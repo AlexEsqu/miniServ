@@ -1,21 +1,14 @@
 // Server side C program to demonstrate HTTP Server programming
-#include <stdio.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string.h>
 
-#define PORT 8080
+#include "server.hpp"
 
-
-int main(int argc, char const *argv[])
+int main()
 {
 	int server_fd, new_socket;
 	long valread;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
-	char *hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\n\n<p>Hello world!</p>";
+	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\n\n<p>Hello world!</p>";
 
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -23,7 +16,6 @@ int main(int argc, char const *argv[])
 		perror("In socket");
 		exit(EXIT_FAILURE);
 	}
-
 
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
@@ -55,7 +47,7 @@ int main(int argc, char const *argv[])
 		char buffer[30000] = {0};
 		valread = read( new_socket , buffer, 30000);
 		printf("%s\n",buffer );
-		write(new_socket , hello , strlen(hello));
+		write(new_socket , hello.c_str() , hello.size());
 
 		printf("------------------Hello message sent-------------------");
 		close(new_socket);
