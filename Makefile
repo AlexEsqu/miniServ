@@ -70,8 +70,8 @@ TEST_DIR			=	tests
 #------- C Client -------------------------------------------------------------#
 
 CLI_DIR				=	$(TEST_DIR)/clients
-CCLIENT				=	client.cpp
-CCLIENT_NAME		=	client_C
+CCLIENT				=	$(CLI_DIR)/client.cpp
+CCLIENT_NAME		=	client
 
 #------ Go Client -------------------------------------------------------------#
 
@@ -79,9 +79,8 @@ CCLIENT_NAME		=	client_C
 
 #------ HTTP Requests ---------------------------------------------------------#
 
-TREQ_DIR			=	$(TEST_DIR)/requests
-
-
+TEST_REQ_DIR		=	$(TEST_DIR)/requests
+HTTP_TEST			=	$(TEST_REQ_DIR)/correct.http
 
 # **************************************************************************** #
 #		Server																   #
@@ -103,7 +102,7 @@ $(OBJ_DIRS):
 # **************************************************************************** #
 
 $(CCLIENT_NAME):
-					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CLI_DIR)/$(CCLIENT)
+					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
 
 
 # **************************************************************************** #

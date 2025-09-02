@@ -48,6 +48,8 @@ int main()
 		valread = read( new_socket , buffer, 30000);
 		printf("%s\n", buffer);
 
+		request res = decodeHttpRequest(buffer);
+
 		write(new_socket , hello.c_str() , hello.size());
 		printf("------------------Hello message sent-------------------");
 		close(new_socket);
