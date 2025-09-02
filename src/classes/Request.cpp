@@ -53,9 +53,8 @@ std::string	Request::extractMethodFromHTTP(std::string httpRequest)
 {
 	std::string	httpMethod = "";
 
-	for (std::string::iterator it = httpRequest.begin(); it != httpRequest.end(); it++) {
-		while (isprint(*it) && isupper(*it))
-			httpMethod.append(1, *it);
+	for (std::string::iterator it = httpRequest.begin(); *it != ' '; it++) {
+		httpMethod.append(1, *it);
 	}
 	return (httpMethod);
 }
