@@ -8,7 +8,9 @@
 # include <netinet/in.h>
 # include <string>
 # include <bits/stdc++.h>
-
+#include <iostream>
+#include <fstream> 
+#include <string>
 # define PORT 8080
 
 #endif
