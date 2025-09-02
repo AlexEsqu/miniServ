@@ -4,13 +4,17 @@
 
 Request::Request(std::string httpRequest)
 	: _fullRequest(httpRequest)
-	, _method(extractMethodFromHTTP(_fullRequest))
 {
-	#ifdef DEBUG
-		std::cout << "Request Constructor called" << std::endl;
-		std::cout << "Method is " << _method << std::endl;
-	#endif
+	decodeHTTPRequest(httpRequest);
 
+	#ifdef DEBUG
+		std::cout << "Request Constructor called";
+		std::cout << "\nMethod is [" << _method;
+		std::cout << "]\nURL is [" << _requestedURL;
+		std::cout << "]\nProtocol is [" << _protocol;
+		std::cout << "]\nContent type is [" << _contentType;
+		std::cout << "]\n" << std::flush;
+	#endif
 
 
 }
@@ -38,6 +42,7 @@ Request &Request::operator=(const Request &other)
 {
 	if (this == &other)
 		return *this;
+	_method = other._method;
 	return *this;
 }
 
@@ -49,12 +54,80 @@ Request &Request::operator=(const Request &other)
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-std::string	Request::extractMethodFromHTTP(std::string httpRequest)
+void		Request::decodeHTTPRequest(std::string &httpRequest)
+{
+	std::string::iterator curr = httpRequest.begin();
+
+	// Extract mandatory info
+	extractMethodFromHTTP(curr);
+	extractURLFromHTTP(curr);
+	extractProtocolFromHTTP(curr);
+
+	// check if Request is valid
+
+
+	// Extract additional info
+	std::string	contentType = "content-type:";
+
+	_contentType = extractInfoFromHTTPHeader(httpRequest, contentType);
+}
+
+// assumes the HTTP method is the first characters of the request until a space occurs
+std::string	Request::extractMethodFromHTTP(std::string::iterator &it)
 {
 	std::string	httpMethod = "";
-
-	for (std::string::iterator it = httpRequest.begin(); *it != ' '; it++) {
+	while (*it != ' ') {
 		httpMethod.append(1, *it);
+		it++;
 	}
+	it++;
+	_method = httpMethod;
 	return (httpMethod);
+}
+
+std::string	Request::extractURLFromHTTP(std::string::iterator &it)
+{
+	std::string	fullURL = "";
+
+	while (*it != ' ') {
+		fullURL.append(1, *it);
+		it++;
+	}
+	it++;
+	_requestedURL = fullURL;
+	return (fullURL);
+}
+
+std::string	Request::extractProtocolFromHTTP(std::string::iterator &it)
+{
+	std::string	protocol = "";
+
+	while (*it != ' ' && *it != '\n') {
+		protocol.append(1, *it);
+		it++;
+	}
+	it++;
+	_protocol = protocol;
+	return (protocol);
+}
+
+std::string	Request::extractInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType)
+{
+	std::string	result = "";
+
+	size_t index = htmlRequest.find(infoType, 0);
+	if (index == std::string::npos)
+		return ("");
+
+	std::string::iterator it = htmlRequest.begin() + index + infoType.size();
+	// skip if space between infotype and info
+	if (*it == ' ')
+		it++;
+	// store info into result until newline
+	while (*it != '\n') {
+		result.append(1, *it);
+		it++;
+	}
+
+	return (result);
 }

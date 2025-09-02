@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 class Request
 {
@@ -14,7 +15,8 @@ private:
 	std::string	_protocol;		// probably not needed, unless we only support HTTP/1.1
 	std::string	_host;			// for example "example.com"
 	std::string	_connection;	// to research keep-alive
-	std::string	_requested_url;	// for example "/home.html"
+	std::string	_requestedURL;	// for example "/home.html"
+	std::string _contentType;
 
 public:
 
@@ -33,7 +35,10 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	std::string	extractMethodFromHTTP(std::string httpRequest);
-	std::string	extractProtocolFromHTTP(std::string httpRequest);
+	void		decodeHTTPRequest(std::string &httpRequest);
+	std::string	extractMethodFromHTTP(std::string::iterator &it);
+	std::string	extractProtocolFromHTTP(std::string::iterator &it);
+	std::string	extractURLFromHTTP(std::string::iterator &it);
+	std::string	extractInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType);
 
 };
