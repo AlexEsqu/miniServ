@@ -8,12 +8,18 @@ int main()
 	long valread;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
-	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\n\n<p>Hello world!</p>";
+	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\n\n<p>Hello world!</p>\n";
 
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
 		perror("In socket");
+		exit(EXIT_FAILURE);
+	}
+	const int on = 1;
+	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) != 0)
+	{
+		perror("In socket options");
 		exit(EXIT_FAILURE);
 	}
 
@@ -48,7 +54,7 @@ int main()
 		valread = read( new_socket , buffer, 30000);
 		printf("%s\n", buffer);
 
-		request res = decodeHttpRequest(buffer);
+		Request decodedRequest(buffer);
 
 		write(new_socket , hello.c_str() , hello.size());
 		printf("------------------Hello message sent-------------------");
