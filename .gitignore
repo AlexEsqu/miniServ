@@ -1,2 +1,4 @@
 a.out
 server
+*.o
+webserv
