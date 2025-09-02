@@ -72,3 +72,11 @@ void Response::setResponse(std::string response)
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////
+
+
+void Response::createResponse()
+{
+	std::string response;
+
+	//adding 
+}

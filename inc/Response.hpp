@@ -19,6 +19,8 @@ public:
 
 	Response &operator=(const Response &other);
 
+	void createResponse();
+
 	void setStatusNum(int number);
 	void setMethod(int method);
 	void setContentType(std::string type);
@@ -27,3 +29,23 @@ public:
 	void setUrl(std::string url);
 	void setResponse(std::string response);
 };
+
+/*
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 319
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link href="./styles.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+        <p>Hello</p>
+        <img src="./big-yoshi-wallpaper.png" width="500">
+</body>
+</html>
+*/
