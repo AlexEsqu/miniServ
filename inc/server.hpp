@@ -13,4 +13,11 @@
 #include <string>
 # define PORT 8080
 
+enum e_methods
+{
+	GET,
+	POST,
+	DELETE,
+	UNSUPPOTRTED
+};
 #endif
