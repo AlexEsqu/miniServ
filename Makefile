@@ -115,11 +115,11 @@ $(CCLIENT_NAME):
 
 debug:				$(OBJ_DIRS) $(OBJ)
 					@echo "Compiling with debug flag"
-					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(OBJ)
+					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(SRC)
 
 verbose:			$(OBJ_DIRS) $(OBJ)
 					@echo "Compiling with additional logging info"
-					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(OBJ)
+					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC)
 
 # **************************************************************************** #
 #		Clean up															   #
