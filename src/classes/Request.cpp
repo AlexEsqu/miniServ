@@ -8,14 +8,12 @@ Request::Request(std::string httpRequest)
 	decodeHTTPRequest(httpRequest);
 
 	#ifdef DEBUG
-		std::cout << "Request Constructor called";
-		std::cout << "\nMethod is [" << _method;
-		std::cout << "]\nURL is [" << _requestedURL;
-		std::cout << "]\nProtocol is [" << _protocol;
-		std::cout << "]\nContent type is [" << _contentType;
-		std::cout << "]\n" << std::flush;
+		std::cout << "Request Constructor called" << std::endl;
+		std::cout << "Method is [" << _method << "]\n";
+		std::cout << "URL is [" << _requestedURL << "]\n";
+		std::cout << "Protocol is [" << _protocol << "]\n";
+		std::cout << "Content type is [" << _contentType << "]\n";
 	#endif
-
 
 }
 
@@ -64,7 +62,7 @@ void		Request::decodeHTTPRequest(std::string &httpRequest)
 	extractProtocolFromHTTP(curr);
 
 	// check if Request is valid
-
+	// TO DO
 
 	// Extract additional info
 	std::string	contentType = "content-type:";
@@ -102,7 +100,8 @@ std::string	Request::extractProtocolFromHTTP(std::string::iterator &it)
 {
 	std::string	protocol = "";
 
-	while (*it != ' ' && *it != '\n') {
+	// end of protocol is expected to be '\r' or carraige return
+	while (*it != ' ' && std::isprint(*it)) {
 		protocol.append(1, *it);
 		it++;
 	}
@@ -124,7 +123,7 @@ std::string	Request::extractInfoFromHTTPHeader(std::string &htmlRequest, std::st
 	if (*it == ' ')
 		it++;
 	// store info into result until newline
-	while (*it != '\n') {
+	while (std::isprint(*it)) {
 		result.append(1, *it);
 		it++;
 	}

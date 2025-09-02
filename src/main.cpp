@@ -8,7 +8,7 @@ int main()
 	long valread;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
-	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\n\n<p>Hello world!</p>\n";
+	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\r\n<p>Hello world!</p>\r";
 
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
