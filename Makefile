@@ -17,6 +17,7 @@ DIR_DECOD			=	decoder
 DIR_PARS			=	parsing
 DIR_EXEC			=	execution
 DIR_FILE			=	fileserv
+DIR_CLAS			=	classes
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
@@ -26,6 +27,7 @@ FUNC_DECOD			=	decoder.cpp
 FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	execution.cpp
 FUNC_FILE			=	fileserv.cpp
+FUNC_CLAS			=	Request.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_ENCOD)/, $(FUNC_ENCOD)) \
@@ -33,6 +35,7 @@ FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_PARS)/, $(FUNC_PARS)) \
 						$(addprefix $(DIR_EXEC)/, $(FUNC_EXEC)) \
 						$(addprefix $(DIR_FILE)/, $(FUNC_FILE)) \
+						$(addprefix $(DIR_CLAS)/, $(FUNC_CLAS)) \
 						main.cpp
 
 HEAD				=	server.hpp
@@ -51,6 +54,7 @@ OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_ERR) \
 						$(OBJ_DIR)/$(DIR_EXEC) \
 						$(OBJ_DIR)/$(DIR_PARS) \
+						$(OBJ_DIR)/$(DIR_CLAS) \
 						$(OBJ_DIR)/$(DIR_FILE)
 
 OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
