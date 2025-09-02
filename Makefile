@@ -62,12 +62,14 @@ CC					=	c++
 FLAGS				=	-Wall -Wextra -Werror -std=c++98
 
 # **************************************************************************** #
-#		Client variables													   #
+#		Testing variables													   #
 # **************************************************************************** #
+
+TEST_DIR			=	tests
 
 #------- C Client -------------------------------------------------------------#
 
-CLI_DIR				=	clients
+CLI_DIR				=	$(TEST_DIR)/clients
 CCLIENT				=	client.cpp
 CCLIENT_NAME		=	client_C
 
@@ -75,6 +77,9 @@ CCLIENT_NAME		=	client_C
 
 
 
+#------ HTTP Requests ---------------------------------------------------------#
+
+TREQ_DIR			=	$(TEST_DIR)/requests
 
 
 

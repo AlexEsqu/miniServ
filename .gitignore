@@ -1,3 +1,4 @@
 webserv
 client_*
-obj/
+obj/*
+obj
