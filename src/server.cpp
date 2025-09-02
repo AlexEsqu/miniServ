@@ -2,9 +2,11 @@
 
 #include "server.hpp"
 
+
+
 int main()
 {
-	//response writer fct(status,method, content type, content length, url of the request)
+	// response writer fct(status,method, content type, content length, url of the request)
 
 	int server_fd, new_socket;
 	long valread;
@@ -13,10 +15,11 @@ int main()
 
 	std::string line;
 	std::ifstream myHtmlFile("src/test/index.html");
-	std::stringstream myHtmlText; 
+	std::stringstream myHtmlText;
 	myHtmlText << myHtmlFile.rdbuf();
 	myHtmlFile.close();
 	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 319\n\n" + myHtmlText.str();
+	std::cout << hello;
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
