@@ -2,11 +2,17 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-Request::Request()
+Request::Request(std::string httpRequest)
+	: _fullRequest(httpRequest)
+	, _method(extractMethodFromHTTP(_fullRequest))
 {
 	#ifdef DEBUG
 		std::cout << "Request Constructor called" << std::endl;
+		std::cout << "Method is " << _method << std::endl;
 	#endif
+
+
+
 }
 
 Request::Request(const Request &copy)
@@ -30,8 +36,9 @@ Request::~Request()
 
 Request &Request::operator=(const Request &other)
 {
-	// code
-	return (*this);
+	if (this == &other)
+		return *this;
+	return *this;
 }
 
 //---------------------------- GUETTERS -------------------------------------//
@@ -41,3 +48,14 @@ Request &Request::operator=(const Request &other)
 
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
+
+std::string	Request::extractMethodFromHTTP(std::string httpRequest)
+{
+	std::string	httpMethod = "";
+
+	for (std::string::iterator it = httpRequest.begin(); it != httpRequest.end(); it++) {
+		while (isprint(*it) && isupper(*it))
+			httpMethod.append(1, *it);
+	}
+	return (httpMethod);
+}

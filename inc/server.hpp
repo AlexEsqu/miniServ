@@ -9,6 +9,8 @@
 # include <string>
 # include <bits/stdc++.h>
 
+# include "Request.hpp"
+
 # define PORT 8080
 
 #endif
