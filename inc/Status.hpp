@@ -1,86 +1,100 @@
 #pragma once
 #include <iostream>
-
+#include <exception>
 class Status
 {
 private:
-	const char *error_messages[512] = {"Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Continue", "Switching Protocols", "Processing", "", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "OK", "Created", "Accepted", "Non-Authoritative Information", "No Content", "Reset Content", "Partial Content", "Multi-Status", "Already Reported", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "IM Used", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Multiple Choices", "Moved Permanently", "Found", "See Other", "Not Modified", "Use Proxy", "Switch Proxy", "Temporary Redirect", "Permanent Redirect", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Bad Request", "Unauthorized", "Payment Required", "Forbidden", "Not Found", "Method Not Allowed", "Not Acceptable", "Proxy Authentication Required", "Request Timeout", "Conflict", "Gone", "Length Required", "Precondition Failed", "Payload Too Large", "URI Too Long", "Unsupported Media Type", "Range Not Satisfiable", "Expectation Failed", "I'm a teapot", "Unknown error", "Unknown error", "Misdirected Request", "Unprocessable Entity", "Locked", "Failed Dependency", "Too Early", "Upgrade Required", "Unknown error", "Precondition Required", "Too Many Requests", "Unknown error", "Request Header Fields Too Large", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unavailable For Legal Reasons", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Unknown error", "Internal Server Error", "Not Implemented", "Bad Gateway", "Service Unavailable", "Gateway Timeout", "HTTP Version Not Supported", "Variant Also Negotiates", "Insufficient Storage", "Loop Detected", "Unknown error", "Not Extended", "Network Authentication Required"};
+	const char *_statusMessages[512] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "Continue", "Switching Protocols", "Processing", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "OK", "Created", "Accepted", "Non-Authoritative Information", "No Content", "Reset Content", "Partial Content", "Multi-Status", "Already Reported", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "IM Used", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "Multiple Choices", "Moved Permanently", "Found", "See Other", "Not Modified", "Use Proxy", "Switch Proxy", "Temporary Redirect", "Permanent Redirect", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "Bad Request", "Unauthorized", "Payment Required", "Forbidden", "Not Found", "Method Not Allowed", "Not Acceptable", "Proxy Authentication Required", "Request Timeout", "Conflict", "Gone", "Length Required", "Precondition Failed", "Payload Too Large", "URI Too Long", "Unsupported Media Type", "Range Not Satisfiable", "Expectation Failed", "I'm a teapot", NULL, NULL, "Misdirected Request", "Unprocessable Entity", "Locked", "Failed Dependency", "Too Early", "Upgrade Required", NULL, "Precondition Required", "Too Many Requests", NULL, "Request Header Fields Too Large", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "Unavailable For Legal Reasons", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "Internal Server Error", "Not Implemented", "Bad Gateway", "Service Unavailable", "Gateway Timeout", "HTTP Version Not Supported", "Variant Also Negotiates", "Insufficient Storage", "Loop Detected", NULL, "Not Extended", "Network Authentication Required"};
+	std::string _statusMessage;
+	unsigned int _statusCode;
 	Status();
+
 public:
 	Status(int num);
+	Status(std::string message);
 	Status(const Status &copy);
 	virtual ~Status();
 
 	Status &operator=(const Status &other);
 
+	unsigned int getStatusCode();
+	std::string getStatusMessage();
+
+	class UnknownStatusException : public std::exception
+	{
+	public:
+		virtual const char *what() const throw()
+		{
+			return ("Unknown status code");
+		}
+	};
 };
 
-//Here in case
-// std::map<int, std::string> status = 
-// {
-// 	{100, "Continue"},
-// 	{101, "Switching Protocols"},
-// 	{102, "Processing"},
-// 	{200, "OK"},
-// 	{201, "Created"},
-// 	{202, "Accepted"},
-// 	{203, "Non-Authoritative Information"},
-// 	{204, "No Content"},
-// 	{205, "Reset Content"},
-// 	{206, "Partial Content"},
-// 	{207, "Multi-Status"},
-// 	{208, "Already Reported"},
-// 	{226, "IM Used"},
-// 	{300, "Multiple Choices"},
-// 	{301, "Moved Permanently"},
-// 	{302, "Found"},
-// 	{303, "See Other"},
-// 	{304, "Not Modified"},
-// 	{305, "Use Proxy"},
-// 	{306, "Switch Proxy"},
-// 	{307, "Temporary Redirect"},
-// 	{308, "Permanent Redirect"},
-// 	{400, "Bad Request"},
-// 	{401, "Unauthorized"},
-// 	{402, "Payment Required"},
-// 	{403, "Forbidden"},
-// 	{404, "Not Found"},
-// 	{405, "Method Not Allowed"},
-// 	{406, "Not Acceptable"},
-// 	{407, "Proxy Authentication Required"},
-// 	{408, "Request Timeout"},
-// 	{409, "Conflict"},
-// 	{410, "Gone"},
-// 	{411, "Length Required"},
-// 	{412, "Precondition Failed"},
-// 	{413, "Payload Too Large"},
-// 	{414, "URI Too Long"},
-// 	{415, "Unsupported Media Type"},
-// 	{416, "Range Not Satisfiable"},
-// 	{417, "Expectation Failed"},
-// 	{418, "I'm a teapot"},
-// 	{421, "Misdirected Request"},
-// 	{422, "Unprocessable Entity"},
-// 	{423, "Locked"},
-// 	{424, "Failed Dependency"},
-// 	{425, "Too Early"},
-// 	{426, "Upgrade Required"},
-// 	{428, "Precondition Required"},
-// 	{429, "Too Many Requests"},
-// 	{431, "Request Header Fields Too Large"},
-// 	{451, "Unavailable For Legal Reasons"},
-// 	{500, "Internal Server Error"},
-// 	{501, "Not Implemented"},
-// 	{502, "Bad Gateway"},
-// 	{503, "Service Unavailable"},
-// 	{504, "Gateway Timeout"},
-// 	{505, "HTTP Version Not Supported"},
-// 	{506, "Variant Also Negotiates"},
-// 	{507, "Insufficient Storage"},
-// 	{508, "Loop Detected"},
-// 	{510, "Not Extended"},
-// 	{511, "Network Authentication Required"}};
-
+// Here in case
+//  std::map<int, std::string> status =
+//  {
+//  	{100, "Continue"},
+//  	{101, "Switching Protocols"},
+//  	{102, "Processing"},
+//  	{200, "OK"},
+//  	{201, "Created"},
+//  	{202, "Accepted"},
+//  	{203, "Non-Authoritative Information"},
+//  	{204, "No Content"},
+//  	{205, "Reset Content"},
+//  	{206, "Partial Content"},
+//  	{207, "Multi-Status"},
+//  	{208, "Already Reported"},
+//  	{226, "IM Used"},
+//  	{300, "Multiple Choices"},
+//  	{301, "Moved Permanently"},
+//  	{302, "Found"},
+//  	{303, "See Other"},
+//  	{304, "Not Modified"},
+//  	{305, "Use Proxy"},
+//  	{306, "Switch Proxy"},
+//  	{307, "Temporary Redirect"},
+//  	{308, "Permanent Redirect"},
+//  	{400, "Bad Request"},
+//  	{401, "Unauthorized"},
+//  	{402, "Payment Required"},
+//  	{403, "Forbidden"},
+//  	{404, "Not Found"},
+//  	{405, "Method Not Allowed"},
+//  	{406, "Not Acceptable"},
+//  	{407, "Proxy Authentication Required"},
+//  	{408, "Request Timeout"},
+//  	{409, "Conflict"},
+//  	{410, "Gone"},
+//  	{411, "Length Required"},
+//  	{412, "Precondition Failed"},
+//  	{413, "Payload Too Large"},
+//  	{414, "URI Too Long"},
+//  	{415, "Unsupported Media Type"},
+//  	{416, "Range Not Satisfiable"},
+//  	{417, "Expectation Failed"},
+//  	{418, "I'm a teapot"},
+//  	{421, "Misdirected Request"},
+//  	{422, "Unprocessable Entity"},
+//  	{423, "Locked"},
+//  	{424, "Failed Dependency"},
+//  	{425, "Too Early"},
+//  	{426, "Upgrade Required"},
+//  	{428, "Precondition Required"},
+//  	{429, "Too Many Requests"},
+//  	{431, "Request Header Fields Too Large"},
+//  	{451, "Unavailable For Legal Reasons"},
+//  	{500, "Internal Server Error"},
+//  	{501, "Not Implemented"},
+//  	{502, "Bad Gateway"},
+//  	{503, "Service Unavailable"},
+//  	{504, "Gateway Timeout"},
+//  	{505, "HTTP Version Not Supported"},
+//  	{506, "Variant Also Negotiates"},
+//  	{507, "Insufficient Storage"},
+//  	{508, "Loop Detected"},
+//  	{510, "Not Extended"},
+//  	{511, "Network Authentication Required"}};
 
 // int httpStatusCodes[] = {
 //   100, 101, 102, 103,
@@ -100,13 +114,12 @@ public:
 // 	{
 // 		if (i == httpStatusCodes[y])
 // 		{
-// 			std::cout << "\"" << status[i] << "\", ";
+// 			std::cout << "\NULL << status[i] << "\", ";
 // 			y++;
 // 		}
 // 		else
-// 			std::cout << "\"Unknown error\", ";
+// 			std::cout << "\"\", ";
 // 		i++;
 // 	}
 
-	
 // };
