@@ -27,6 +27,7 @@ Response::~Response()
 Response &Response::operator=(const Response &other)
 {
 	// code
+	(void)other;
 	return (*this);
 }
 
