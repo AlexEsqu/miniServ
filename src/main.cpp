@@ -8,7 +8,7 @@ int main()
 	std::string finalResponse;
 	std::ifstream input("pages/index.html"); //opening the file as the content for the response
 	std::stringstream content;
-	content << input.rdbuf();
+	content << input.rdbuf(); //putting the content of the input file into the content variable
 	
 	Response response; //Setting all the necessary infos for the response
 	response.setProtocol("HTTP/1.1");
