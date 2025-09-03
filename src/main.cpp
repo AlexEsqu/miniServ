@@ -4,20 +4,26 @@
 
 int main()
 {
-	// response writer fct(status, method, content type, content length, url of the request)
+
+	std::string finalResponse;
+	std::ifstream input("pages/index.html"); //opening the file as the content for the response
+	std::stringstream content;
+	content << input.rdbuf();
+	
+	Response response; //Setting all the necessary infos for the response
+	response.setProtocol("HTTP/1.1");
+	response.setStatusNum(200);
+	response.setContentType("text/html");
+	response.setContentLength(content.str().length());
+	response.setContent(content.str());
+	finalResponse = response.createResponse(); //creating the final response with all the values precedently added
 
 	int server_fd, new_socket;
 	long valread;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
 
-	std::string line;
-	std::ifstream myHtmlFile("src/test/index.html");
-	std::stringstream myHtmlText;
-	myHtmlText << myHtmlFile.rdbuf();
-	myHtmlFile.close();
-	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 319\n\n" + myHtmlText.str();
-	std::cout << hello;
+	
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
@@ -66,7 +72,7 @@ int main()
 		Request decodedRequest(buffer);
 		Request copyRequest = decodedRequest;
 
-		write(new_socket , hello.c_str() , hello.size());
+		write(new_socket , finalResponse.c_str() , finalResponse.size());
 		printf("------------------Hello message sent-------------------");
 		close(new_socket);
 	}
