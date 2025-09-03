@@ -6,18 +6,18 @@
 
 Response::Response()
 {
-	std::cout << "Response Constructor called" << std::endl;
+	// std::cout << "Response Constructor called" << std::endl;
 }
 
 Response::Response(const Response &copy)
 {
-	std::cout << "Response copy Constructor called" << std::endl;
+	// std::cout << "Response copy Constructor called" << std::endl;
 	*this = copy;
 }
 
 Response::~Response()
 {
-	std::cout << "Response Destructor called" << std::endl;
+	// std::cout << "Response Destructor called" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	this->_url = url;
+	this->_requestedURL = url;
 }
 
 void Response::setResponse(std::string response)
@@ -70,14 +70,24 @@ void Response::setResponse(std::string response)
 	this->_response = response;
 }
 
+void Response::setProtocol(std::string protocol)
+{
+	this->_protocol = protocol;
+}
+
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////
 
-
-void Response::createResponse()
+std::string Response::createResponse()
 {
-	std::string response;
+	std::stringstream response;
+	Status statusCode(this->_statusNum);
+	response << this->_protocol << " " << statusCode 
+			<< "Content-Type: " << this->_contentType << "\n"
+			<< "Content-Length: " << this->_contentLength
+			<< "\n\n" << this->_content;
+	std::cout << response.rdbuf();
 
-	//adding 
+	return(response.str());
 }

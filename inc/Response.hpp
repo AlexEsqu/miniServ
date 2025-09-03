@@ -1,16 +1,17 @@
 #pragma once
 #include <iostream>
-
+#include "server.hpp"
 class Response
 {
 private:
-	int 			_statusNum;
-	int 			_method;	  // potential enum for GET,POST,DELETE... / or could be string too??
-	std::string 	_contentType; 
-	unsigned int 	_contentLength;
-	std::string		_content;
-	std::string 	_url;
-	std::string		_response;
+	int _statusNum;
+	int _method; // potential enum for GET,POST,DELETE... / or could be string too??
+	std::string _contentType;
+	unsigned int _contentLength;
+	std::string _content;
+	std::string _requestedURL;
+	std::string _response;
+	std::string _protocol;
 
 public:
 	Response();
@@ -19,7 +20,7 @@ public:
 
 	Response &operator=(const Response &other);
 
-	void createResponse();
+	std::string createResponse();
 
 	void setStatusNum(int number);
 	void setMethod(int method);
@@ -28,6 +29,7 @@ public:
 	void setContent(std::string content);
 	void setUrl(std::string url);
 	void setResponse(std::string response);
+	void setProtocol(std::string protocol);
 };
 
 /*
@@ -38,14 +40,14 @@ Content-Length: 319
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <link href="./styles.css" rel="stylesheet" type="text/css" />
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Document</title>
+		<link href="./styles.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-        <p>Hello</p>
-        <img src="./big-yoshi-wallpaper.png" width="500">
+		<p>Hello</p>
+		<img src="./big-yoshi-wallpaper.png" width="500">
 </body>
 </html>
 */
