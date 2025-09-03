@@ -1,30 +1,36 @@
-#include "Error.hpp"
+#include "Status.hpp"
 
 ///////////////////////////////////////////////////////////////////
 ///                  CONSTRUCTORS | DESTRUCTORS                  //
 ///////////////////////////////////////////////////////////////////
 
-Error::Error()
+Status::Status()
 {
-    std::cout << "Error Constructor called" << std::endl;
+    std::cout << "Status Constructor called" << std::endl;
 }
 
-Error::Error(const Error &copy)
+
+Status::	Status(int num)
 {
-    std::cout << "Error copy Constructor called" << std::endl;
+	
+}
+
+Status::Status(const Status &copy)
+{
+    std::cout << "Status copy Constructor called" << std::endl;
     *this = copy;
 }
 
-Error::~Error()
+Status::~Status()
 {
-    std::cout << "Error Destructor called" << std::endl;
+    std::cout << "Status Destructor called" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////
 ///                        OPERATORS                             //
 ///////////////////////////////////////////////////////////////////
 
-Error &Error::operator=(const Error &other)
+Status &Status::operator=(const Status &other)
 {
     // code
     return (*this);
