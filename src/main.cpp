@@ -10,7 +10,6 @@ int main()
 	long valread;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
-	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\r\n<p>Hello world!</p>\r";
 
 	std::string line;
 	std::ifstream myHtmlFile("src/test/index.html");
