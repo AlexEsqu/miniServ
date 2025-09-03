@@ -2,11 +2,9 @@
 
 #include "server.hpp"
 
-
-
 int main()
 {
-	// response writer fct(status,method, content type, content length, url of the request)
+	// response writer fct(status, method, content type, content length, url of the request)
 
 	int server_fd, new_socket;
 	long valread;
@@ -61,6 +59,8 @@ int main()
 		printf("------------------Hello message sent-------------------");
 		close(new_socket);
 	}
+	Status code(404);
 
+	std::cout << code.getStatusCode() << " " << code.getStatusMessage() << std::endl;
 	return 0;
 }
