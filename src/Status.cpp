@@ -6,14 +6,14 @@
 
 Status::Status()
 {
-	std::cout << "Status Constructor called" << std::endl;
+	// std::cout << "Status Constructor called" << std::endl;
 }
 
-Status::Status(int num) : _statusCode(num)
+Status::Status(int num) :_statusMessage("Unknown status code"), _statusCode(num)
 {
 	try
 	{
-		if (num <= 511 && _statusMessages[num] != NULL)
+		if (num <= 511 && *_statusMessages[num] != '\0')
 			this->_statusMessage = _statusMessages[num];
 		else
 			throw Status::UnknownStatusException();
@@ -24,7 +24,7 @@ Status::Status(int num) : _statusCode(num)
 	}
 }
 
-Status::Status(std::string message) : _statusMessage(message)
+Status::Status(std::string message) : _statusMessage(message), _statusCode(0)
 {
 	int i = 0;
 	try
@@ -34,6 +34,7 @@ Status::Status(std::string message) : _statusMessage(message)
 			if (_statusMessages[i] == message)
 			{
 				this->_statusCode = i;
+				return;
 			}
 			i++;
 		}
@@ -54,7 +55,7 @@ Status::Status(const Status &copy)
 
 Status::~Status()
 {
-	std::cout << "Status Destructor called" << std::endl;
+	// std::cout << "Status Destructor called" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -63,20 +64,26 @@ Status::~Status()
 
 Status &Status::operator=(const Status &other)
 {
-	// code
+	this->_statusCode = other.getStatusCode();
+	this->_statusMessage = other.getStatusMessage();
 	return (*this);
 }
 
+std::ostream &operator<<(std::ostream &o, Status &status)
+{
+	o << status.getStatusCode() << " "  << status.getStatusMessage() << std::endl;
+	return(o);
+}
 ///////////////////////////////////////////////////////////////////
 ///                    GETTERS | SETTERS                         //
 ///////////////////////////////////////////////////////////////////
 
-unsigned int Status::getStatusCode()
+unsigned int Status::getStatusCode() const
 {
 	return(this->_statusCode);
 }
 
-std::string Status::getStatusMessage()
+std::string Status::getStatusMessage() const
 {
 	return(this->_statusMessage);
 }
