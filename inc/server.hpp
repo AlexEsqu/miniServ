@@ -12,6 +12,9 @@
 #include <fstream> 
 #include <string>
 #include <map>
+#include <exception>
+#include "Status.hpp"
+
 # define PORT 8080
 
 enum e_methods
