@@ -57,6 +57,7 @@ int main()
 		printf("%s\n", buffer);
 
 		Request decodedRequest(buffer);
+		Request copyRequest = decodedRequest;
 
 		write(new_socket , hello.c_str() , hello.size());
 		printf("------------------Hello message sent-------------------");

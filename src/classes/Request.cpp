@@ -40,7 +40,18 @@ Request &Request::operator=(const Request &other)
 {
 	if (this == &other)
 		return *this;
-	_method = other._method;
+
+	_fullRequest = other._fullRequest;
+	decodeHTTPRequest(_fullRequest);
+
+	#ifdef DEBUG
+		std::cout << "Request Copy Assignement called" << std::endl;
+		std::cout << "Method is [" << _method << "]\n";
+		std::cout << "URL is [" << _requestedURL << "]\n";
+		std::cout << "Protocol is [" << _protocol << "]\n";
+		std::cout << "Content type is [" << _contentType << "]\n";
+	#endif
+
 	return *this;
 }
 
