@@ -16,6 +16,8 @@ int main()
 		perror("In socket");
 		exit(EXIT_FAILURE);
 	}
+
+	// allow socket to be reused and webserv to reload faster wi SO_REUSEADDR
 	const int on = 1;
 	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) != 0)
 	{
