@@ -14,7 +14,7 @@
 #include <map>
 #include <exception>
 #include "Status.hpp"
-
+#include "Response.hpp"
 # include "Request.hpp"
 
 # define PORT 8080
