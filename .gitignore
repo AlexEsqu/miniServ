@@ -2,3 +2,9 @@ a.out
 server
 *.o
 webserv
+C_client
+obj/*
+obj
+/client
+.vscode
+

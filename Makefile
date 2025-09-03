@@ -2,60 +2,124 @@
 #		General variables													   #
 # **************************************************************************** #
 
-NAME				= webserv
+NAME				=	webserv
 
-SRC_DIR				= src
+SRC_DIR				=	src
+OBJ_DIR				=	obj
+INC_DIR				=	inc
+WEB_DIR				=	pages
 
-OBJ_DIR				= obj
+#----- SOURCE FILE FOLDERS ----------------------------------------------------#
 
-INC_DIR				= inc
+DIR_ERR				=	error
+DIR_ENCOD			=	encoder
+DIR_DECOD			=	decoder
+DIR_PARS			=	parsing
+DIR_EXEC			=	execution
+DIR_FILE			=	fileserv
+DIR_CLAS			=	classes
 
-WEB_DIR				= pages
+#----- SOURCE FILES -----------------------------------------------------------#
 
-FUNC				= server.cpp
+FUNC_ERR			=	error.cpp
+FUNC_ENCOD			=	encoder.cpp
+FUNC_DECOD			=	decoder.cpp
+FUNC_PARS			=	parsing.cpp
+FUNC_EXEC			=	execution.cpp
+FUNC_FILE			=	fileserv.cpp
+FUNC_CLAS			=	Request.cpp
 
-HEAD				= server.hpp
+FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
+						$(addprefix $(DIR_ENCOD)/, $(FUNC_ENCOD)) \
+						$(addprefix $(DIR_DECOD)/, $(FUNC_DECOD)) \
+						$(addprefix $(DIR_PARS)/, $(FUNC_PARS)) \
+						$(addprefix $(DIR_EXEC)/, $(FUNC_EXEC)) \
+						$(addprefix $(DIR_FILE)/, $(FUNC_FILE)) \
+						$(addprefix $(DIR_CLAS)/, $(FUNC_CLAS)) \
+						main.cpp
 
-SRC					= $(addprefix $(SRC_DIR)/, $(FUNC))
+HEAD				=	server.hpp
 
-HEADER				= $(addprefix $(INC_DIR)/, $(HEAD))
+SRC					=	$(addprefix $(SRC_DIR)/, $(FUNC))
 
-INC					= -I$(INC_DIR)
+HEADER				=	$(addprefix $(INC_DIR)/, $(HEAD))
 
-OBJ					= $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+#----- COMPILATION VARIABLES --------------------------------------------------#
 
-DEP					= $(OBJ_DIR) $(HEADER)
+INC					=	-I$(INC_DIR)
 
-CC					= c++
+OBJ_DIRS			= 	$(OBJ_DIR) \
+						$(OBJ_DIR)/$(DIR_ENCOD) \
+						$(OBJ_DIR)/$(DIR_DECOD) \
+						$(OBJ_DIR)/$(DIR_ERR) \
+						$(OBJ_DIR)/$(DIR_EXEC) \
+						$(OBJ_DIR)/$(DIR_PARS) \
+						$(OBJ_DIR)/$(DIR_CLAS) \
+						$(OBJ_DIR)/$(DIR_FILE)
 
-FLAGS				= -Wall -Wextra -Werror -std=c++98
+OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+
+DEP					=	$(OBJ_DIRS) $(HEADER)
+
+CC					=	c++
+
+FLAGS				=	-Wall -Wextra -Werror -std=c++98
 
 # **************************************************************************** #
-#		Compilation															   #
+#		Testing variables													   #
+# **************************************************************************** #
+
+TEST_DIR			=	tests
+
+#------- C Client -------------------------------------------------------------#
+
+CLI_DIR				=	$(TEST_DIR)/clients
+CCLIENT				=	$(CLI_DIR)/client.cpp
+CCLIENT_NAME		=	client
+
+#------ Go Client -------------------------------------------------------------#
+
+
+
+#------ HTTP Requests ---------------------------------------------------------#
+
+TEST_REQ_DIR		=	$(TEST_DIR)/requests
+HTTP_TEST			=	$(TEST_REQ_DIR)/correct.http
+
+# **************************************************************************** #
+#		Server																   #
 # **************************************************************************** #
 
 all:				$(NAME)
 
-$(NAME):			$(DEP) $(OBJ)
+$(NAME):			$(OBJ_DIRS) $(OBJ)
 					$(CC) $(FLAGS) $(INC) -o $(NAME) $(OBJ)
 
-$(OBJ_DIR)/%.o:		$(SRC_DIR)/%.cpp
+$(OBJ_DIR)/%.o:		$(SRC_DIR)/%.cpp $(HEADER)
 					$(CC) $(FLAGS) $(INC) -c $< -o $@
 
-$(OBJ_DIR):
-					mkdir -p $@
+$(OBJ_DIRS):
+					mkdir -p $(OBJ_DIRS)
+
+# **************************************************************************** #
+#		Client																   #
+# **************************************************************************** #
+
+$(CCLIENT_NAME):
+					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
+
 
 # **************************************************************************** #
 #		Debug																   #
 # **************************************************************************** #
 
-debug:				$(DEP) $(OBJ)
+debug:				$(OBJ_DIRS) $(OBJ)
 					@echo "Compiling with debug flag"
-					$(CC) $(CFLAGS) -g $(INC) -o $(NAME) $(SRC) $(LIB)
+					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(SRC)
 
-verbose:			$(DEP) $(OBJ)
+verbose:			$(OBJ_DIRS) $(OBJ)
 					@echo "Compiling with additional logging info"
-					$(CC) $(CFLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC) $(LIB)
+					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC)
 
 # **************************************************************************** #
 #		Clean up															   #
@@ -70,4 +134,4 @@ fclean:
 
 re:					fclean all
 
-.PHONY:				all clean fclean re debug
+.PHONY:				all clean fclean re debug verbose $(CCLIENT_NAME)

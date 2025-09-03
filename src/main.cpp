@@ -10,6 +10,7 @@ int main()
 	long valread;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
+	std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 18\r\n<p>Hello world!</p>\r";
 
 	std::string line;
 	std::ifstream myHtmlFile("src/test/index.html");
@@ -22,6 +23,14 @@ int main()
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
 		perror("In socket");
+		exit(EXIT_FAILURE);
+	}
+
+	// allow socket to be reused and webserv to reload faster wi SO_REUSEADDR
+	const int on = 1;
+	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) != 0)
+	{
+		perror("In socket options");
 		exit(EXIT_FAILURE);
 	}
 
@@ -52,10 +61,13 @@ int main()
 		}
 
 		char buffer[30000] = {0};
-		valread = read(new_socket, buffer, 30000);
+		valread = read( new_socket , buffer, 30000);
 		printf("%s\n", buffer);
-		write(new_socket, hello.c_str(), hello.size());
 
+		Request decodedRequest(buffer);
+		Request copyRequest = decodedRequest;
+
+		write(new_socket , hello.c_str() , hello.size());
 		printf("------------------Hello message sent-------------------");
 		close(new_socket);
 	}

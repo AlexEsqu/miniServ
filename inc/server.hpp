@@ -15,6 +15,8 @@
 #include <exception>
 #include "Status.hpp"
 
+# include "Request.hpp"
+
 # define PORT 8080
 
 enum e_methods
