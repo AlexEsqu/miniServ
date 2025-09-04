@@ -9,12 +9,7 @@ std::string createResponse(std::string filePath)
 	std::stringstream content;
 	content << input.rdbuf(); // putting the content of the input file into the content variable
 
-	Response response; // Setting all the necessary infos for the response
-	response.setProtocol("HTTP/1.1");
-	response.setStatusNum(200);
-	response.setContentType("text/html");
-	response.setContentLength(content.str().length());
-	response.setContent(content.str());
+	Response response(200,"text/html", content.str()); // Setting all the necessary infos for the response
 	finalResponse = response.createResponse(); // creating the final response with all the values precedently added
 	return (finalResponse);
 }
