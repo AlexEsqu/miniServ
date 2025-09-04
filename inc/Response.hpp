@@ -15,6 +15,7 @@ private:
 
 public:
 	Response();
+	Response(int status, std::string contentType, std::string content);
 	Response(const Response &copy);
 	virtual ~Response();
 

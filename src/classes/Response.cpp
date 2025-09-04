@@ -9,6 +9,12 @@ Response::Response()
 	// std::cout << "Response Constructor called" << std::endl;
 }
 
+Response::Response(int status, std::string contentType, std::string content): _statusNum(status), 
+	_contentType(contentType), _content(content), _protocol("HTTP/1.1"), _contentLength(content.length())
+{
+	// std::cout << "Response Constructor called" << std::endl;
+	this->_contentLength = content.length();
+}
 Response::Response(const Response &copy)
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
