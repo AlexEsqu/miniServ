@@ -9,8 +9,8 @@ Response::Response()
 	// std::cout << "Response Constructor called" << std::endl;
 }
 
-Response::Response(int status, std::string contentType, std::string content): _statusNum(status), 
-	_contentType(contentType), _content(content), _protocol("HTTP/1.1"), _contentLength(content.length())
+Response::Response(int status, std::string contentType, std::string content) : _statusNum(status),
+			 _contentType(contentType), _contentLength(content.length()),_content(content), _protocol("HTTP/1.1")
 {
 	// std::cout << "Response Constructor called" << std::endl;
 	this->_contentLength = content.length();
@@ -89,11 +89,12 @@ std::string Response::createResponse()
 {
 	std::stringstream response;
 	Status statusCode(this->_statusNum);
-	response << this->_protocol << " " << statusCode 
-			<< "Content-Type: " << this->_contentType << "\n"
-			<< "Content-Length: " << this->_contentLength
-			<< "\n\n" << this->_content;
+	response << this->_protocol << " " << statusCode
+			 << "Content-Type: " << this->_contentType << "\n"
+			 << "Content-Length: " << this->_contentLength
+			 << "\n\n"
+			 << this->_content;
 	std::cout << response.rdbuf();
 
-	return(response.str());
+	return (response.str());
 }
