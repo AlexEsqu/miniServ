@@ -21,7 +21,7 @@ std::string createResponse(std::string filePath)
 
 int main()
 {
-	std::string finalResponse = createResponse("pages/index.html");
+	std::string finalResponse = createResponse("pages/index.html"); //test with an html file
 	int server_fd, new_socket;
 	long valread;
 	struct sockaddr_in address;
