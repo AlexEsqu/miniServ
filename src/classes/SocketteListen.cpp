@@ -5,8 +5,7 @@
 SocketteListen::SocketteListen(int port)
 {
 	#ifdef DEBUG
-		std::cout << "SocketteListen
-	 Constructor called" << std::endl;
+		std::cout << "SocketteListen Constructor called" << std::endl;
 	#endif
 
 	setPort(port);
@@ -28,12 +27,7 @@ SocketteListen::SocketteListen(int port)
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
-SocketteListen::~SocketteListen()
-{
-	#ifdef DEBUG
-		std::cout << "SocketteListen Destructor called" << std::endl;
-	#endif
-}
+
 
 //---------------------------- OPERATORS ------------------------------------//
 

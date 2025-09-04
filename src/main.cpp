@@ -1,5 +1,3 @@
-// Server side C program to demonstrate HTTP Server programming
-
 #include "server.hpp"
 
 std::string createResponse(std::string filePath)
@@ -19,27 +17,26 @@ std::string createResponse(std::string filePath)
 	return (finalResponse);
 }
 
-void	servingLoop(Sockette &ServSocket)
+void	listeningLoop(Sockette &ListenerSocket)
 {
-	long valread;
-
 	while (1)
 	{
-		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-		SocketteAccept Worker(ServSocket);
+		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n" << std::endl;
 
-		char buffer[30000] = {0};
-		valread = read(Worker.getSocketFd(), buffer, 30000);
-		printf("%s\n", buffer);
+		// create a socket to receive incoming communication
+		SocketteAnswer AnsweringSocket(ListenerSocket);
 
-		Request decodedRequest(buffer);
-		Request copyRequest = decodedRequest;
+		// reading the request into the Sockette buffer
+		AnsweringSocket.readRequest();
 
+		// decoding the buffer into a Request object
+		Request decodedRequest(AnsweringSocket.getRequest());
+
+		// creating a Response
 		std::string finalResponse = createResponse("pages/index.html");
+		write(AnsweringSocket.getSocketFd(), finalResponse.c_str(), finalResponse.size());
 
-		write(Worker.getSocketFd(), finalResponse.c_str(), finalResponse.size());
-		printf("------------------Hello message sent-------------------");
-		close(Worker.getSocketFd());
+		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
 	}
 }
 
@@ -47,9 +44,9 @@ void	servingLoop(Sockette &ServSocket)
 int main()
 {
 	// creating a socket, binding it to an IP address and listening
-	SocketteListen	ServerSocket(PORT);
+	SocketteListen	ListenerSocket(PORT);
 
+	listeningLoop(ListenerSocket);
 
-	servingLoop(ServerSocket);
 	return 0;
 }

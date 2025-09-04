@@ -3,6 +3,7 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <cstring>
+# include <unistd.h>
 
 class Sockette
 {
@@ -72,6 +73,11 @@ public:
 	};
 
 	class failedSocketAccept : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
+	class failedSocketRead : public std::exception {
 		public :
 			const char* what() const throw();
 	};

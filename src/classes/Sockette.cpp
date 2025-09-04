@@ -19,6 +19,9 @@ Sockette::~Sockette()
 	#ifdef DEBUG
 		std::cout << "Sockette Destructor called" << std::endl;
 	#endif
+
+	if (_socketFd >= 0)
+		close(_socketFd);
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -139,4 +142,9 @@ const char*		Sockette::failedSocketListen::what() const throw()
 const char*		Sockette::failedSocketAccept::what() const throw()
 {
 	return "ERROR: Failed to accept connection in call to accept()";
+}
+
+const char*		Sockette::failedSocketRead::what() const throw()
+{
+	return "ERROR: Failed to read request in buffer call to write()";
 }
