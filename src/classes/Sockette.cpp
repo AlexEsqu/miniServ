@@ -8,21 +8,8 @@ Sockette::Sockette()
 	,  _port(8080)
 {
 	#ifdef DEBUG
-		std::cout << "Sockette Constructor called" << std::endl;
+		std::cout << "Sockette generic Constructor called" << std::endl;
 	#endif
-
-	// Creating socket and file descriptor referring it
-	if ((_socketFd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
-		throw failedSocketCreation();
-
-}
-
-Sockette::Sockette(const Sockette &copy)
-{
-	#ifdef DEBUG
-		std::cout << "Sockette copy Constructor called" << std::endl;
-	#endif
-	*this = copy;
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
@@ -82,6 +69,11 @@ void			Sockette::setPort(int port)
 	_port = port;
 }
 
+void			Sockette::setSocketFd(int socketFd)
+{
+	_socketFd = socketFd;
+}
+
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 void			Sockette::setSocketOption(int option)
@@ -97,7 +89,7 @@ void			Sockette::bindToIPAddress()
 
 	_socketAddress.sin_family = AF_INET;
 	_socketAddress.sin_addr.s_addr = INADDR_ANY;
-	_socketAddress.sin_port = htons(8080);
+	_socketAddress.sin_port = htons(_port);
 	memset(_socketAddress.sin_zero, '\0', sizeof _socketAddress.sin_zero);
 
 	if (bind(_socketFd, (struct sockaddr *)&_socketAddress, (socklen_t)addrlen) < 0)

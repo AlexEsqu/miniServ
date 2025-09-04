@@ -1,14 +1,20 @@
-# include "ServSockette.hpp"
+# include "SocketteListen.hpp"
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-ServSockette::ServSockette(int port)
+SocketteListen::SocketteListen(int port)
 {
 	#ifdef DEBUG
-		std::cout << "ServSockette Constructor called" << std::endl;
+		std::cout << "SocketteListen
+	 Constructor called" << std::endl;
 	#endif
 
 	setPort(port);
+
+	// Creating socket and file descriptor referring it
+	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
+	if (getSocketFd() < 0)
+		throw failedSocketCreation();
 
 	// allow socket to be reused and webserv to reload faster with SO_REUSEADDR
 	setSocketOption(SO_REUSEADDR);
@@ -22,10 +28,10 @@ ServSockette::ServSockette(int port)
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
-ServSockette::~ServSockette()
+SocketteListen::~SocketteListen()
 {
 	#ifdef DEBUG
-		std::cout << "ServSockette Destructor called" << std::endl;
+		std::cout << "SocketteListen Destructor called" << std::endl;
 	#endif
 }
 

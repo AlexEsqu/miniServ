@@ -19,23 +19,17 @@ std::string createResponse(std::string filePath)
 	return (finalResponse);
 }
 
-void	servingLoop(int server_fd, struct sockaddr_in address)
+void	servingLoop(Sockette &ServSocket)
 {
-	int addrlen = sizeof(address);
-	int new_socket;
 	long valread;
 
 	while (1)
 	{
 		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-		if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
-		{
-			perror("In accept");
-			exit(EXIT_FAILURE);
-		}
+		SocketteAccept Worker(ServSocket);
 
 		char buffer[30000] = {0};
-		valread = read(new_socket, buffer, 30000);
+		valread = read(Worker.getSocketFd(), buffer, 30000);
 		printf("%s\n", buffer);
 
 		Request decodedRequest(buffer);
@@ -43,9 +37,9 @@ void	servingLoop(int server_fd, struct sockaddr_in address)
 
 		std::string finalResponse = createResponse("pages/index.html");
 
-		write(new_socket, finalResponse.c_str(), finalResponse.size());
+		write(Worker.getSocketFd(), finalResponse.c_str(), finalResponse.size());
 		printf("------------------Hello message sent-------------------");
-		close(new_socket);
+		close(Worker.getSocketFd());
 	}
 }
 
@@ -53,9 +47,9 @@ void	servingLoop(int server_fd, struct sockaddr_in address)
 int main()
 {
 	// creating a socket, binding it to an IP address and listening
-	ServSockette	ServerSocket(PORT);
+	SocketteListen	ServerSocket(PORT);
 
 
-	servingLoop(ServerSocket.getSocketFd(), *ServerSocket.getSocketAddr());
+	servingLoop(ServerSocket);
 	return 0;
 }
