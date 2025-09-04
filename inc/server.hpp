@@ -8,14 +8,16 @@
 # include <netinet/in.h>
 # include <string>
 # include <bits/stdc++.h>
-#include <iostream>
-#include <fstream> 
-#include <string>
-#include <map>
-#include <exception>
-#include "Status.hpp"
-#include "Response.hpp"
+# include <iostream>
+# include <fstream>
+# include <string>
+# include <map>
+# include <exception>
+
+# include "Status.hpp"
+# include "Response.hpp"
 # include "Request.hpp"
+# include "Sockette.hpp"
 
 # define PORT 8080
 

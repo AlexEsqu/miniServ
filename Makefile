@@ -27,7 +27,7 @@ FUNC_DECOD			=	decoder.cpp
 FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	execution.cpp
 FUNC_FILE			=	fileserv.cpp
-FUNC_CLAS			=	Request.cpp Response.cpp Status.cpp
+FUNC_CLAS			=	Request.cpp Response.cpp Status.cpp Sockette.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_ENCOD)/, $(FUNC_ENCOD)) \

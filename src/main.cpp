@@ -19,29 +19,6 @@ std::string createResponse(std::string filePath)
 	return (finalResponse);
 }
 
-// create a socket and add option to reuse addresses
-int	createServerSocket()
-{
-	int	server_fd = -1;
-
-	// Creating socket file descriptor
-	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
-	{
-		perror("In socket");
-		exit(EXIT_FAILURE);
-	}
-
-	// allow socket to be reused and webserv to reload faster wi SO_REUSEADDR
-	const int on = 1;
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) != 0)
-	{
-		perror("In socket options");
-		exit(EXIT_FAILURE);
-	}
-
-	return (server_fd);
-}
-
 // Binding a socket using a standard IP address options (AF_INET, INADDR_ANY)
 struct sockaddr_in bindSocketToIPAddress(int socket_fd)
 {
@@ -99,8 +76,8 @@ void	servingLoop(int server_fd, struct sockaddr_in address)
 
 int main()
 {
-	int server_fd = createServerSocket();
-	struct sockaddr_in address = bindSocketToIPAddress(server_fd);
-	servingLoop(server_fd, address);
+	Sockette	ServerSocket;
+	bindSocketToIPAddress(ServerSocket.getSocketFd());
+	servingLoop(ServerSocket.getSocketFd(), ServerSocket.getSocketAddr());
 	return 0;
 }
