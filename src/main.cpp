@@ -19,13 +19,10 @@ std::string createResponse(std::string filePath)
 	return (finalResponse);
 }
 
-int main()
+// create a socket and add option to reuse addresses
+int	createServerSocket()
 {
-	std::string finalResponse = createResponse("pages/index.html");
-	int server_fd, new_socket;
-	long valread;
-	struct sockaddr_in address;
-	int addrlen = sizeof(address);
+	int	server_fd = -1;
 
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -42,22 +39,38 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 
+	return (server_fd);
+}
+
+// Binding a socket using a standard IP address options (AF_INET, INADDR_ANY)
+struct sockaddr_in bindSocketToIPAddress(int socket_fd)
+{
+	struct sockaddr_in address;
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(PORT);
 	memset(address.sin_zero, '\0', sizeof address.sin_zero);
 
-	if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
+	if (bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
 	{
 		perror("In bind");
 		exit(EXIT_FAILURE);
 	}
 
-	if (listen(server_fd, 10) < 0)
+	if (listen(socket_fd, 10) < 0)
 	{
 		perror("In listen");
 		exit(EXIT_FAILURE);
 	}
+
+	return (address);
+}
+
+void	servingLoop(int server_fd, struct sockaddr_in address)
+{
+	int addrlen = sizeof(address);
+	int new_socket;
+	long valread;
 
 	while (1)
 	{
@@ -75,12 +88,19 @@ int main()
 		Request decodedRequest(buffer);
 		Request copyRequest = decodedRequest;
 
+		std::string finalResponse = createResponse("pages/index.html");
+
 		write(new_socket, finalResponse.c_str(), finalResponse.size());
 		printf("------------------Hello message sent-------------------");
 		close(new_socket);
 	}
-	Status code(404);
+}
 
-	std::cout << code.getStatusCode() << " " << code.getStatusMessage() << std::endl;
+
+int main()
+{
+	int server_fd = createServerSocket();
+	struct sockaddr_in address = bindSocketToIPAddress(server_fd);
+	servingLoop(server_fd, address);
 	return 0;
 }
