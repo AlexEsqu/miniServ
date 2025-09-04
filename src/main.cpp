@@ -2,28 +2,31 @@
 
 #include "server.hpp"
 
-int main()
+std::string createResponse(std::string filePath)
 {
-
 	std::string finalResponse;
-	std::ifstream input("pages/index.html"); //opening the file as the content for the response
+	std::ifstream input(filePath.c_str()); // opening the file as the content for the response
 	std::stringstream content;
-	content << input.rdbuf(); //putting the content of the input file into the content variable
-	
-	Response response; //Setting all the necessary infos for the response
+	content << input.rdbuf(); // putting the content of the input file into the content variable
+
+	Response response; // Setting all the necessary infos for the response
 	response.setProtocol("HTTP/1.1");
 	response.setStatusNum(200);
 	response.setContentType("text/html");
 	response.setContentLength(content.str().length());
 	response.setContent(content.str());
-	finalResponse = response.createResponse(); //creating the final response with all the values precedently added
+	finalResponse = response.createResponse(); // creating the final response with all the values precedently added
+	return (finalResponse);
+}
 
+int main()
+{
+	std::string finalResponse = createResponse("pages/index.html");
 	int server_fd, new_socket;
 	long valread;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
 
-	
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
@@ -66,13 +69,13 @@ int main()
 		}
 
 		char buffer[30000] = {0};
-		valread = read( new_socket , buffer, 30000);
+		valread = read(new_socket, buffer, 30000);
 		printf("%s\n", buffer);
 
 		Request decodedRequest(buffer);
 		Request copyRequest = decodedRequest;
 
-		write(new_socket , finalResponse.c_str() , finalResponse.size());
+		write(new_socket, finalResponse.c_str(), finalResponse.size());
 		printf("------------------Hello message sent-------------------");
 		close(new_socket);
 	}
