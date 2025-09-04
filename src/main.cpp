@@ -3,10 +3,16 @@
 std::string createResponse(std::string filePath)
 {
 	std::string finalResponse;
+
+	// added a dot to request the correct filepath
+	filePath.insert(0, 1, '.');
+	#ifdef DEBUG
+		std::cout << "\nRequested filepath is : [" << filePath << "]\n\n";
+	#endif
+
 	std::ifstream input(filePath.c_str()); // opening the file as the content for the response
 	std::stringstream content;
 	content << input.rdbuf(); // putting the content of the input file into the content variable
-
 	Response response; // Setting all the necessary infos for the response
 	response.setProtocol("HTTP/1.1");
 	response.setStatusNum(200);
@@ -14,6 +20,11 @@ std::string createResponse(std::string filePath)
 	response.setContentLength(content.str().length());
 	response.setContent(content.str());
 	finalResponse = response.createResponse(); // creating the final response with all the values precedently added
+
+	#ifdef DEBUG
+		std::cout << "\nResponse is : [" << finalResponse << "]\n\n";
+	#endif
+
 	return (finalResponse);
 }
 
@@ -33,8 +44,7 @@ void	listeningLoop(Sockette &ListenerSocket)
 		Request decodedRequest(AnsweringSocket.getRequest());
 
 		// creating a Response
-		std::string finalResponse = createResponse("pages/index.html");
-		write(AnsweringSocket.getSocketFd(), finalResponse.c_str(), finalResponse.size());
+		std::string finalResponse = createResponse(decodedRequest.getRequestedURL());
 
 		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
 	}
