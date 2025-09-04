@@ -19,30 +19,6 @@ std::string createResponse(std::string filePath)
 	return (finalResponse);
 }
 
-// Binding a socket using a standard IP address options (AF_INET, INADDR_ANY)
-struct sockaddr_in bindSocketToIPAddress(int socket_fd)
-{
-	struct sockaddr_in address;
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(PORT);
-	memset(address.sin_zero, '\0', sizeof address.sin_zero);
-
-	if (bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
-	{
-		perror("In bind");
-		exit(EXIT_FAILURE);
-	}
-
-	if (listen(socket_fd, 10) < 0)
-	{
-		perror("In listen");
-		exit(EXIT_FAILURE);
-	}
-
-	return (address);
-}
-
 void	servingLoop(int server_fd, struct sockaddr_in address)
 {
 	int addrlen = sizeof(address);
@@ -76,8 +52,10 @@ void	servingLoop(int server_fd, struct sockaddr_in address)
 
 int main()
 {
-	Sockette	ServerSocket;
-	bindSocketToIPAddress(ServerSocket.getSocketFd());
-	servingLoop(ServerSocket.getSocketFd(), ServerSocket.getSocketAddr());
+	// creating a socket, binding it to an IP address and listening
+	ServSockette	ServerSocket(PORT);
+
+
+	servingLoop(ServerSocket.getSocketFd(), *ServerSocket.getSocketAddr());
 	return 0;
 }
