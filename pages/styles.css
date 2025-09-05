@@ -15,9 +15,9 @@ header {
 }
 
 body {
-  background-image: url("./big-yoshi-wallpaper.png");
-  background-size: cover;
-  font-family: "Comic Sans MS", cursive;
+  /* background-image: url("./big-yoshi-wallpaper.png");
+  background-size: cover; */
+  font-family: "Comic Sans";
 }
 
 img {
@@ -32,6 +32,8 @@ img {
 
 .presentation {
   display: flex;
+  flex: auto;
   flex-direction: row;
   text-align: center;
+  justify-content: space-around;
 }
