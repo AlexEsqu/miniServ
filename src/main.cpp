@@ -1,5 +1,7 @@
 #include "server.hpp"
 
+
+
 void	listeningLoop(Sockette &ListenerSocket)
 {
 	while (1)
@@ -15,8 +17,11 @@ void	listeningLoop(Sockette &ListenerSocket)
 		// decoding the buffer into a Request object
 		Request decodedRequest(AnsweringSocket.getRequest());
 
+		
 		// creating a Response
 		std::string finalResponse = createResponse(decodedRequest.getRequestedURL());
+		
+		write(AnsweringSocket.getSocketFd(), finalResponse.c_str(), finalResponse.size());
 
 		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
 	}
