@@ -9,6 +9,15 @@ content-type: text/html
   "body": "Hello World !"
 }
 
+####
+
+GET http://localhost:8080/src/main.cpp/
+content-type: text/html
+
+{
+  "body": "Hello World !"
+}
+
 ###
 
 POST http://localhost:8080/info/

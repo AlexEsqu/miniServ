@@ -12,8 +12,8 @@ WEB_DIR				=	pages
 #----- SOURCE FILE FOLDERS ----------------------------------------------------#
 
 DIR_ERR				=	error
-DIR_ENCOD			=	encoder
-DIR_DECOD			=	decoder
+DIR_ENCOD			=	response
+DIR_DECOD			=	request
 DIR_PARS			=	parsing
 DIR_EXEC			=	execution
 DIR_FILE			=	fileserv
@@ -22,8 +22,8 @@ DIR_CLAS			=	classes
 #----- SOURCE FILES -----------------------------------------------------------#
 
 FUNC_ERR			=	error.cpp
-FUNC_ENCOD			=	encoder.cpp
-FUNC_DECOD			=	decoder.cpp
+FUNC_ENCOD			=	response.cpp
+FUNC_DECOD			=	request.cpp
 FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	execution.cpp
 FUNC_FILE			=	fileserv.cpp

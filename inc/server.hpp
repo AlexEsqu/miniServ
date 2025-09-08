@@ -32,7 +32,8 @@ enum e_methods
 	UNSUPPOTRTED
 };
 
-enum e_status {
+enum e_status
+{
   CONTINUE = 100,
   SWITCHING_PROTOCOLS = 101,
   PROCESSING = 102,
@@ -101,4 +102,10 @@ enum e_status {
   NOT_EXTENDED = 510,
   NETWORK_AUTHENTICATION_REQUIRED = 511
 };
+
+
+std::string createResponse(std::string filePath);
+
+
+
 #endif
