@@ -5,15 +5,19 @@
 # include <cstring>
 # include <unistd.h>
 
+
+# define MAX_EVENTS 10
+# define MAX_SOCKET 10
+
 class Sockette
 {
 
 private:
 
-	int				_socketFd;
-	sockaddr_in		_socketAddress;		// first element of the sockaddr_in, used in many functions
-	int				_socketAddrLen;
-	int				_port;
+	int					_socketFd;
+	sockaddr_in			_socketAddress;		// first element of the sockaddr_in, used in many functions
+	int					_socketAddrLen;
+	int					_port;
 
 public:
 
@@ -81,6 +85,5 @@ public:
 		public :
 			const char* what() const throw();
 	};
-
 
 };
