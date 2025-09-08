@@ -132,6 +132,10 @@ std::string	Request::extractURLFromHTTP(std::string::iterator &it)
 		it++;
 	}
 	it++;
+
+	if (fullURL.at(0) == '/')
+		fullURL.insert(0, ".");
+
 	_requestedURL = fullURL;
 	return (fullURL);
 }
