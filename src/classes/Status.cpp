@@ -20,7 +20,7 @@ Status::Status(int num) :_statusMessage("Unknown status code"), _statusCode(num)
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << RED << e.what() << STOP_COLOR << '\n';
 	}
 }
 
@@ -43,13 +43,13 @@ Status::Status(std::string message) : _statusMessage(message), _statusCode(0)
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << RED << e.what() << STOP_COLOR << '\n';
 	}
 }
 
 Status::Status(const Status &copy)
 {
-	std::cout << "Status copy Constructor called" << std::endl;
+	// std::cout << "Status copy Constructor called" << std::endl;
 	*this = copy;
 }
 
