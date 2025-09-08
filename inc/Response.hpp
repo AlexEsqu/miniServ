@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 #include "server.hpp"
+
+class Status; 
+
 class Response
 {
 private:
@@ -12,6 +15,8 @@ private:
 	std::string _requestedURL;
 	std::string _response;
 	std::string _protocol;
+	
+	std::string createErrorPageContent(const Status &num);
 
 public:
 	Response();

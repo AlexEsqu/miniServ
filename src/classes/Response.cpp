@@ -10,7 +10,7 @@ Response::Response()
 }
 
 Response::Response(int status, std::string contentType, std::string content) : _statusNum(status),
-			 _contentType(contentType), _contentLength(content.length()),_content(content), _protocol("HTTP/1.1")
+																			   _contentType(contentType), _contentLength(content.length()), _content(content), _protocol("HTTP/1.1")
 {
 	// std::cout << "Response Constructor called" << std::endl;
 	this->_contentLength = content.length();
@@ -85,11 +85,42 @@ void Response::setProtocol(std::string protocol)
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////
 
+std::string Response::createErrorPageContent(const Status &num)
+{
+	std::ifstream inputErrorFile("./pages/error.html");
+	std::stringstream outputString;
+	std::string line;
+
+	if (!inputErrorFile.is_open())
+	{
+		std::cerr << "Could not open file" << std::endl;
+	}
+	/* Could be a better implementation with finding the string
+	 in the line instead of matching exactly because if i add anything
+	 like an other space in the error.html well it wont find int anymore */
+	while (getline(inputErrorFile, line))
+	{
+		if (line == "    <h1></h1>")
+			line.insert(8, num.getStringStatusCode() + " " + num.getStatusMessage());
+		if (line == "    <title></title>")
+			line.insert(11, num.getStringStatusCode() + num.getStatusMessage());
+
+		outputString << line;
+		std::cout << line;
+	}
+	inputErrorFile.close();
+	return (outputString.str());
+}
+
 std::string Response::createResponse()
 {
 	std::stringstream response;
-	Status statusCode(this->_statusNum);
-	response << this->_protocol << " " << statusCode
+	Status status(this->_statusNum);
+	if (status.getStatusCode() >= 400) // if its an error
+	{
+		this->_content = createErrorPageContent(status);
+	}
+	response << this->_protocol << " " << status
 			 << "Content-Type: " << this->_contentType << "\n"
 			 << "Content-Length: " << this->_contentLength
 			 << "\n\n"
