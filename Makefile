@@ -19,6 +19,7 @@ DIR_EXEC			=	execution
 DIR_FILE			=	fileserv
 DIR_CLAS			=	classes
 DIR_POLL			=	polling
+DIR_CONF			=	config
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
@@ -29,6 +30,7 @@ FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	execution.cpp
 FUNC_FILE			=	fileserv.cpp
 FUNC_CLAS			=	Status.cpp
+FUNC_CONF			=	Config.cpp Route.cpp
 FUNC_POLL			=	Sockette.cpp SocketteAnswer.cpp SocketteListen.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
