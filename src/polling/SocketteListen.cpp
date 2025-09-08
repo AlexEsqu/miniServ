@@ -38,7 +38,7 @@ SocketteListen::SocketteListen(int port)
 
 void			SocketteListen::createEpollInstance()
 {
-	_epollFd = epoll_create(0);
+	_epollFd = epoll_create(1);
 	if (_epollFd == -1)
 		throw failedEpollCreate();
 }
@@ -59,13 +59,48 @@ void			SocketteListen::waitForEvents()
 		throw failedEpollWait();
 }
 
-void			SocketteListen::acceptNewConnection()
+void			SocketteListen::acceptNewConnection(epoll_event &event)
 {
+	// allocating new acccepting socket to be used
+	SocketteAnswer*	Connecting = new SocketteAnswer(*this);
+
+	Connecting->setSocketNonBlocking();
+
+	event.events = EPOLLIN | EPOLLET;
+	// event.data.fd = Connecting->getSocketFd();
+
+	// adding new socket pointer as context in the event itself
+	event.data.ptr = &Connecting;
+
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &_event) == -1) {
+		throw failedEpollCtl();
+	}
+
+	Connecting->readRequest();
+
+	#ifdef DEBUG
+		std::cout << "Connection established" << std::endl;
+		std::cout << "Fd is " << Connecting->getSocketFd() << std::endl;
+		std::cout << Connecting->getRequest() << std::endl;
+	#endif
+
+	handleExistingConnection(event);
+
+	// close(Connecting->getSocketFd());
+	// delete Connecting;
 
 }
 
-void			SocketteListen::handleExistingConnection()
+void			SocketteListen::handleExistingConnection(epoll_event &event)
 {
+	SocketteAnswer* Connecting = reinterpret_cast<SocketteAnswer*>(event.data.ptr);
+
+
+	std::cout << Connecting->getRequest() << std::endl;
+
+	#ifdef DEBUG
+		std::cout << "Connection handled" << std::endl;
+	#endif
 
 }
 
@@ -74,15 +109,17 @@ void			SocketteListen::processEvents()
 {
 	for (int i = 0; i < _eventsReadyForProcess; ++i) {
 		if (_eventQueue[i].data.fd == getSocketFd()) {
-			acceptNewConnection();
+			acceptNewConnection(_eventQueue[i]);
 		} else {
-			handleExistingConnection();
+			handleExistingConnection(_eventQueue[i]);
 		}
 	}
 }
 
 void			SocketteListen::launchEpollListenLoop()
 {
+	createEpollInstance();
+	attachEpollToSocket();
 	while (1)
 	{
 		waitForEvents();

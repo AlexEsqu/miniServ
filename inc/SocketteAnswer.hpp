@@ -1,7 +1,6 @@
 #pragma once
 # include "Sockette.hpp"
 
-
 class SocketteAnswer: public Sockette
 {
 
@@ -13,7 +12,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	SocketteAnswer(Sockette &Source);
+	SocketteAnswer(Sockette &ListenSocket);
 
 	//----------------- DESTRUCTOR -----------------------//
 

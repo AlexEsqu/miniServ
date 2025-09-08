@@ -1,4 +1,5 @@
 #include "SocketteAnswer.hpp"
+#include "server.hpp"
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
@@ -38,11 +39,13 @@ void	SocketteAnswer::readRequest()
 {
 	int valread = read(getSocketFd(), _buffer, 30000);
 
+	std::cerr << "beep\n";
+
 	if (valread < 0)
 		throw failedSocketRead();
 
 	#ifdef DEBUG
-		std::cout << "Answer socket read :[" <<  _buffer << "]\n" << std::endl;
+		std::cout << "Answer socket read " << valread << " bytes: [" << _buffer << "]\n" << std::endl;
 	#endif
 }
 

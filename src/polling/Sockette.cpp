@@ -86,6 +86,14 @@ void			Sockette::setSocketOption(int option)
 		throw failedSocketSetOption();
 }
 
+void			Sockette::setSocketNonBlocking()
+{
+	int status = fcntl(getSocketFd(), F_SETFL, fcntl(getSocketFd(), F_GETFL, 0) | O_NONBLOCK);
+
+	if (status == -1)
+		throw failedFcntl();
+}
+
 void			Sockette::bindToIPAddress()
 {
 	int addrlen = sizeof(_socketAddress);
@@ -146,5 +154,10 @@ const char*		Sockette::failedSocketAccept::what() const throw()
 
 const char*		Sockette::failedSocketRead::what() const throw()
 {
-	return "ERROR: Failed to read request in buffer call to write()";
+	return "ERROR: Failed to read request in buffer call to read()";
+}
+
+const char*		Sockette::failedFcntl::what() const throw()
+{
+	return "ERROR: Failed to modify socket flags in call to fcntl()";
 }

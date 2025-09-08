@@ -1,7 +1,8 @@
 #pragma once
 #include <iostream>
-#include "Sockette.hpp"
-#include "sys/epoll.h"
+#include <sys/epoll.h>
+
+#include "SocketteAnswer.hpp"
 
 class SocketteListen: public Sockette
 {
@@ -10,7 +11,6 @@ private:
 
 	int					_epollFd;
 	int					_eventsReadyForProcess;
-	int					_eventsReady;
 	struct epoll_event	_event;
 	struct epoll_event	_eventQueue[MAX_EVENTS];
 
@@ -32,8 +32,8 @@ public:
 	void				attachEpollToSocket();
 	void				waitForEvents();
 	void				processEvents();
-	void				acceptNewConnection();
-	void				handleExistingConnection();
+	void				acceptNewConnection(epoll_event &event);
+	void				handleExistingConnection(epoll_event &event);
 	void				launchEpollListenLoop();
 
 	//------------------ EXCEPTIONS ----------------------//
