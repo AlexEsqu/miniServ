@@ -22,6 +22,7 @@ public:
 	//----------------- CONSTRUCTORS ---------------------//
 
 	Config();
+	Config(std::string &configFilePath);
 	Config(const Config &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
