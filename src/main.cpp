@@ -1,12 +1,11 @@
 #include "server.hpp"
 
-
-
-void	listeningLoop(Sockette &ListenerSocket)
+void listeningLoop(Sockette &ListenerSocket)
 {
 	while (1)
 	{
-		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n" << std::endl;
+		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n"
+				  << std::endl;
 
 		// create a socket to receive incoming communication
 		SocketteAnswer AnsweringSocket(ListenerSocket);
@@ -17,21 +16,20 @@ void	listeningLoop(Sockette &ListenerSocket)
 		// decoding the buffer into a Request object
 		Request decodedRequest(AnsweringSocket.getRequest());
 
-		
 		// creating a Response
-		std::string finalResponse = createResponse(decodedRequest.getRequestedURL());
-		
-		write(AnsweringSocket.getSocketFd(), finalResponse.c_str(), finalResponse.size());
 
-		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
+		Response response(200, "text/html", decodedRequest.getRequestedURL()); 
+		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
+
+		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n"
+				  << std::endl;
 	}
 }
-
 
 int main()
 {
 	// creating a socket, binding it to an IP address and listening
-	SocketteListen	ListenerSocket(PORT);
+	SocketteListen ListenerSocket(PORT);
 
 	listeningLoop(ListenerSocket);
 
