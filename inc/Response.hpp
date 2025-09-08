@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include "server.hpp"
+
 class Response
 {
 private:

@@ -12,7 +12,7 @@ content-type: text/html
 ####
 
 GET http://localhost:8080/src/main.cpp/
-content-type: text/html
+content-type: text/plain
 
 {
   "body": "Hello World !"
