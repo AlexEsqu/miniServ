@@ -13,7 +13,7 @@ Status::Status(int num) :_statusMessage("Unknown status code"), _statusCode(num)
 {
 	try
 	{
-		if (num <= 511 && *_statusMessages[num] != '\0')
+		if (num <= 511 && *_statusMessages[num] != '\0') //add macro for readability
 			this->_statusMessage = _statusMessages[num];
 		else
 			throw Status::UnknownStatusException();
@@ -81,6 +81,13 @@ std::ostream &operator<<(std::ostream &o, Status &status)
 unsigned int Status::getStatusCode() const
 {
 	return(this->_statusCode);
+}
+
+std::string Status::getStringStatusCode() const
+{
+	std::stringstream temp;
+	temp << this->_statusCode;
+	return(temp.str());
 }
 
 std::string Status::getStatusMessage() const
