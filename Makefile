@@ -12,22 +12,24 @@ WEB_DIR				=	pages
 #----- SOURCE FILE FOLDERS ----------------------------------------------------#
 
 DIR_ERR				=	error
-DIR_ENCOD			=	encoder
-DIR_DECOD			=	decoder
+DIR_ENCOD			=	response
+DIR_DECOD			=	request
 DIR_PARS			=	parsing
 DIR_EXEC			=	execution
 DIR_FILE			=	fileserv
 DIR_CLAS			=	classes
+DIR_POLL			=	polling
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
 FUNC_ERR			=	error.cpp
-FUNC_ENCOD			=	encoder.cpp
-FUNC_DECOD			=	decoder.cpp
+FUNC_ENCOD			=	Response.cpp
+FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	execution.cpp
 FUNC_FILE			=	fileserv.cpp
-FUNC_CLAS			=	Request.cpp Response.cpp Status.cpp
+FUNC_CLAS			=	Status.cpp
+FUNC_POLL			=	Sockette.cpp SocketteAnswer.cpp SocketteListen.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_ENCOD)/, $(FUNC_ENCOD)) \
@@ -36,6 +38,7 @@ FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_EXEC)/, $(FUNC_EXEC)) \
 						$(addprefix $(DIR_FILE)/, $(FUNC_FILE)) \
 						$(addprefix $(DIR_CLAS)/, $(FUNC_CLAS)) \
+						$(addprefix $(DIR_POLL)/, $(FUNC_POLL)) \
 						main.cpp
 
 HEAD				=	server.hpp
@@ -55,7 +58,8 @@ OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_EXEC) \
 						$(OBJ_DIR)/$(DIR_PARS) \
 						$(OBJ_DIR)/$(DIR_CLAS) \
-						$(OBJ_DIR)/$(DIR_FILE)
+						$(OBJ_DIR)/$(DIR_FILE) \
+						$(OBJ_DIR)/$(DIR_POLL)
 
 OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 

@@ -8,16 +8,22 @@
 # include <netinet/in.h>
 # include <string>
 # include <bits/stdc++.h>
-#include <iostream>
-#include <fstream> 
-#include <string>
-#include <map>
-#include <exception>
-#include "Status.hpp"
-#include "Response.hpp"
+# include <iostream>
+# include <fstream>
+# include <string>
+# include <map>
+# include <exception>
+
+# include "Status.hpp"
+# include "Response.hpp"
 # include "Request.hpp"
+# include "Sockette.hpp"
+# include "SocketteAnswer.hpp"
+# include "SocketteListen.hpp"
+# include "readability.hpp"
 
 # define PORT 8080
+
 
 enum e_methods
 {
@@ -27,7 +33,8 @@ enum e_methods
 	UNSUPPOTRTED
 };
 
-enum e_status {
+enum e_status
+{
   CONTINUE = 100,
   SWITCHING_PROTOCOLS = 101,
   PROCESSING = 102,
@@ -96,4 +103,10 @@ enum e_status {
   NOT_EXTENDED = 510,
   NETWORK_AUTHENTICATION_REQUIRED = 511
 };
+
+
+std::string createResponse(std::string filePath);
+
+
+
 #endif

@@ -29,6 +29,15 @@ public:
 
 	~Request();
 
+	//-------------------- GETTERS -----------------------//
+
+	std::string	getMethod() const;
+	std::string	getProtocol() const;
+	std::string	getHost() const;
+	std::string	getConnection() const;
+	std::string	getRequestedURL() const;
+	std::string	getContentType() const;
+
 	//------------------- OPERATORS ----------------------//
 
 	Request &operator=(const Request &other);

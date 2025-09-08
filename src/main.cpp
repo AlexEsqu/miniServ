@@ -1,81 +1,34 @@
-// Server side C program to demonstrate HTTP Server programming
-
 #include "server.hpp"
 
-std::string createResponse(std::string filePath)
+void	listeningLoop(Sockette &ListenerSocket)
 {
-	std::string finalResponse;
-	std::ifstream input(filePath.c_str()); // opening the file as the content for the response
-	std::stringstream content;
-	content << input.rdbuf(); // putting the content of the input file into the content variable
+	while (1)
+	{
+		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n" << std::endl;
 
-	Response response(200,"text/html", content.str()); // Setting all the necessary infos for the response
-	finalResponse = response.createResponse(); // creating the final response with all the values precedently added
-	return (finalResponse);
+		// create a socket to receive incoming communication
+		SocketteAnswer AnsweringSocket(ListenerSocket);
+
+		// reading the request into the Sockette buffer
+		AnsweringSocket.readRequest();
+
+		// decoding the buffer into a Request object
+		Request decodedRequest(AnsweringSocket.getRequest());
+
+		// creating a Response
+		std::string finalResponse = createResponse(decodedRequest.getRequestedURL());
+
+		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
+	}
 }
+
 
 int main()
 {
-	std::string finalResponse = createResponse("pages/index.html"); //test with an html file
-	int server_fd, new_socket;
-	long valread;
-	struct sockaddr_in address;
-	int addrlen = sizeof(address);
+	// creating a socket, binding it to an IP address and listening
+	SocketteListen	ListenerSocket(PORT);
 
-	// Creating socket file descriptor
-	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
-	{
-		perror("In socket");
-		exit(EXIT_FAILURE);
-	}
+	listeningLoop(ListenerSocket);
 
-	// allow socket to be reused and webserv to reload faster wi SO_REUSEADDR
-	const int on = 1;
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) != 0)
-	{
-		perror("In socket options");
-		exit(EXIT_FAILURE);
-	}
-
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(PORT);
-	memset(address.sin_zero, '\0', sizeof address.sin_zero);
-
-	if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
-	{
-		perror("In bind");
-		exit(EXIT_FAILURE);
-	}
-
-	if (listen(server_fd, 10) < 0)
-	{
-		perror("In listen");
-		exit(EXIT_FAILURE);
-	}
-
-	while (1)
-	{
-		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-		if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
-		{
-			perror("In accept");
-			exit(EXIT_FAILURE);
-		}
-
-		char buffer[30000] = {0};
-		valread = read(new_socket, buffer, 30000);
-		printf("%s\n", buffer);
-
-		Request decodedRequest(buffer);
-		Request copyRequest = decodedRequest;
-
-		write(new_socket, finalResponse.c_str(), finalResponse.size());
-		printf("------------------Hello message sent-------------------");
-		close(new_socket);
-	}
-	Status code(404);
-
-	std::cout << code.getStatusCode() << " " << code.getStatusMessage() << std::endl;
 	return 0;
 }

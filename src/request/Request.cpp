@@ -57,6 +57,35 @@ Request &Request::operator=(const Request &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
+std::string	Request::getMethod() const
+{
+	return _method;
+}
+
+std::string	Request::getProtocol() const
+{
+	return _protocol;
+}
+
+std::string	Request::getHost() const
+{
+	return _host;
+}
+
+std::string	Request::getConnection() const
+{
+	return _connection;
+}
+
+std::string	Request::getRequestedURL() const
+{
+	return _requestedURL;
+}
+
+std::string	Request::getContentType() const
+{
+	return _contentType;
+}
 
 //---------------------------- SETTERS --------------------------------------//
 
