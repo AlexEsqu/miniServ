@@ -9,11 +9,14 @@ Response::Response()
 	// std::cout << "Response Constructor called" << std::endl;
 }
 
-Response::Response(int status, std::string contentType, std::string content) : _statusNum(status),
-																			   _contentType(contentType), _contentLength(content.length()), _content(content), _protocol("HTTP/1.1")
+Response::Response(int status, std::string contentType, std::string url) : _statusNum(status),
+																		   _contentType(contentType), _contentLength(0), _content(""), _protocol("HTTP/1.1")
 {
 	// std::cout << "Response Constructor called" << std::endl;
-	this->_contentLength = content.length();
+
+	Response::setUrl(url);
+	Response::setContent(this->_content);
+	Response::setHTTPResponse();
 }
 Response::Response(const Response &copy)
 {
@@ -63,12 +66,26 @@ void Response::setContentLength(int length)
 
 void Response::setContent(std::string content)
 {
-	this->_content = content;
+	if (content.empty())
+	{
+		std::ifstream input(this->_requestedURL.c_str()); // opening the file as the content for the response
+		std::stringstream content;
+		if (!input.is_open())
+			std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
+		content << input.rdbuf();
+		this->_content = content.str();
+	}
+	else
+		this->_content = content;
 }
 
 void Response::setUrl(std::string url)
 {
-	this->_requestedURL = url;
+	if (url == "./")
+		this->_requestedURL = "./pages/index.html";
+	else
+		this->_requestedURL = url;
+	std::cout << GREEN << _requestedURL << STOP_COLOR << std::endl;
 }
 
 void Response::setResponse(std::string response)
@@ -93,7 +110,7 @@ std::string Response::createErrorPageContent(const Status &num)
 
 	if (!inputErrorFile.is_open())
 	{
-		std::cerr << "Could not open file" << std::endl;
+		std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
 	}
 	/* Could be a better implementation with finding the string
 	 in the line instead of matching exactly because if i add anything
@@ -106,13 +123,12 @@ std::string Response::createErrorPageContent(const Status &num)
 			line.insert(11, num.getStringStatusCode() + num.getStatusMessage());
 
 		outputString << line;
-		std::cout << line;
 	}
 	inputErrorFile.close();
 	return (outputString.str());
 }
 
-std::string Response::createResponse()
+void Response::setHTTPResponse()
 {
 	std::stringstream response;
 	Status status(this->_statusNum);
@@ -120,6 +136,7 @@ std::string Response::createResponse()
 	{
 		this->_content = createErrorPageContent(status);
 	}
+	this->_contentLength = this->_content.length();
 	response << this->_protocol << " " << status
 			 << "Content-Type: " << this->_contentType << "\n"
 			 << "Content-Length: " << this->_contentLength
@@ -127,5 +144,10 @@ std::string Response::createResponse()
 			 << this->_content;
 	std::cout << response.rdbuf();
 
-	return (response.str());
+	this->_HTTPResponse = response.str();
+}
+
+std::string Response::getHTTPResponse() const
+{
+	return(this->_HTTPResponse);
 }

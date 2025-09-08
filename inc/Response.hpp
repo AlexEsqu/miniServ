@@ -15,19 +15,21 @@ private:
 	std::string _requestedURL;
 	std::string _response;
 	std::string _protocol;
-	
+	std::string _HTTPResponse;
+
 	std::string createErrorPageContent(const Status &num);
 
 public:
 	Response();
-	Response(int status, std::string contentType, std::string content);
+	Response(int status, std::string contentType, std::string requestedUrl);
 	Response(const Response &copy);
 	virtual ~Response();
 
 	Response &operator=(const Response &other);
+	
 
-	std::string createResponse();
 
+	void setHTTPResponse();
 	void setStatusNum(int number);
 	void setMethod(int method);
 	void setContentType(std::string type);
@@ -36,6 +38,8 @@ public:
 	void setUrl(std::string url);
 	void setResponse(std::string response);
 	void setProtocol(std::string protocol);
+
+	std::string getHTTPResponse() const ;
 };
 
 /*
@@ -56,4 +60,5 @@ Content-Length: 319
 		<img src="./big-yoshi-wallpaper.png" width="500">
 </body>
 </html>
+
 */
