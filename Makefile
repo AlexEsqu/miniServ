@@ -23,7 +23,7 @@ DIR_POLL			=	polling
 #----- SOURCE FILES -----------------------------------------------------------#
 
 FUNC_ERR			=	error.cpp
-FUNC_ENCOD			=	response.cpp Response.cpp
+FUNC_ENCOD			=	Response.cpp
 FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	execution.cpp
