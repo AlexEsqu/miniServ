@@ -77,6 +77,10 @@ FLAGS				=	-Wall -Wextra -Werror -std=c++98
 
 TEST_DIR			=	tests
 
+#------- NGINX Docker ---------------------------------------------------------#
+
+NGINX_DOCK			=	$(TEST_DIR)/nginx
+
 #------- C Client -------------------------------------------------------------#
 
 CLI_DIR				=	$(TEST_DIR)/clients
@@ -108,12 +112,15 @@ $(OBJ_DIRS):
 					mkdir -p $(OBJ_DIRS)
 
 # **************************************************************************** #
-#		Client																   #
+#		Testing																   #
 # **************************************************************************** #
+
+nginx:
+					make -C $(NGINX_DOCK)
+					@echo "Connect on http://localhost:8080"
 
 $(CCLIENT_NAME):
 					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
-
 
 # **************************************************************************** #
 #		Debug																   #
@@ -133,9 +140,10 @@ verbose:			$(OBJ_DIRS) $(OBJ)
 
 clean:
 					rm -rf $(OBJ_DIR)
+					make -C $(NGINX_DOCK) clean
 
 fclean:
-					rm -rf $(OBJ_DIR)
+					clean
 					rm -rf $(NAME)
 
 re:					fclean all

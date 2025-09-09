@@ -1,0 +1,25 @@
+services:
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "0.0.0.0:8080:8080"
+    volumes:
+      - www_data:/var/www/html
+    networks:
+      - inception_network
+
+volumes:
+  www_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../pages
+
+networks:
+  inception_network:
+    driver: bridge

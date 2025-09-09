@@ -15,8 +15,8 @@ header {
 }
 
 body {
-  /* background-image: url("./big-yoshi-wallpaper.png");
-  background-size: cover; */
+  background-image: url("img/big-yoshi-wallpaper.png");
+  background-size: cover;
   font-family: "Comic Sans";
 }
 
