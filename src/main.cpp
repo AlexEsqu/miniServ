@@ -15,7 +15,8 @@ void listeningLoop(Sockette &ListenerSocket)
 		// decoding the buffer into a Request object
 		Request decodedRequest(AnsweringSocket.getRequest());
 
-
+		std::string	testPHPFile = "./pages/action.php";
+		execPHPwithFork(testPHPFile);
 
 
 		// creating a Response

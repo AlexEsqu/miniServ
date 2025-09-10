@@ -3,6 +3,8 @@
 
 # include <stdio.h>
 # include <sys/socket.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include <netinet/in.h>
@@ -105,8 +107,8 @@ enum e_status
 };
 
 
-std::string createResponse(std::string filePath);
-
+// std::string createResponse(std::string filePath);
+int	execPHPwithFork(std::string& fileToExecPath);
 
 
 #endif
