@@ -143,7 +143,7 @@ clean:
 					make -C $(NGINX_DOCK) clean
 
 fclean:
-					clean
+					make clean
 					rm -rf $(NAME)
 
 re:					fclean all
