@@ -182,7 +182,7 @@ std::string Request::extractInfoFromHTTPHeader(std::string &htmlRequest, std::st
 	return (result);
 }
 
-void Request::setCGI() 
+void Request::setCGI()
 {
 	std::vector<std::string> acceptedCGIs;
 
@@ -217,9 +217,14 @@ void Request::redirectIfCGI() // OR SET CGI?
 		std::size_t pos = this->_requestedURL.find(*it);
 		if (pos != std::string::npos)
 		{
-			if (this->_requestedURL.substr(pos) == ".py" || this->_requestedURL.substr(pos) == ".php") 
-				Request::handleCGI();
+			if (this->_requestedURL.substr(pos) == ".py" || this->_requestedURL.substr(pos) == ".php")
+				return(Request::handleCGI());
 		}
 	}
+		std::cout << MAGENTA << "NO CGI REQUIRED"  << STOP_COLOR << std::endl;
 }
 
+void Request::handleCGI()
+{
+	std::cout << MAGENTA << "CGI REQUIRED"  << STOP_COLOR << std::endl;
+}

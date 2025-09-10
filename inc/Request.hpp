@@ -50,5 +50,5 @@ public:
 
 	void 		setCGI();
 	void redirectIfCGI();
-	void handleCGI(){};
+	void handleCGI();
 };
