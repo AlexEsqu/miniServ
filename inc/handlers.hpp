@@ -1,4 +1,11 @@
 #pragma once
 #include "server.hpp"
 
-std::string doesRequestNeedCGI(Request &req);
+int doesRequestNeedCGI(Request &req);
+
+enum e_CGI
+{
+	NO_CGI,
+	PY,
+	PHP
+};
