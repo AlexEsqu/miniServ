@@ -114,7 +114,7 @@ enum e_pipe_fd
 
 
 // std::string createResponse(std::string filePath);
-std::string	execPHPwithFork(std::string& fileToExecPath);
+std::string	execPHPwithFork(Request& request, std::string& fileToExecPath);
 
 
 #endif

@@ -19,7 +19,7 @@ void listeningLoop(Sockette &ListenerSocket)
 
 		// creating a Response
 		Response response(200, "text/html", decodedRequest.getRequestedURL());
-		response.setContent(execPHPwithFork(requestedURL));
+		response.setContent(execPHPwithFork(decodedRequest, requestedURL));
 		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
@@ -31,7 +31,12 @@ int main()
 	// creating a socket, binding it to an IP address and listening
 	SocketteListen ListenerSocket(PORT);
 
-	listeningLoop(ListenerSocket);
+	try {
+		listeningLoop(ListenerSocket);
+	}
+	catch ( const std::exception &e) {
+		std::cerr << e.what();
+	}
 
 	return 0;
 }

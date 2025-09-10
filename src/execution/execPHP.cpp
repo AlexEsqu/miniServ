@@ -15,7 +15,7 @@ std::vector<const char*> buildArgv(const char* program, const char* flag, std::s
 }
 
 
-int	execFileWithPHP(std::string& fileToExecPath, int* pipefd)
+int	execFileWithPHP(Request& request, std::string& fileToExecPath, int* pipefd)
 {
 	const char*		program = "/usr/bin/php";
 	const char*		flag = "-f";
@@ -33,14 +33,14 @@ int	execFileWithPHP(std::string& fileToExecPath, int* pipefd)
 	// assemble into an execve approved array of char*, add EOF at end
 	std::vector<const char*> argv(buildArgv(program, flag, fileToExecPath));
 
-	execve(program, (char* const*)argv.data(), environ);
+	execve(program, (char* const*)argv.data(), request.getRequestEnv());
 
 	// clean up
 
 	return (-1);
 }
 
-std::string	execPHPwithFork(std::string& fileToExecPath)
+std::string	execPHPwithFork(Request& request, std::string& fileToExecPath)
 {
 	int	fork_pid;
 	int	pipefd[2];
@@ -53,7 +53,7 @@ std::string	execPHPwithFork(std::string& fileToExecPath)
 	if (fork_pid == -1)
 		return (s);
 	if (fork_pid == 0)
-		execFileWithPHP(fileToExecPath, pipefd);
+		execFileWithPHP(request, fileToExecPath, pipefd);
 	else {
 		waitpid(fork_pid, &exit_code, 0);
 		close(pipefd[WRITE]);

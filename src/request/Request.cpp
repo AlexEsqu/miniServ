@@ -87,6 +87,11 @@ std::string	Request::getContentType() const
 	return _contentType;
 }
 
+char* const*	Request::getRequestEnv() const
+{
+	return (char* const*)_requestEnv.data();
+}
+
 //---------------------------- SETTERS --------------------------------------//
 
 
@@ -101,13 +106,16 @@ void		Request::decodeHTTPRequest(std::string &httpRequest)
 	extractURLFromHTTP(curr);
 	extractProtocolFromHTTP(curr);
 
-	// check if Request is valid
-	// TO DO
+	// check if Request is valid (Has Method, Protocol, URL, crlf)
+	checkHTTPValidity(httpRequest, curr);
 
-	// Extract additional info
+	// Get environ from the Request
+	fillEnvFromHTTPHeader(httpRequest, curr);
+
+	// Get additional info
 	std::string	contentType = "content-type:";
+	_contentType = getInfoFromHTTPHeader(httpRequest, contentType);
 
-	_contentType = extractInfoFromHTTPHeader(httpRequest, contentType);
 }
 
 // assumes the HTTP method is the first characters of the request until a space occurs
@@ -154,15 +162,65 @@ std::string	Request::extractProtocolFromHTTP(std::string::iterator &it)
 	return (protocol);
 }
 
-std::string	Request::extractInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType)
+void	Request::fillEnvFromHTTPHeader(std::string &httpRequest, std::string::iterator &curr)
+{
+	while (curr != httpRequest.end() && *curr != '\r')
+	{
+		std::string	envVar;
+		while (*curr != '\n' && *curr != '\r')
+		{
+			envVar.push_back(*curr);
+			curr++;
+		}
+		std::cout << "var is [" << envVar << "]\n";
+		_requestEnv.push_back(envVar.c_str());
+		curr++;
+		curr++;
+	}
+
+	for (size_t i = 0; i != _requestEnv.size(); i++) {
+		std::cout << _requestEnv[i] << "\n";
+	}
+}
+
+bool	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator &it)
+{
+	#ifdef DEBUG
+		std::cout << "Checking validity:" << std::endl;
+		std::cout << "Method is [" << _method << "]\n";
+		std::cout << "URL is [" << _requestedURL << "]\n";
+		std::cout << "Protocol is [" << _protocol << "]\n";
+	#endif
+
+	if (getMethod().empty())
+		return false;
+	if (getProtocol().empty())
+		return false;
+	if (getRequestedURL().empty())
+		return false;
+
+	// check for the Line Feed or '\n'
+	if (*it != '\n')
+		return false;
+	it++;
+
+	// check for the end of request Carriage Return or '\r'
+	// TO DO: ensure \r is at end
+	if (httpRequest.find('\r') == std::string::npos)
+		return false;
+
+	return true;
+}
+
+std::string	Request::getInfoFromHTTPHeader(std::string &httpRequest, std::string &infoType)
 {
 	std::string	result = "";
 
-	size_t index = htmlRequest.find(infoType, 0);
+	size_t index = httpRequest.find(infoType, 0);
 	if (index == std::string::npos)
 		return ("");
 
-	std::string::iterator it = htmlRequest.begin() + index + infoType.size();
+	std::string::iterator it = httpRequest.begin() + index + infoType.size();
 	// skip if space between infotype and info
 	if (*it == ' ')
 		it++;
