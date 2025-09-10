@@ -1,8 +1,14 @@
 #include "handlers.hpp"
 
+
+/* Running on an issue, when the client asks for "/" i need to serve whatever file that
+is asked in the config, for example : index.php index.html 
+*/
+
 /*If the extension requires cgi, the function will return the extension.
 Otherwise, it will return NULL*/
-std::string doesRequestNeedCGI(Request &req)
+
+int doesRequestNeedCGI(Request &req)
 {
 	std::vector<std::string> acceptedCGIs;
 
@@ -12,11 +18,15 @@ std::string doesRequestNeedCGI(Request &req)
 
 	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
 	{
-		if (req.getRequestedURL().find(*it) != it->npos)
+		std::size_t pos = req.getRequestedURL().find(*it);
+		if (pos != std::string::npos)
 		{
-			std::cout << *it << std::endl;
-			return (*it);
+			if (req.getRequestedURL().substr(pos) == ".py");
+				return(PY);
+			if (req.getRequestedURL().substr(pos) == ".php");
+				return(PHP);
 		}
 	}
-	return (NULL);
+	return (NO_CGI);
 }
+
