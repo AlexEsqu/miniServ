@@ -106,9 +106,15 @@ enum e_status
   NETWORK_AUTHENTICATION_REQUIRED = 511
 };
 
+enum e_pipe_fd
+{
+	READ = 0,
+	WRITE = 1,
+};
+
 
 // std::string createResponse(std::string filePath);
-int	execPHPwithFork(std::string& fileToExecPath);
+std::string	execPHPwithFork(std::string& fileToExecPath);
 
 
 #endif

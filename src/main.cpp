@@ -15,12 +15,11 @@ void listeningLoop(Sockette &ListenerSocket)
 		// decoding the buffer into a Request object
 		Request decodedRequest(AnsweringSocket.getRequest());
 
-		std::string	testPHPFile = "./pages/action.php";
-		execPHPwithFork(testPHPFile);
-
+		std::string	requestedURL = decodedRequest.getRequestedURL();
 
 		// creating a Response
 		Response response(200, "text/html", decodedRequest.getRequestedURL());
+		response.setContent(execPHPwithFork(requestedURL));
 		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;

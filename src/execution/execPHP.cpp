@@ -15,41 +15,60 @@ std::vector<const char*> buildArgv(const char* program, const char* flag, std::s
 }
 
 
-int	execFileWithPHP(std::string& fileToExecPath)
+int	execFileWithPHP(std::string& fileToExecPath, int* pipefd)
 {
 	const char*		program = "/usr/bin/php";
 	const char*		flag = "-f";
 
 	// redirect into pipe
+	close(pipefd[READ]);
+	if (dup2(pipefd[WRITE], STDOUT_FILENO) == -1)
+		return (-1);
+	close(pipefd[WRITE]);
 
 	// expand (if needed ?)
 
 	// unchunk (if needed ?)
 
-	// add EOF at end of file path
-
+	// assemble into an execve approved array of char*, add EOF at end
 	std::vector<const char*> argv(buildArgv(program, flag, fileToExecPath));
 
-	execve("/usr/bin/php", (char* const*)argv.data(), environ);
+	execve(program, (char* const*)argv.data(), environ);
 
 	// clean up
 
 	return (-1);
 }
 
-int	execPHPwithFork(std::string& fileToExecPath)
+std::string	execPHPwithFork(std::string& fileToExecPath)
 {
 	int	fork_pid;
-	int	exit_code;
+	int	pipefd[2];
+	int	exit_code = 0;
+	std::string	s = "";
 
-	exit_code = 0;
+	if (pipe(pipefd) != 0)
+		return (s);
 	fork_pid = fork();
 	if (fork_pid == -1)
-		return (-1);
+		return (s);
 	if (fork_pid == 0)
-		execFileWithPHP(fileToExecPath);
-	else
+		execFileWithPHP(fileToExecPath, pipefd);
+	else {
 		waitpid(fork_pid, &exit_code, 0);
+		close(pipefd[WRITE]);
+
+		char	buff;
+		while (read(pipefd[READ], &buff, 1) > 0)
+		{
+			if (buff != 0)
+				s.push_back(buff);
+		}
+
+		std::cout << "Pipe read was : [" << s << "]\n";
+
+		close(pipefd[READ]);
+	}
 	exit_code = WEXITSTATUS(exit_code);
-	return (exit_code);
+	return (s);
 }

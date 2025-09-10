@@ -77,6 +77,7 @@ void Response::setContent(std::string content)
 	}
 	else
 		this->_content = content;
+	setContentLength(content.size());
 }
 
 void Response::setUrl(std::string url)
