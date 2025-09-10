@@ -33,6 +33,13 @@ enum e_methods
 	UNSUPPOTRTED
 };
 
+enum e_CGI
+{
+	NO_CGI,
+	PY,
+	PHP
+};
+
 enum e_status
 {
   CONTINUE = 100,
