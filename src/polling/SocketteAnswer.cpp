@@ -39,7 +39,6 @@ void	SocketteAnswer::readRequest()
 {
 	int valread = read(getSocketFd(), _buffer, 30000);
 
-	std::cerr << "beep\n";
 
 	if (valread < 0)
 		throw failedSocketRead();
