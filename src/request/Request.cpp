@@ -7,21 +7,20 @@ Request::Request(std::string httpRequest)
 {
 	decodeHTTPRequest(httpRequest);
 
-	#ifdef DEBUG
-		std::cout << "Request Constructor called" << std::endl;
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedURL << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
-		std::cout << "Content type is [" << _contentType << "]\n";
-	#endif
-
+#ifdef DEBUG
+	std::cout << "Request Constructor called" << std::endl;
+	std::cout << "Method is [" << _method << "]\n";
+	std::cout << "URL is [" << _requestedURL << "]\n";
+	std::cout << "Protocol is [" << _protocol << "]\n";
+	std::cout << "Content type is [" << _contentType << "]\n";
+#endif
 }
 
 Request::Request(const Request &copy)
 {
-	#ifdef DEBUG
-		std::cout << "Request copy Constructor called" << std::endl;
-	#endif
+#ifdef DEBUG
+	std::cout << "Request copy Constructor called" << std::endl;
+#endif
 	*this = copy;
 }
 
@@ -29,9 +28,9 @@ Request::Request(const Request &copy)
 
 Request::~Request()
 {
-	#ifdef DEBUG
-		std::cout << "Request Destructor called" << std::endl;
-	#endif
+#ifdef DEBUG
+	std::cout << "Request Destructor called" << std::endl;
+#endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -44,55 +43,59 @@ Request &Request::operator=(const Request &other)
 	_fullRequest = other._fullRequest;
 	decodeHTTPRequest(_fullRequest);
 
-	#ifdef DEBUG
-		std::cout << "Request Copy Assignement called" << std::endl;
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedURL << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
-		std::cout << "Content type is [" << _contentType << "]\n";
-	#endif
+#ifdef DEBUG
+	std::cout << "Request Copy Assignement called" << std::endl;
+	std::cout << "Method is [" << _method << "]\n";
+	std::cout << "URL is [" << _requestedURL << "]\n";
+	std::cout << "Protocol is [" << _protocol << "]\n";
+	std::cout << "Content type is [" << _contentType << "]\n";
+#endif
 
 	return *this;
 }
 
 //---------------------------- GUETTERS -------------------------------------//
 
-std::string	Request::getMethod() const
+std::string Request::getMethod() const
 {
 	return _method;
 }
 
-std::string	Request::getProtocol() const
+std::string Request::getProtocol() const
 {
 	return _protocol;
 }
 
-std::string	Request::getHost() const
+std::string Request::getHost() const
 {
 	return _host;
 }
 
-std::string	Request::getConnection() const
+std::string Request::getConnection() const
 {
 	return _connection;
 }
 
-std::string	Request::getRequestedURL() const
+std::string Request::getRequestedURL() const
 {
 	return _requestedURL;
 }
 
-std::string	Request::getContentType() const
+std::string Request::getContentType() const
 {
 	return _contentType;
 }
 
-//---------------------------- SETTERS --------------------------------------//
+int Request::getCGI() const
+{
+	return (_CGI);
+}
 
+//---------------------------- SETTERS --------------------------------------//
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-void		Request::decodeHTTPRequest(std::string &httpRequest)
+void Request::decodeHTTPRequest(std::string &httpRequest)
 {
 	std::string::iterator curr = httpRequest.begin();
 
@@ -105,16 +108,17 @@ void		Request::decodeHTTPRequest(std::string &httpRequest)
 	// TO DO
 
 	// Extract additional info
-	std::string	contentType = "content-type:";
+	std::string contentType = "content-type:";
 
 	_contentType = extractInfoFromHTTPHeader(httpRequest, contentType);
 }
 
 // assumes the HTTP method is the first characters of the request until a space occurs
-std::string	Request::extractMethodFromHTTP(std::string::iterator &it)
+std::string Request::extractMethodFromHTTP(std::string::iterator &it)
 {
-	std::string	httpMethod = "";
-	while (*it != ' ') {
+	std::string httpMethod = "";
+	while (*it != ' ')
+	{
 		httpMethod.append(1, *it);
 		it++;
 	}
@@ -123,11 +127,12 @@ std::string	Request::extractMethodFromHTTP(std::string::iterator &it)
 	return (httpMethod);
 }
 
-std::string	Request::extractURLFromHTTP(std::string::iterator &it)
+std::string Request::extractURLFromHTTP(std::string::iterator &it)
 {
-	std::string	fullURL = "";
+	std::string fullURL = "";
 
-	while (*it != ' ') {
+	while (*it != ' ')
+	{
 		fullURL.append(1, *it);
 		it++;
 	}
@@ -140,12 +145,13 @@ std::string	Request::extractURLFromHTTP(std::string::iterator &it)
 	return (fullURL);
 }
 
-std::string	Request::extractProtocolFromHTTP(std::string::iterator &it)
+std::string Request::extractProtocolFromHTTP(std::string::iterator &it)
 {
-	std::string	protocol = "";
+	std::string protocol = "";
 
 	// end of protocol is expected to be '\r' or carraige return
-	while (*it != ' ' && std::isprint(*it)) {
+	while (*it != ' ' && std::isprint(*it))
+	{
 		protocol.append(1, *it);
 		it++;
 	}
@@ -154,9 +160,9 @@ std::string	Request::extractProtocolFromHTTP(std::string::iterator &it)
 	return (protocol);
 }
 
-std::string	Request::extractInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType)
+std::string Request::extractInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType)
 {
-	std::string	result = "";
+	std::string result = "";
 
 	size_t index = htmlRequest.find(infoType, 0);
 	if (index == std::string::npos)
@@ -167,10 +173,53 @@ std::string	Request::extractInfoFromHTTPHeader(std::string &htmlRequest, std::st
 	if (*it == ' ')
 		it++;
 	// store info into result until newline
-	while (std::isprint(*it)) {
+	while (std::isprint(*it))
+	{
 		result.append(1, *it);
 		it++;
 	}
 
 	return (result);
 }
+
+void Request::setCGI() 
+{
+	std::vector<std::string> acceptedCGIs;
+
+	acceptedCGIs.push_back(".py");
+	acceptedCGIs.push_back(".php");
+	std::vector<std::string>::iterator it;
+
+	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
+	{
+		std::size_t pos = this->_requestedURL.find(*it);
+		if (pos != std::string::npos)
+		{
+			if (this->_requestedURL.substr(pos) == ".py")
+				this->_CGI = PY;
+			if (this->_requestedURL.substr(pos) == ".php")
+				this->_CGI = PHP;
+		}
+	}
+	this->_CGI = NO_CGI;
+}
+
+void Request::redirectIfCGI() // OR SET CGI?
+{
+	std::vector<std::string> acceptedCGIs;
+
+	acceptedCGIs.push_back(".py");
+	acceptedCGIs.push_back(".php");
+	std::vector<std::string>::iterator it;
+
+	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
+	{
+		std::size_t pos = this->_requestedURL.find(*it);
+		if (pos != std::string::npos)
+		{
+			if (this->_requestedURL.substr(pos) == ".py" || this->_requestedURL.substr(pos) == ".php") 
+				Request::handleCGI();
+		}
+	}
+}
+
