@@ -1,14 +1,26 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>PHP Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHP Test</title>
+    <link href="./styles.css" rel="stylesheet">
     </head>
     <body>
-        <?php echo '<p>Hello World Ending</p>'; ?>
+        <?php echo '<p>Hello World</p>'; ?>
 
         <?php
-        echo 'My username is ' .$_ENV["USER"] . '!';
+        echo '<p>Your user agents is ' .$_SERVER['HTTP_USER_AGENT'] . ' 👀 </p>';
         ?>
 
+        <form action="action.php" method="post">
+            <label for="name">Your name:</label>
+            <input name="name" id="name" type="text">
+
+            <label for="age">Your age:</label>
+            <input name="age" id="age" type="number">
+
+            <button type="submit">Submit</button>
+        </form>
     </body>
 </html>
