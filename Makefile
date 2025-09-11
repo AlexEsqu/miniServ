@@ -20,7 +20,6 @@ DIR_FILE			=	fileserv
 DIR_CLAS			=	classes
 DIR_POLL			=	polling
 DIR_CONF			=	config
-DIR_HAND			=	handlers
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
@@ -33,7 +32,6 @@ FUNC_FILE			=	fileserv.cpp
 FUNC_CLAS			=	Status.cpp
 FUNC_CONF			=	Config.cpp Route.cpp
 FUNC_POLL			=	Sockette.cpp SocketteAnswer.cpp SocketteListen.cpp
-FUNC_HAND			=	handlerCGI.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_ENCOD)/, $(FUNC_ENCOD)) \
@@ -43,7 +41,6 @@ FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_FILE)/, $(FUNC_FILE)) \
 						$(addprefix $(DIR_CLAS)/, $(FUNC_CLAS)) \
 						$(addprefix $(DIR_POLL)/, $(FUNC_POLL)) \
-						$(addprefix $(DIR_HAND)/, $(FUNC_HAND)) \
 						main.cpp
 
 HEAD				=	server.hpp
