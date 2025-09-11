@@ -4,47 +4,19 @@
 ///                  CONSTRUCTORS | DESTRUCTORS                  //
 ///////////////////////////////////////////////////////////////////
 
-Status::Status()
+Status::Status() : _statusMessage("Unknown status code"), _statusCode(0)
 {
 	// std::cout << "Status Constructor called" << std::endl;
 }
 
-Status::Status(int num) :_statusMessage("Unknown status code"), _statusCode(num)
+Status::Status(unsigned int num) :_statusMessage("Unknown status code")
 {
-	try
-	{
-		if (num <= 511 && *_statusMessages[num] != '\0') //add macro for readability
-			this->_statusMessage = _statusMessages[num];
-		else
-			throw Status::UnknownStatusException();
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << RED << e.what() << STOP_COLOR << '\n';
-	}
+	Status::setStatusCode(num);
 }
 
-Status::Status(std::string message) : _statusMessage(message), _statusCode(0)
+Status::Status(std::string message) : _statusCode(0)
 {
-	int i = 0;
-	try
-	{
-		while (i < 512)
-		{
-			if (_statusMessages[i] == message)
-			{
-				this->_statusCode = i;
-				return;
-			}
-			i++;
-		}
-		if (i == 512)
-			throw Status::UnknownStatusException();
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << RED << e.what() << STOP_COLOR << '\n';
-	}
+	Status::setStatusMessage(message);
 }
 
 Status::Status(const Status &copy)
@@ -94,6 +66,48 @@ std::string Status::getStatusMessage() const
 {
 	return(this->_statusMessage);
 }
+
+void Status::setStatusCode(unsigned int num)
+{
+	this->_statusCode = num;
+	try
+	{
+		if (num <= 511 && *_statusMessages[num] != '\0') //add macro for readability
+			this->_statusMessage = _statusMessages[num];
+		else
+			throw Status::UnknownStatusException();
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << RED << e.what() << STOP_COLOR << '\n';
+	}
+
+}
+
+void Status::setStatusMessage(std::string message)
+{
+	this->_statusMessage = message;
+	int i = 0;
+	try
+	{
+		while (i < 512)
+		{
+			if (_statusMessages[i] == message)
+			{
+				this->_statusCode = i;
+				return;
+			}
+			i++;
+		}
+		if (i == 512)
+			throw Status::UnknownStatusException();
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << RED << e.what() << STOP_COLOR << '\n';
+	}
+}
+
 
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //

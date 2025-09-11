@@ -9,10 +9,11 @@ class Status
 private:
 	std::string _statusMessage;
 	unsigned int _statusCode;
-	Status();
+	std::string _errorPage;
 
 public:
-	Status(int num);
+	Status();
+	Status(unsigned int num);
 	Status(std::string message);
 	Status(const Status &copy);
 	virtual ~Status();
@@ -23,6 +24,9 @@ public:
 	unsigned int getStatusCode() const;
 	std::string getStatusMessage() const;
 
+	void setStatusCode(unsigned int num);
+	void setStatusMessage(std::string message);
+
 	class UnknownStatusException : public std::exception
 	{
 	public:
@@ -31,6 +35,18 @@ public:
 			return ("Unknown status code");
 		}
 	};
+
+	// class StatusException : public std::exception
+	// {
+	// public:
+
+	// 	std::string	errorPage();
+	// 	virtual const char *what() const throw()
+	// 	{
+	// 		return ("Unknown status code");
+	// 	}
+	// };
+
 };
 
 std::ostream &operator<<( std::ostream &o, Status &status);
