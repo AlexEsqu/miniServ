@@ -21,9 +21,9 @@ int doesRequestNeedCGI(Request &req)
 		std::size_t pos = req.getRequestedURL().find(*it);
 		if (pos != std::string::npos)
 		{
-			if (req.getRequestedURL().substr(pos) == ".py");
+			if (req.getRequestedURL().substr(pos) == ".py")
 				return(PY);
-			if (req.getRequestedURL().substr(pos) == ".php");
+			if (req.getRequestedURL().substr(pos) == ".php")
 				return(PHP);
 		}
 	}
