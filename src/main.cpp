@@ -28,6 +28,9 @@ void listeningLoop(Sockette &ListenerSocket)
 
 int main()
 {
+	// initializing and handling signals
+	signal(SIGINT, singalHandler);
+
 	// creating a socket, binding it to an IP address and listening
 	SocketteListen ListenerSocket(PORT);
 

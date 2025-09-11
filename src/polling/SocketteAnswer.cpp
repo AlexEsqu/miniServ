@@ -44,9 +44,9 @@ void	SocketteAnswer::readRequest()
 	if (valread < 0)
 		throw failedSocketRead();
 
-	#ifdef DEBUG
-		std::cout << "Answer socket read " << valread << " bytes: [" << _buffer << "]\n" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Answer socket read " << valread << " bytes: [" << _buffer << "]\n" << std::endl;
+	// #endif
 }
 
 
