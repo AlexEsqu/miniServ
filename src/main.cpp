@@ -16,8 +16,9 @@ void listeningLoop(Sockette &ListenerSocket)
 		Request decodedRequest(AnsweringSocket.getRequest());
 
 		// creating a Response
-			decodedRequest.redirectIfCGI();
-	
+		decodedRequest.testFilename();
+
+		decodedRequest.redirectIfCGI();
 		Response response(200, "text/html", decodedRequest.getRequestedURL());
 		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
