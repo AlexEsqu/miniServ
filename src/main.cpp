@@ -17,8 +17,9 @@ void listeningLoop(Sockette &ListenerSocket)
 		Request decodedRequest(AnsweringSocket.getRequest());
 
 		// creating a Response
-
-		Response response(200, "text/html", decodedRequest.getRequestedURL()); 
+			decodedRequest.redirectIfCGI();
+	
+		Response response(200, "text/html", decodedRequest.getRequestedURL());
 		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n"
@@ -32,6 +33,5 @@ int main()
 	SocketteListen ListenerSocket(PORT);
 
 	listeningLoop(ListenerSocket);
-
 	return 0;
 }
