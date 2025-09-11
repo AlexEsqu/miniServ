@@ -4,7 +4,7 @@ void listeningLoop(Sockette &ListenerSocket)
 {
 	while (1)
 	{
-		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n" << std::endl;
+		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
 
 		// create a socket to receive incoming communication
 		SocketteAnswer AnsweringSocket(ListenerSocket);
@@ -19,10 +19,10 @@ void listeningLoop(Sockette &ListenerSocket)
 
 		// creating a Response
 		Response response(200, "text/html", decodedRequest.getRequestedURL());
-		response.setContent(execPHPwithFork(decodedRequest, requestedURL));
+		// response.setContent(execPHPwithFork(decodedRequest, requestedURL));
 		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
-		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
+		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
 	}
 }
 

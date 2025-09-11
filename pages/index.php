@@ -15,7 +15,7 @@
         echo "<p>Your user agents is " .$_SERVER['HTTP_USER_AGENT'] . " 👀 </p>";
         ?>
 
-        <form action="action.php" method="post">
+        <form action="./action.php" method="post">
             <label for="name">Your name:</label>
             <input name="name" id="name" type="text">
 

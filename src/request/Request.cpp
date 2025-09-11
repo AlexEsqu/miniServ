@@ -167,7 +167,7 @@ void	Request::fillEnvFromHTTPHeader(std::string &httpRequest, std::string::itera
 	while (curr != httpRequest.end() && *curr != '\r')
 	{
 		std::string	envVar;
-		while (*curr != '\n' && *curr != '\r')
+		while (*curr && *curr != '\n' && *curr != '\r')
 		{
 			envVar.push_back(*curr);
 			curr++;

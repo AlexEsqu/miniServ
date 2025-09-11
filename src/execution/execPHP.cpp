@@ -47,15 +47,19 @@ std::string	execPHPwithFork(Request& request, std::string& fileToExecPath)
 	int	exit_code = 0;
 	std::string	s = "";
 
+	if (access(fileToExecPath.c_str(), O_RDONLY) != 0)
+		return (s);
+
 	if (pipe(pipefd) != 0)
 		return (s);
 	fork_pid = fork();
 	if (fork_pid == -1)
 		return (s);
+
 	if (fork_pid == 0)
 		execFileWithPHP(request, fileToExecPath, pipefd);
+
 	else {
-		waitpid(fork_pid, &exit_code, 0);
 		close(pipefd[WRITE]);
 
 		char	buff;
@@ -69,6 +73,9 @@ std::string	execPHPwithFork(Request& request, std::string& fileToExecPath)
 
 		close(pipefd[READ]);
 	}
+	std::cerr << RED << "out of reading loop\n" << STOP_COLOR;
+	waitpid(fork_pid, &exit_code, 0);
+	std::cerr << RED << "fork waited\n" << STOP_COLOR;
 	exit_code = WEXITSTATUS(exit_code);
 	return (s);
 }

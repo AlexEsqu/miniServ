@@ -83,7 +83,7 @@ void Response::setContent(std::string content)
 void Response::setUrl(std::string url)
 {
 	if (url == "./")
-		this->_requestedURL = "./pages/index.html";
+		this->_requestedURL = "./pages/index.php";
 	else
 		this->_requestedURL = url;
 	std::cout << GREEN << _requestedURL << STOP_COLOR << std::endl;
