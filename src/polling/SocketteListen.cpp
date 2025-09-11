@@ -95,7 +95,6 @@ void			SocketteListen::handleExistingConnection(epoll_event &event)
 {
 	SocketteAnswer* Connecting = reinterpret_cast<SocketteAnswer*>(event.data.ptr);
 
-
 	std::cout << Connecting->getRequest() << std::endl;
 
 	#ifdef DEBUG

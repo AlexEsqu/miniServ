@@ -12,6 +12,7 @@
 # include <fstream>
 # include <string>
 # include <map>
+# include <csignal>
 # include <exception>
 
 # include "Status.hpp"
@@ -112,8 +113,8 @@ enum e_status
 };
 
 
-std::string createResponse(std::string filePath);
-
+// std::string createResponse(std::string filePath);
+void singalHandler(int sig);
 
 
 #endif

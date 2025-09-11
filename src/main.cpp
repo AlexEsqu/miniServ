@@ -19,7 +19,7 @@ void listeningLoop(Sockette &ListenerSocket)
 		decodedRequest.testFilename();
 
 		decodedRequest.redirectIfCGI();
-		Response response(200, "text/html", decodedRequest.getRequestedURL());
+		Response response(200, decodedRequest.getContentType(), decodedRequest.getRequestedURL());
 		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
@@ -28,6 +28,9 @@ void listeningLoop(Sockette &ListenerSocket)
 
 int main()
 {
+	// initializing and handling signals
+	signal(SIGINT, singalHandler);
+
 	// creating a socket, binding it to an IP address and listening
 	SocketteListen ListenerSocket(PORT);
 
