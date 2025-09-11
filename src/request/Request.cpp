@@ -218,13 +218,25 @@ void Request::redirectIfCGI() // OR SET CGI?
 		if (pos != std::string::npos)
 		{
 			if (this->_requestedURL.substr(pos) == ".py" || this->_requestedURL.substr(pos) == ".php")
-				return(Request::handleCGI());
+				return (Request::handleCGI());
 		}
 	}
-		std::cout << MAGENTA << "NO CGI REQUIRED"  << STOP_COLOR << std::endl;
+	std::cout << MAGENTA << "NO CGI REQUIRED" << STOP_COLOR << std::endl;
 }
 
 void Request::handleCGI()
 {
-	std::cout << MAGENTA << "CGI REQUIRED"  << STOP_COLOR << std::endl;
+	std::cout << MAGENTA << "CGI REQUIRED" << STOP_COLOR << std::endl;
+}
+
+void Request::testFilename()
+{
+	Status status;
+	std::ifstream input(this->_requestedURL.c_str()); // opening the file as the content for the response
+	std::stringstream content;
+	if (!input.is_open())
+	{
+		status.setStatusCode(404);
+		std::cerr << RED << status << STOP_COLOR << std::endl;
+	}
 }
