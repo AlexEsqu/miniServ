@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <server.hpp>
+
 class Request
 {
 
@@ -50,5 +51,6 @@ public:
 
 	void 		setCGI();
 	void redirectIfCGI();
+	void testFilename();
 	void handleCGI();
 };
