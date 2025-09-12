@@ -179,6 +179,8 @@ void	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator 
 		std::cout << "Protocol is [" << _protocol << "]\n";
 	#endif
 
+	throw badSyntax();
+
 	// CHECK METHOD
 	// empty method is not valid HTTP request
 	if (getMethod().empty())
@@ -319,6 +321,17 @@ void Request::testFilename()
 
 //------------------------ EXCEPTIONS ---------------------------------//
 
+Request::HTTPError::HTTPError(Request& req, int status)
+{
+	Response res(req, status);
+
+	_message = res.getHTTPResponse();
+}
+
+std::string Request::HTTPError::getErrorPage()
+{
+	return _message;
+}
 
 const char*		Request::timeout::what() const throw()
 {

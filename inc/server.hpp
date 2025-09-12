@@ -122,7 +122,7 @@ enum e_pipe_fd
 
 
 void singalHandler(int sig);
-std::string	execPHPwithFork(Request& request, std::string& fileToExecPath);
+std::string	execPHPwithFork(class Request& request, std::string& fileToExecPath);
 
 
 #endif

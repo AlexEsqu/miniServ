@@ -12,7 +12,7 @@ Response::Response()
 
 Response::Response(Request &req, int status) : _content("")
 {
-	
+
 	this->_statusNum = status;
 	this->_contentType = req.getContentType();
 	this->_protocol = req.getProtocol();
@@ -85,7 +85,7 @@ void Response::setContent(std::string content)
 	{
 		std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
 		std::stringstream content;
-	
+
 		if (!input.is_open() || is_directory(this->_requestedFileName.c_str()))
 		{
 			std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
@@ -149,8 +149,7 @@ std::string Response::createErrorPageContent(const Status &num)
 		outputString << line;
 	}
 	inputErrorFile.close();
-	returResponse::Response(Request &req, int status) : _content("")
-n (outputString.str());
+	return (outputString.str());
 }
 
 void Response::setHTTPResponse()

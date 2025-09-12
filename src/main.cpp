@@ -8,7 +8,7 @@ void listeningLoop(Sockette &ListenerSocket)
 
 		// create a socket to receive incoming communication
 		SocketteAnswer AnsweringSocket(ListenerSocket);
-		
+
 		try {
 			// reading the request into the Sockette buffer
 			AnsweringSocket.readRequest();
@@ -21,7 +21,7 @@ void listeningLoop(Sockette &ListenerSocket)
 			decodedRequest.testFilename();
 
 			decodedRequest.redirectIfCGI();
-			Response response(decodedRequest, 418);
+			Response response(decodedRequest, 200);
 			// response.setContent(execPHPwithFork(decodedRequest, requestedURL));
 			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
@@ -31,8 +31,9 @@ void listeningLoop(Sockette &ListenerSocket)
 		catch ( Request::HTTPError &e )
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ Been Been +++++++ \n\n");
+			std::cout << "response is [" << e.getErrorPage() << "\n";
+			write(AnsweringSocket.getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
 			std::cerr << e.what() << "\n";
-			write(AnsweringSocket.getSocketFd(), e.createErrorPage().c_str(), e.createErrorPage().size());
 		}
 
 		catch ( std::exception &e )
