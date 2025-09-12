@@ -19,7 +19,7 @@ void listeningLoop(Sockette &ListenerSocket)
 		decodedRequest.testFilename();
 
 		decodedRequest.redirectIfCGI();
-		Response response(200, decodedRequest.getContentType(), decodedRequest.getRequestedURL());
+		Response response(decodedRequest, 200);
 		write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 		std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n" << std::endl;
