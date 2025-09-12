@@ -10,7 +10,7 @@ Request::Request(std::string httpRequest)
 #ifdef DEBUG
 	std::cout << "Request Constructor called" << std::endl;
 	std::cout << "Method is [" << _method << "]\n";
-	std::cout << "URL is [" << _requestedURL << "]\n";
+	std::cout << "URL is [" << _requestedFileName << "]\n";
 	std::cout << "Protocol is [" << _protocol << "]\n";
 	std::cout << "Content type is [" << _contentType << "]\n";
 #endif
@@ -46,7 +46,7 @@ Request &Request::operator=(const Request &other)
 #ifdef DEBUG
 	std::cout << "Request Copy Assignement called" << std::endl;
 	std::cout << "Method is [" << _method << "]\n";
-	std::cout << "URL is [" << _requestedURL << "]\n";
+	std::cout << "URL is [" << _requestedFileName << "]\n";
 	std::cout << "Protocol is [" << _protocol << "]\n";
 	std::cout << "Content type is [" << _contentType << "]\n";
 #endif
@@ -78,7 +78,7 @@ std::string Request::getConnection() const
 
 std::string Request::getRequestedURL() const
 {
-	return _requestedURL;
+	return _requestedFileName;
 }
 
 std::string Request::getContentType() const
@@ -141,7 +141,7 @@ std::string Request::extractURLFromHTTP(std::string::iterator &it)
 	if (fullURL.at(0) == '/')
 		fullURL.insert(0, ".");
 
-	_requestedURL = fullURL;
+	_requestedFileName = fullURL;
 	return (fullURL);
 }
 
@@ -149,7 +149,7 @@ std::string Request::extractProtocolFromHTTP(std::string::iterator &it)
 {
 	std::string protocol = "";
 
-	// end of protocol is expected to be '\r' or carraige return
+	// end of protocol is expected to be '\r' or carriage return
 	while (*it != ' ' && std::isprint(*it))
 	{
 		protocol.append(1, *it);
@@ -192,12 +192,12 @@ void Request::setCGI()
 
 	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
 	{
-		std::size_t pos = this->_requestedURL.find(*it);
+		std::size_t pos = this->_requestedFileName.find(*it);
 		if (pos != std::string::npos)
 		{
-			if (this->_requestedURL.substr(pos) == ".py")
+			if (this->_requestedFileName.substr(pos) == ".py")
 				this->_CGI = PY;
-			if (this->_requestedURL.substr(pos) == ".php")
+			if (this->_requestedFileName.substr(pos) == ".php")
 				this->_CGI = PHP;
 		}
 	}
@@ -214,10 +214,10 @@ void Request::redirectIfCGI() // OR SET CGI?
 
 	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
 	{
-		std::size_t pos = this->_requestedURL.find(*it);
+		std::size_t pos = this->_requestedFileName.find(*it);
 		if (pos != std::string::npos)
 		{
-			if (this->_requestedURL.substr(pos) == ".py" || this->_requestedURL.substr(pos) == ".php")
+			if (this->_requestedFileName.substr(pos) == ".py" || this->_requestedFileName.substr(pos) == ".php")
 				return (Request::handleCGI());
 		}
 	}
@@ -232,7 +232,7 @@ void Request::handleCGI()
 void Request::testFilename()
 {
 	Status status;
-	std::ifstream input(this->_requestedURL.c_str()); // opening the file as the content for the response
+	std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
 	std::stringstream content;
 	if (!input.is_open())
 	{

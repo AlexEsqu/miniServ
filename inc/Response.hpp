@@ -2,7 +2,7 @@
 #include <iostream>
 #include "server.hpp"
 
-class Status; 
+class Status;
 
 class Response
 {
@@ -12,7 +12,7 @@ private:
 	std::string _contentType;
 	unsigned int _contentLength;
 	std::string _content;
-	std::string _requestedURL;
+	std::string _requestedFileName;
 	std::string _response;
 	std::string _protocol;
 	std::string _HTTPResponse;
@@ -26,7 +26,7 @@ public:
 	virtual ~Response();
 
 	Response &operator=(const Response &other);
-	
+
 
 
 	void setHTTPResponse();

@@ -68,7 +68,7 @@ void Response::setContent(std::string content)
 {
 	if (content.empty())
 	{
-		std::ifstream input(this->_requestedURL.c_str()); // opening the file as the content for the response
+		std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
 		std::stringstream content;
 		if (!input.is_open())
 			std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
@@ -82,10 +82,10 @@ void Response::setContent(std::string content)
 void Response::setUrl(std::string url)
 {
 	if (url == "./")
-		this->_requestedURL = "./pages/index.html";
+		this->_requestedFileName = "./pages/index.html";
 	else
-		this->_requestedURL = url;
-	std::cout << GREEN << _requestedURL << STOP_COLOR << std::endl;
+		this->_requestedFileName = url;
+	std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
 }
 
 void Response::setResponse(std::string response)
