@@ -22,13 +22,10 @@ private:
 public:
 	Response();
 	Response(Request &req, int status);
-	Response(int status, std::string contentType, std::string requestedUrl);
 	Response(const Response &copy);
 	virtual ~Response();
 
 	Response &operator=(const Response &other);
-	
-
 
 	void setHTTPResponse();
 	void setStatusNum(int number);
@@ -44,24 +41,3 @@ public:
 	std::string createErrorPageContent(const Status &num);
 
 };
-
-/*
-HTTP/1.1 200 OK
-Content-Type: text/html
-Content-Length: 319
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Document</title>
-		<link href="./styles.css" rel="stylesheet" type="text/css" />
-</head>
-<body>
-		<p>Hello</p>
-		<img src="./big-yoshi-wallpaper.png" width="500">
-</body>
-</html>
-
-*/
