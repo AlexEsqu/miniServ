@@ -1,5 +1,6 @@
 #include "Response.hpp"
-
+#include <fcntl.h>
+#include <sys/stat.h>
 ///////////////////////////////////////////////////////////////////
 ///                  CONSTRUCTORS | DESTRUCTORS                  //
 ///////////////////////////////////////////////////////////////////
@@ -10,7 +11,7 @@ Response::Response()
 }
 
 Response::Response(int status, std::string contentType, std::string url) : _statusNum(status),
-																		   _contentType(contentType), _contentLength(0), _content(""), _protocol("HTTP/1.1")
+	_contentType(contentType), _contentLength(0), _content(""), _protocol("HTTP/1.1")
 {
 	// std::cout << "Response Constructor called" << std::endl;
 
@@ -18,6 +19,17 @@ Response::Response(int status, std::string contentType, std::string url) : _stat
 	Response::setContent(this->_content);
 	Response::setHTTPResponse();
 }
+
+Response::Response(Request &req, int status) : _contentLength(0), _content("")
+{
+	this->_statusNum = status;
+	this->_contentType = req.getContentType();
+	this->_protocol = req.getProtocol();
+	Response::setUrl(req.getRequestedURL());
+	Response::setContent(this->_content);
+}
+
+
 Response::Response(const Response &copy)
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
@@ -64,27 +76,42 @@ void Response::setContentLength(int length)
 	this->_contentLength = length;
 }
 
+int is_directory(const char *path)
+{
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISDIR(path_stat.st_mode);
+}
+
 void Response::setContent(std::string content)
 {
 	if (content.empty())
 	{
 		std::ifstream input(this->_requestedURL.c_str()); // opening the file as the content for the response
 		std::stringstream content;
-		if (!input.is_open())
+	
+		if (!input.is_open() || is_directory(this->_requestedURL.c_str()))
+		{
 			std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
+			Response::setStatusNum(404);
+			std::cout << _statusNum << std::endl;
+
+			Response::setHTTPResponse();
+			return;
+		}
 		content << input.rdbuf();
 		this->_content = content.str();
 	}
 	else
+	{
 		this->_content = content;
+	}
+	Response::setHTTPResponse();
 }
 
 void Response::setUrl(std::string url)
 {
-	if (url == "./")
-		this->_requestedURL = "./pages/index.html";
-	else
-		this->_requestedURL = url;
+	this->_requestedURL = url;
 	std::cout << GREEN << _requestedURL << STOP_COLOR << std::endl;
 }
 
@@ -104,13 +131,14 @@ void Response::setProtocol(std::string protocol)
 
 std::string Response::createErrorPageContent(const Status &num)
 {
-	std::ifstream inputErrorFile("./pages/error.html");
+	std::ifstream inputErrorFile;
+	inputErrorFile.open("./pages/error.html", std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;
 
 	if (!inputErrorFile.is_open())
 	{
-		std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
+		std::cerr << RED << "Could not open error file" << STOP_COLOR << std::endl;
 	}
 	/* Could be a better implementation with finding the string
 	 in the line instead of matching exactly because if i add anything

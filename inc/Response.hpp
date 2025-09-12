@@ -3,6 +3,7 @@
 #include "server.hpp"
 
 class Status; 
+class Request;
 
 class Response
 {
@@ -17,10 +18,10 @@ private:
 	std::string _protocol;
 	std::string _HTTPResponse;
 
-	std::string createErrorPageContent(const Status &num);
 
 public:
 	Response();
+	Response(Request &req, int status);
 	Response(int status, std::string contentType, std::string requestedUrl);
 	Response(const Response &copy);
 	virtual ~Response();
@@ -40,6 +41,8 @@ public:
 	void setProtocol(std::string protocol);
 
 	std::string getHTTPResponse() const ;
+	std::string createErrorPageContent(const Status &num);
+
 };
 
 /*
