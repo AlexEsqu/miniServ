@@ -3,6 +3,8 @@
 
 # include <stdio.h>
 # include <sys/socket.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include <netinet/in.h>
@@ -112,9 +114,16 @@ enum e_status
   NETWORK_AUTHENTICATION_REQUIRED = 511
 };
 
+enum e_pipe_fd
+{
+	READ = 0,
+	WRITE = 1,
+};
 
 // std::string createResponse(std::string filePath);
 void singalHandler(int sig);
+
+std::string	execPHPwithFork(Request& request, std::string& fileToExecPath);
 
 
 #endif

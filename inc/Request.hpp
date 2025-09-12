@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <server.hpp>
+#include <vector>
 
 class Request
 {
@@ -24,7 +24,10 @@ private:
 	std::string extractMethodFromHTTP(std::string::iterator &it);
 	std::string extractProtocolFromHTTP(std::string::iterator &it);
 	std::string extractURLFromHTTP(std::string::iterator &it);
-	std::string extractInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType);
+	void		fillEnvFromHTTPHeader(std::string &httpRequest, std::string::iterator &curr);
+	std::string getInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType);
+	bool		checkHTTPValidity(std::string &htmlRequest, std::string::iterator &it);
+	std::vector<std::string>	_requestEnv;	// all header variables as ENV in a vector
 
 public:
 	//----------------- CONSTRUCTORS ---------------------//
@@ -38,13 +41,14 @@ public:
 
 	//-------------------- GETTERS -----------------------//
 
-	std::string getMethod() const;
-	std::string getProtocol() const;
-	std::string getHost() const;
-	std::string getConnection() const;
-	std::string getRequestedURL() const;
-	std::string getContentType() const;
-	int			getCGI() const;
+	std::string		getMethod() const;
+	std::string		getProtocol() const;
+	std::string		getHost() const;
+	std::string		getConnection() const;
+	std::string		getRequestedURL() const;
+	std::string		getContentType() const;
+	char* const*	getRequestEnv() const;
+	int				getCGI() const;
 
 	//------------------- OPERATORS ----------------------//
 
@@ -52,9 +56,9 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void		decodeHTTPRequest(std::string &httpRequest);
-	void 		setCGI();
-	void		redirectIfCGI();
-	void		testFilename();
-	void		handleCGI();
+	void			decodeHTTPRequest(std::string &httpRequest);
+	void 			setCGI();
+	void			redirectIfCGI();
+	void			testFilename();
+	void			handleCGI();
 };
