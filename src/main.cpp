@@ -6,10 +6,10 @@ void listeningLoop(Sockette &ListenerSocket)
 	{
 		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
 
+		// create a socket to receive incoming communication
+		SocketteAnswer AnsweringSocket(ListenerSocket);
+		
 		try {
-			// create a socket to receive incoming communication
-			SocketteAnswer AnsweringSocket(ListenerSocket);
-
 			// reading the request into the Sockette buffer
 			AnsweringSocket.readRequest();
 
@@ -21,16 +21,23 @@ void listeningLoop(Sockette &ListenerSocket)
 			decodedRequest.testFilename();
 
 			decodedRequest.redirectIfCGI();
-			Response response(decodedRequest, 200);
+			Response response(decodedRequest, 418);
 			// response.setContent(execPHPwithFork(decodedRequest, requestedURL));
 			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
 		}
 
+		catch ( Request::HTTPError &e )
+		{
+			std::cout << ERROR_FORMAT("\n\n+++++++ Been Been +++++++ \n\n");
+			std::cerr << e.what() << "\n";
+			write(AnsweringSocket.getSocketFd(), e.createErrorPage().c_str(), e.createErrorPage().size());
+		}
+
 		catch ( std::exception &e )
 		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Answer has not been been sent +++++++ \n\n");
+			std::cout << ERROR_FORMAT("\n\n+++++++ Not Not Been Been +++++++ \n\n");
 			std::cerr << e.what() << "\n";
 		}
 

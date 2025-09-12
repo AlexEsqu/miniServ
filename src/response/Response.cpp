@@ -12,10 +12,16 @@ Response::Response()
 
 Response::Response(Request &req, int status) : _content("")
 {
+	
 	this->_statusNum = status;
 	this->_contentType = req.getContentType();
 	this->_protocol = req.getProtocol();
 	Response::setUrl(req.getRequestedURL());
+	if (status >= 400 )
+	{
+		setHTTPResponse();
+		return;
+	}
 	Response::setContent(this->_content);
 }
 
@@ -143,7 +149,8 @@ std::string Response::createErrorPageContent(const Status &num)
 		outputString << line;
 	}
 	inputErrorFile.close();
-	return (outputString.str());
+	returResponse::Response(Request &req, int status) : _content("")
+n (outputString.str());
 }
 
 void Response::setHTTPResponse()

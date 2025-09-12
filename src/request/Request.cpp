@@ -319,6 +319,7 @@ void Request::testFilename()
 
 //------------------------ EXCEPTIONS ---------------------------------//
 
+
 const char*		Request::timeout::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request Timeout");
