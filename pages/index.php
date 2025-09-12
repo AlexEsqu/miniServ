@@ -7,13 +7,15 @@
     <link href="./styles.css" rel="stylesheet">
     </head>
     <body>
-        <?php echo '<p>Hello World</p>'; ?>
-
         <?php
-        echo '<p>Your user agents is ' .$_SERVER['HTTP_USER_AGENT'] . ' 👀 </p>';
+        echo "<p>Hello World Ending</p>";
         ?>
 
-        <form action="action.php" method="post">
+        <?php
+        echo "<p>Your user agents is " .$_SERVER['HTTP_USER_AGENT'] . " 👀 </p>";
+        ?>
+
+        <form action="./action.php" method="post">
             <label for="name">Your name:</label>
             <input name="name" id="name" type="text">
 

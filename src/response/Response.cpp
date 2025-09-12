@@ -77,7 +77,7 @@ void Response::setContent(std::string content)
 {
 	if (content.empty())
 	{
-		std::ifstream input(this->_requestedURL.c_str()); // opening the file as the content for the response
+		std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
 		std::stringstream content;
 	
 		if (!input.is_open() || is_directory(this->_requestedURL.c_str()))
@@ -101,8 +101,8 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	this->_requestedURL = url;
-	std::cout << GREEN << _requestedURL << STOP_COLOR << std::endl;
+	this->_requestedFileName = url;
+	std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
 }
 
 void Response::setResponse(std::string response)
