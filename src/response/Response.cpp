@@ -10,17 +10,7 @@ Response::Response()
 	// std::cout << "Response Constructor called" << std::endl;
 }
 
-Response::Response(int status, std::string contentType, std::string url) : _statusNum(status),
-	_contentType(contentType), _contentLength(0), _content(""), _protocol("HTTP/1.1")
-{
-	// std::cout << "Response Constructor called" << std::endl;
-
-	Response::setUrl(url);
-	Response::setContent(this->_content);
-	Response::setHTTPResponse();
-}
-
-Response::Response(Request &req, int status) : _contentLength(0), _content("")
+Response::Response(Request &req, int status) : _content("")
 {
 	this->_statusNum = status;
 	this->_contentType = req.getContentType();
