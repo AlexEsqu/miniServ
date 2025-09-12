@@ -2,7 +2,7 @@ GET http://localhost:8080/
 
 ####
 
-GET http://localhost:8080/pages/index.html
+GET http://localhost:8080/index.php
 content-type: text/html
 
 {
