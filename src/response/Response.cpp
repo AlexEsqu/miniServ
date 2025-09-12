@@ -80,7 +80,7 @@ void Response::setContent(std::string content)
 		std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
 		std::stringstream content;
 	
-		if (!input.is_open() || is_directory(this->_requestedURL.c_str()))
+		if (!input.is_open() || is_directory(this->_requestedFileName.c_str()))
 		{
 			std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
 			Response::setStatusNum(404);
