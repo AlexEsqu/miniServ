@@ -8,6 +8,7 @@ class Request
 {
 
 private:
+
 	//------------------ ATTRIBUTES ----------------------//
 
 	std::string _fullRequest;	// full content of the request
@@ -25,11 +26,11 @@ private:
 	std::string extractProtocolFromHTTP(std::string::iterator &it);
 	std::string extractURLFromHTTP(std::string::iterator &it);
 	void		fillEnvFromHTTPHeader(std::string &httpRequest, std::string::iterator &curr);
-	std::string getInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType);
-	bool		checkHTTPValidity(std::string &htmlRequest, std::string::iterator &it);
+	void		checkHTTPValidity(std::string &htmlRequest, std::string::iterator &it);
 	std::vector<std::string>	_requestEnv;	// all header variables as ENV in a vector
 
 public:
+
 	//----------------- CONSTRUCTORS ---------------------//
 
 	Request(std::string httpRequest);
@@ -57,8 +58,42 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void			decodeHTTPRequest(std::string &httpRequest);
+	std::string		getInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType);
 	void 			setCGI();
 	void			redirectIfCGI();
 	void			testFilename();
 	void			handleCGI();
+
+		//------------------ EXCEPTIONS ----------------------//
+
+	class timeout : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
+	class badSyntax : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
+	class missingLength : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
+	class contentTooLarge : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
+	class forbiddenMethod : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
+	class badProtocol : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
 };

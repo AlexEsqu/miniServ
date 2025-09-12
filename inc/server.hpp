@@ -120,9 +120,8 @@ enum e_pipe_fd
 	WRITE = 1,
 };
 
-// std::string createResponse(std::string filePath);
-void singalHandler(int sig);
 
+void singalHandler(int sig);
 std::string	execPHPwithFork(Request& request, std::string& fileToExecPath);
 
 

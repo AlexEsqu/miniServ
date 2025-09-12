@@ -9,13 +9,13 @@ Request::Request(std::string httpRequest)
 {
 	decodeHTTPRequest(httpRequest);
 
-#ifdef DEBUG
-	std::cout << "Request Constructor called" << std::endl;
-	std::cout << "Method is [" << _method << "]\n";
-	std::cout << "URL is [" << _requestedFileName << "]\n";
-	std::cout << "Protocol is [" << _protocol << "]\n";
-	std::cout << "Content type is [" << _contentType << "]\n";
-#endif
+	#ifdef DEBUG
+		std::cout << "Request Constructor called" << std::endl;
+		std::cout << "Method is [" << _method << "]\n";
+		std::cout << "URL is [" << _requestedFileName << "]\n";
+		std::cout << "Protocol is [" << _protocol << "]\n";
+		std::cout << "Content type is [" << _contentType << "]\n";
+	#endif
 }
 
 Request::Request(const Request &copy)
@@ -45,13 +45,13 @@ Request &Request::operator=(const Request &other)
 	_fullRequest = other._fullRequest;
 	decodeHTTPRequest(_fullRequest);
 
-#ifdef DEBUG
-	std::cout << "Request Copy Assignement called" << std::endl;
-	std::cout << "Method is [" << _method << "]\n";
-	std::cout << "URL is [" << _requestedFileName << "]\n";
-	std::cout << "Protocol is [" << _protocol << "]\n";
-	std::cout << "Content type is [" << _contentType << "]\n";
-#endif
+	#ifdef DEBUG
+		std::cout << "Request Copy Assignement called" << std::endl;
+		std::cout << "Method is [" << _method << "]\n";
+		std::cout << "URL is [" << _requestedFileName << "]\n";
+		std::cout << "Protocol is [" << _protocol << "]\n";
+		std::cout << "Content type is [" << _contentType << "]\n";
+	#endif
 
 	return *this;
 }
@@ -98,30 +98,8 @@ int Request::getCGI() const
 	return (_CGI);
 }
 
-//---------------------------- SETTERS --------------------------------------//
+//----------------------- INTERNAL FUNCTIONS -----------------------------------//
 
-//------------------------ MEMBER FUNCTIONS ---------------------------------//
-
-void Request::decodeHTTPRequest(std::string &httpRequest)
-{
-	std::string::iterator curr = httpRequest.begin();
-
-	// Extract mandatory info
-	extractMethodFromHTTP(curr);
-	extractURLFromHTTP(curr);
-	extractProtocolFromHTTP(curr);
-
-	// check if Request is valid (Has Method, Protocol, URL, crlf)
-	checkHTTPValidity(httpRequest, curr);
-
-	// Get environ from the Request
-	fillEnvFromHTTPHeader(httpRequest, curr);
-
-	// Get additional info
-	std::string	contentType = "content-type:";
-	_contentType = getInfoFromHTTPHeader(httpRequest, contentType);
-
-}
 
 // assumes the HTTP method is the first characters of the request until a space occurs
 std::string Request::extractMethodFromHTTP(std::string::iterator &it)
@@ -180,18 +158,19 @@ void	Request::fillEnvFromHTTPHeader(std::string &httpRequest, std::string::itera
 			envVar.push_back(*curr);
 			curr++;
 		}
-		std::cout << "var is [" << envVar << "]\n";
 		_requestEnv.push_back(envVar.c_str());
 		curr++;
 		curr++;
 	}
 
 	for (size_t i = 0; i != _requestEnv.size(); i++) {
-		std::cout << _requestEnv[i] << "\n";
+		#ifdef DEBUG
+			std::cout << _requestEnv[i] << "\n";
+		#endif
 	}
 }
 
-bool	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator &it)
+void	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator &it)
 {
 	#ifdef DEBUG
 		std::cout << "Checking validity:" << std::endl;
@@ -200,25 +179,62 @@ bool	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator 
 		std::cout << "Protocol is [" << _protocol << "]\n";
 	#endif
 
+	// CHECK METHOD
+	// empty method is not valid HTTP request
 	if (getMethod().empty())
-		return false;
-	if (getProtocol().empty())
-		return false;
-	if (getRequestedURL().empty())
-		return false;
+		throw badSyntax();
+	// TO DO : check if within allowed method for the route, requires config class
 
+	// CHECK PROTOCOL
+	// assuming supported HTTP/1.1 if no protocol, and throwing error is any other protocol
+	if (getProtocol().empty())
+		_protocol = "HTTP/1.1";
+	if (getProtocol() != "HTTP/1.1")
+		throw badProtocol();
+
+	// CHECK URL
+	// empty URL is not valid HTTP request
+	if (getRequestedURL().empty())
+		throw badSyntax();
+	// Rest of the check will come once rerouting / proxy have been applied
+
+	// CHECK FORMAT
 	// check for the Line Feed or '\n'
 	if (*it != '\n')
-		return false;
+		throw badSyntax();
 	it++;
-
 	// check for the end of request Carriage Return or '\r'
-	// TO DO: ensure \r is at end
-	if (httpRequest.find('\r') == std::string::npos)
-		return false;
-
-	return true;
+	size_t	positionCarriageReturn = httpRequest.find('\r');
+	if (positionCarriageReturn == std::string::npos)
+		throw badSyntax();
+	// if (positionCarriageReturn != httpRequest.size() - 1)
+	// 	throw badSyntax();
 }
+
+//------------------------ MEMBER FUNCTIONS ---------------------------------//
+
+void Request::decodeHTTPRequest(std::string &httpRequest)
+{
+
+	// using a single iterator, go through the request to check for requirement
+	// Method, URL, Protocol and the <crlf> ('\r' '\n')
+	std::string::iterator curr = httpRequest.begin();
+	// Extract mandatory info
+	extractMethodFromHTTP(curr);
+	extractURLFromHTTP(curr);
+	extractProtocolFromHTTP(curr);
+	// check if Request is valid (Has Method, Protocol, URL, crlf)
+	checkHTTPValidity(httpRequest, curr);
+
+	// Get environ from the Request
+	fillEnvFromHTTPHeader(httpRequest, curr);
+
+	// Get additional info
+	std::string	contentType = "content-type:";
+	_contentType = getInfoFromHTTPHeader(httpRequest, contentType);
+
+}
+
 
 std::string	Request::getInfoFromHTTPHeader(std::string &httpRequest, std::string &infoType)
 {
@@ -281,12 +297,12 @@ void Request::redirectIfCGI() // OR SET CGI?
 				return (Request::handleCGI());
 		}
 	}
-	std::cout << MAGENTA << "NO CGI REQUIRED" << STOP_COLOR << std::endl;
+	std::cout << CGI_FORMAT("NO CGI REQUIRED") << std::endl;
 }
 
 void Request::handleCGI()
 {
-	std::cout << MAGENTA << "CGI REQUIRED" << STOP_COLOR << std::endl;
+	std::cout << CGI_FORMAT("CGI REQUIRED") << std::endl;
 }
 
 void Request::testFilename()
@@ -300,3 +316,37 @@ void Request::testFilename()
 		std::cerr << RED << status << STOP_COLOR << std::endl;
 	}
 }
+
+//------------------------ EXCEPTIONS ---------------------------------//
+
+const char*		Request::timeout::what() const throw()
+{
+	return ERROR_FORMAT("ERROR: Request Timeout");
+}
+
+const char*		Request::badSyntax::what() const throw()
+{
+	return ERROR_FORMAT("ERROR: Request has bad syntax");
+}
+
+const char*		Request::missingLength::what() const throw()
+{
+	return ERROR_FORMAT("ERROR: Request has no content length");
+}
+
+const char*		Request::contentTooLarge::what() const throw()
+{
+	return ERROR_FORMAT("ERROR: Request content is too big");
+}
+
+const char*		Request::forbiddenMethod::what() const throw()
+{
+	return ERROR_FORMAT("ERROR: Request has a forbidden method");
+}
+
+const char*		Request::badProtocol::what() const throw()
+{
+	return ERROR_FORMAT("ERROR: Request uses unsupported protocol");
+}
+
+

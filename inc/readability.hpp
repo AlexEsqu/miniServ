@@ -16,8 +16,9 @@
 # define ITALIC "\033[3m"
 # define STOP_ITALIC "\033[23m"
 
-# ifndef DEBUG
-#  define DEBUG 0
-# endif
+# define ERROR_FORMAT(msg) RED msg STOP_COLOR
+
+# define CGI_FORMAT(msg) MAGENTA msg STOP_COLOR
+
 
 #endif
