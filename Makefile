@@ -68,7 +68,6 @@ OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_SIG) \
 						$(OBJ_DIR)/$(DIR_HAND)
 
-
 OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 DEP					=	$(OBJ_DIRS) $(HEADER)
@@ -102,6 +101,14 @@ CCLIENT_NAME		=	client
 TEST_REQ_DIR		=	$(TEST_DIR)/requests
 HTTP_TEST			=	$(TEST_REQ_DIR)/correct.http
 
+#------ Unit Test -------------------------------------------------------------#
+
+UNIT_TEST_DIR		=	$(TEST_DIR)/unittest
+UNIT_TEST_SRC		=	$(UNIT_TEST_DIR)/RequestTest.cpp
+UNIT_TEST_FRAME		=	$(UNIT_TEST_DIR)/doctest/doctest/
+SRC_NO_MAIN			=	$(filter-out $(SRC_DIR)/main.cpp, $(SRC))
+UNIT_TEST_BIN		=	utest_$(NAME)
+
 # **************************************************************************** #
 #		Server																   #
 # **************************************************************************** #
@@ -128,6 +135,9 @@ nginx:
 $(CCLIENT_NAME):
 					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
 
+utest:
+					$(CC) -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
+
 # **************************************************************************** #
 #		Debug																   #
 # **************************************************************************** #
@@ -146,6 +156,7 @@ verbose:			$(OBJ_DIRS) $(OBJ)
 
 clean:
 					rm -rf $(OBJ_DIR)
+					rm -rf $(UNIT_TEST_BIN)
 					make -C $(NGINX_DOCK) clean
 
 fclean:

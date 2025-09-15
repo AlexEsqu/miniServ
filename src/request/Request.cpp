@@ -10,6 +10,7 @@ Request::Request(std::string httpRequest)
 	decodeHTTPRequest(httpRequest);
 
 	#ifdef DEBUG
+		std::cout << "Request HTTP was [" << httpRequest << "]\n";
 		std::cout << "Request Constructor called" << std::endl;
 		std::cout << "Method is [" << _method << "]\n";
 		std::cout << "URL is [" << _requestedFileName << "]\n";
@@ -178,8 +179,6 @@ void	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator 
 		std::cout << "URL is [" << _requestedFileName << "]\n";
 		std::cout << "Protocol is [" << _protocol << "]\n";
 	#endif
-
-	throw badSyntax();
 
 	// CHECK METHOD
 	// empty method is not valid HTTP request

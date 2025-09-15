@@ -2,22 +2,21 @@
 #include <iostream>
 #include "server.hpp"
 
-class Status; 
+class Status;
 class Request;
 
 class Response
 {
 private:
-	int _statusNum;
-	int _method; // potential enum for GET,POST,DELETE... / or could be string too??
-	std::string _contentType;
-	unsigned int _contentLength;
-	std::string _content;
-	std::string _requestedFileName;
-	std::string _response;
-	std::string _protocol;
-	std::string _HTTPResponse;
-
+	int				_statusNum;
+	int				_method; // potential enum for GET,POST,DELETE... / or could be string too??
+	std::string		_contentType;
+	unsigned int	_contentLength;
+	std::string		_content;
+	std::string		_requestedFileName;
+	std::string		_response;
+	std::string		_protocol;
+	std::string		_HTTPResponse;
 
 public:
 	Response();
