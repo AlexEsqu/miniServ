@@ -5,7 +5,7 @@
 
 TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 
-	SUBCASE("Valid GET Request") {
+	SUBCASE("Valid GET root request") {
 
 		const char* HTTPRequest =
 		"GET / HTTP/1.1\r\n"
@@ -16,10 +16,34 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 		CHECK(request.getMethod() == "GET");
 		CHECK(request.getRequestedURL() == "./");
 		CHECK(request.getProtocol() == "HTTP/1.1");
-
 	}
 
-	SUBCASE("Invalid GET Request") {
+	SUBCASE("Valid minimalist GET root request") {
+
+		const char* HTTPRequest =
+		"GET / HTTP/1.1\r\n"
+		"\r\n";
+
+		Request	request(HTTPRequest);
+		CHECK(request.getMethod() == "GET");
+		CHECK(request.getRequestedURL() == "./");
+		CHECK(request.getProtocol() == "HTTP/1.1");
+	}
+
+	SUBCASE("Valid GET page request") {
+
+		const char* HTTPRequest =
+		"GET /pages/error.html HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
+
+		Request	request(HTTPRequest);
+		CHECK(request.getMethod() == "GET");
+		CHECK(request.getRequestedURL() == "./pages/error.html");
+		CHECK(request.getProtocol() == "HTTP/1.1");
+	}
+
+	SUBCASE("Invalid Protocol Request") {
 
 		const char* HTTPRequest =
 		"GET / HTTP/1.3\r\n"
@@ -29,27 +53,63 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 		CHECK_THROWS_AS(Request request(HTTPRequest), Request::badProtocol);
 	}
 
-	// SUBCASE("Valid GET Cookie Request") {
+	SUBCASE("Forbidden Method Request") {
 
-	// const char* HTTPRequest =
-	// "GET / HTTP/1.1\r\n"
-	// "Host: localhost:8080\r\n"
-	// "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0\r\n"
-	// "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
-	// "Accept-Language: en-US,en;q=0.5\r\n"
-	// "Accept-Encoding: gzip, deflate, br, zstd\r\n"
-	// "Sec-GPC: 1\r\n"
-	// "Connection: keep-alive\r\n"
-	// "Cookie: wp-settings-time-1=1755175009\r\n"
-	// "Priority: u=0, i\r\n"
-	// "\r\n";
+		const char* HTTPRequest =
+		"LAUNCH / HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
 
-	// Request	request(HTTPRequest);
+		CHECK_THROWS_AS(Request request(HTTPRequest), Request::forbiddenMethod);
+	}
 
+	SUBCASE("Unsupported Method Request") {
 
-	// }
+		const char* HTTPRequest =
+		"UPDATE / HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
 
+		CHECK_THROWS_AS(Request request(HTTPRequest), Request::forbiddenMethod);
+	}
 
+}
 
-	// CHECK(factorial(0) == 1);
+TEST_CASE("Testing : HTTP Request Class set if CGI is needed or not") {
+
+	SUBCASE("root request") {
+
+		const char* HTTPRequest =
+		"GET / HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
+
+		Request	request(HTTPRequest);
+		request.setCGI();
+		CHECK(request.getCGI() == false);
+	}
+
+	SUBCASE("html request") {
+
+		const char* HTTPRequest =
+		"GET /index.html HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
+
+		Request	request(HTTPRequest);
+		request.setCGI();
+		CHECK(request.getCGI() == false);
+	}
+
+	SUBCASE("python request") {
+
+		const char* HTTPRequest =
+		"GET /index.py HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
+
+		Request	request(HTTPRequest);
+		request.setCGI();
+		CHECK(request.getCGI() == true);
+	}
 }

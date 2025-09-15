@@ -30,7 +30,7 @@ private:
 	std::string extractProtocolFromHTTP(std::string::iterator &it);
 	std::string extractURLFromHTTP(std::string::iterator &it);
 	void		fillEnvFromHTTPHeader(std::string &httpRequest, std::string::iterator &curr);
-	void		checkHTTPValidity(std::string &htmlRequest, std::string::iterator &it);
+	void		checkHTTPValidity(std::string &htmlRequest);
 	std::vector<std::string>	_requestEnv;	// all header variables as ENV in a vector
 
 public:

@@ -8,15 +8,6 @@ Request::Request(std::string httpRequest)
 	: _fullRequest(httpRequest)
 {
 	decodeHTTPRequest(httpRequest);
-
-	#ifdef DEBUG
-		std::cout << "Request HTTP was [" << httpRequest << "]\n";
-		std::cout << "Request Constructor called" << std::endl;
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedFileName << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
-		std::cout << "Content type is [" << _contentType << "]\n";
-	#endif
 }
 
 Request::Request(const Request &copy)
@@ -45,14 +36,6 @@ Request &Request::operator=(const Request &other)
 
 	_fullRequest = other._fullRequest;
 	decodeHTTPRequest(_fullRequest);
-
-	#ifdef DEBUG
-		std::cout << "Request Copy Assignement called" << std::endl;
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedFileName << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
-		std::cout << "Content type is [" << _contentType << "]\n";
-	#endif
 
 	return *this;
 }
@@ -171,7 +154,7 @@ void	Request::fillEnvFromHTTPHeader(std::string &httpRequest, std::string::itera
 	}
 }
 
-void	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator &it)
+void	Request::checkHTTPValidity(std::string &httpRequest)
 {
 	#ifdef DEBUG
 		std::cout << "Checking validity:" << std::endl;
@@ -197,26 +180,20 @@ void	Request::checkHTTPValidity(std::string &httpRequest, std::string::iterator 
 	// empty URL is not valid HTTP request
 	if (getRequestedURL().empty())
 		throw badSyntax();
-	// Rest of the check will come once rerouting / proxy have been applied
 
 	// CHECK FORMAT
-	// check for the Line Feed or '\n'
-	if (*it != '\n')
-		throw badSyntax();
-	it++;
 	// check for the end of request Carriage Return or '\r'
-	size_t	positionCarriageReturn = httpRequest.find('\r');
-	if (positionCarriageReturn == std::string::npos)
+	if (httpRequest[httpRequest.size() - 2] != '\r')
 		throw badSyntax();
-	// if (positionCarriageReturn != httpRequest.size() - 1)
-	// 	throw badSyntax();
+	// check for the Line Feed or '\n'
+	if (httpRequest[httpRequest.size() - 1] != '\n')
+		throw badSyntax();
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 void Request::decodeHTTPRequest(std::string &httpRequest)
 {
-
 	// using a single iterator, go through the request to check for requirement
 	// Method, URL, Protocol and the <crlf> ('\r' '\n')
 	std::string::iterator curr = httpRequest.begin();
@@ -225,7 +202,7 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 	extractURLFromHTTP(curr);
 	extractProtocolFromHTTP(curr);
 	// check if Request is valid (Has Method, Protocol, URL, crlf)
-	checkHTTPValidity(httpRequest, curr);
+	checkHTTPValidity(httpRequest);
 
 	// Get environ from the Request
 	fillEnvFromHTTPHeader(httpRequest, curr);
@@ -233,6 +210,15 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 	// Get additional info
 	std::string	contentType = "content-type:";
 	_contentType = getInfoFromHTTPHeader(httpRequest, contentType);
+
+	#ifdef DEBUG
+		std::cout << "Request HTTP was [" << httpRequest << "]\n";
+		std::cout << "Request Constructor called" << std::endl;
+		std::cout << "Method is [" << _method << "]\n";
+		std::cout << "URL is [" << _requestedFileName << "]\n";
+		std::cout << "Protocol is [" << _protocol << "]\n";
+		std::cout << "Content type is [" << _contentType << "]\n";
+	#endif
 
 }
 
