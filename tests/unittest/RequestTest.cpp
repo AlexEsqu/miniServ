@@ -16,6 +16,17 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 		CHECK(request.getMethod() == "GET");
 		CHECK(request.getRequestedURL() == "./");
 		CHECK(request.getProtocol() == "HTTP/1.1");
+
+	}
+
+	SUBCASE("Invalid GET Request") {
+
+		const char* HTTPRequest =
+		"GET / HTTP/1.3\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
+
+		CHECK_THROWS_AS(Request request(HTTPRequest), Request::badProtocol);
 	}
 
 	// SUBCASE("Valid GET Cookie Request") {
