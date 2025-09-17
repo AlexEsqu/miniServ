@@ -13,7 +13,7 @@ private:
 
 	// error pages redirect ?
 	unsigned int		_maxSizeClientRequestBody;
-	std::vector<Route>	_routes;
+	std::vector<Route *>	_routes;
 
 
 public:
@@ -37,5 +37,5 @@ public:
 
 	unsigned int getPort() const;
 	unsigned int getMaxSizeClientRequestBody() const;
-	std::vector<Route> getRoutes() const;
+	const Route *getRoutes(int index) const;
 };

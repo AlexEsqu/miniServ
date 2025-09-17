@@ -129,13 +129,14 @@ void Response::setProtocol(std::string protocol)
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	inputErrorFile.open("./pages/error.html", std::ifstream::in);
+	std::string errorFile = conf.getRoutes(0)->getRootDirectory() + "error.html";
+	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;
 
 	if (!inputErrorFile.is_open())
 	{
-		std::cerr << RED << "Could not open error file" << STOP_COLOR << std::endl;
+		std::cerr << RED << "Could not open error file: " << errorFile << STOP_COLOR << std::endl;
 	}
 	/* Could be a better implementation with finding the string
 	 in the line instead of matching exactly because if i add anything

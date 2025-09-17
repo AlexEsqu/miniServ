@@ -4,7 +4,8 @@
 
 Route::Route()
 {
-	setRootDirectory("/pages/");
+	
+	setRootDirectory("./pages/");
 
 	std::vector<std::string> defaultFiles;
 	defaultFiles.push_back("index.html");
