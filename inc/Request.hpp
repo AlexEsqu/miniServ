@@ -15,22 +15,22 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	std::string _fullRequest;	// full content of the request
-	std::string _method;		// could be set as the enum already ?
-	std::string _protocol;		// probably not needed, unless we only support HTTP/1.1
-	std::string _host;			// for example "example.com"
-	std::string _connection;	// to research keep-alive
-	std::string _requestedFileName;	// for example "/home.html"
-	std::string _contentType;
-	int			_CGI;			// 0 NO CGI, 1 PY, 2 PHP
+	std::string		_fullRequest;	// full content of the request
+	std::string		_method;		// could be set as the enum already ?
+	std::string		_protocol;		// probably not needed, unless we only support HTTP/1.1
+	std::string		_host;			// for example "example.com"
+	std::string		_connection;	// to research keep-alive
+	std::string		_requestedFileName;	// for example "/home.html"
+	std::string		_contentType;
+	int				_CGI;			// 0 NO CGI, 1 PY, 2 PHP
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
-	std::string extractMethodFromHTTP(std::string::iterator &it);
-	std::string extractProtocolFromHTTP(std::string::iterator &it);
-	std::string extractURLFromHTTP(std::string::iterator &it);
-	void		fillEnvFromHTTPHeader(std::string &httpRequest, std::string::iterator &curr);
-	void		checkHTTPValidity(std::string &htmlRequest, std::string::iterator &it);
+	std::string		extractMethodFromHTTP(std::string::iterator &it);
+	std::string		extractProtocolFromHTTP(std::string::iterator &it);
+	std::string		extractURLFromHTTP(std::string::iterator &it);
+	void			fillEnvFromHTTPHeader(std::string &httpRequest, std::string::iterator &curr);
+	void			checkHTTPValidity(std::string &htmlRequest);
 	std::vector<std::string>	_requestEnv;	// all header variables as ENV in a vector
 
 public:
@@ -68,7 +68,7 @@ public:
 	void			testFilename();
 	void			handleCGI();
 
-		//------------------ EXCEPTIONS ----------------------//
+	//------------------ EXCEPTIONS ----------------------//
 
 	class HTTPError : public std::exception
 	{
@@ -81,7 +81,7 @@ public:
 		std::string	getErrorPage();
 	};
 
-	class timeout : public std::exception {
+	class timeout : public HTTPError {
 		public :
 			const char* what() const throw();
 	};
