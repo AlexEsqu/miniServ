@@ -28,6 +28,9 @@
 # include "Config.hpp"
 # include "Route.hpp"
 
+class Config;
+
+extern Config conf; //default conf
 
 enum e_methods
 {
