@@ -2,8 +2,10 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-Config::Config()
+Config::Config() : _port(8080), _maxSizeClientRequestBody(__INT_MAX__)
 {
+	Route r1;
+	_routes.push_back(r1);
 	#ifdef DEBUG
 		std::cout << "Config Constructor called" << std::endl;
 	#endif
@@ -30,11 +32,26 @@ Config::~Config()
 
 Config &Config::operator=(const Config &other)
 {
-	// code
+	(void)other;
 	return (*this);
 }
 
 //---------------------------- GUETTERS -------------------------------------//
+
+unsigned int Config::getPort() const
+{
+	return (this->_port);
+}
+
+unsigned int Config::getMaxSizeClientRequestBody() const
+{
+	return (this->_maxSizeClientRequestBody);
+}	
+
+std::vector<Route> Config::getRoutes() const
+{
+	return (this->_routes);
+}
 
 
 //---------------------------- SETTERS --------------------------------------//
