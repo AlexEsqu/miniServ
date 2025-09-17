@@ -110,6 +110,6 @@ TEST_CASE("Testing : HTTP Request Class set if CGI is needed or not") {
 
 		Request	request(HTTPRequest);
 		request.setCGI();
-		CHECK(request.getCGI() == true);
+		CHECK(request.getCGI() == PY);
 	}
 }
