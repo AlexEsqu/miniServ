@@ -46,13 +46,14 @@ void listeningLoop(Sockette &ListenerSocket)
 	}
 }
 
+
 int main()
 {
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
-
+	Config conf; //default conf
 	// creating a socket, binding it to an IP address and listening
-	SocketteListen ListenerSocket(PORT);
+	SocketteListen ListenerSocket(conf.getPort());
 
 	listeningLoop(ListenerSocket);
 
