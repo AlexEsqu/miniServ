@@ -15,11 +15,11 @@ void listeningLoop(Sockette &ListenerSocket)
 
 			// decoding the buffer into a Request object
 			Request decodedRequest(AnsweringSocket.getRequest());
-			std::string	requestedURL = decodedRequest.getRequestedURL();
+
+			// handling of request according to configured routes
+			// TO DO
 
 			// creating a Response
-			decodedRequest.testFilename();
-
 			decodedRequest.redirectIfCGI();
 			Response response(decodedRequest, 200);
 			// response.setContent(execPHPwithFork(decodedRequest, requestedURL));
@@ -48,6 +48,9 @@ void listeningLoop(Sockette &ListenerSocket)
 
 int main()
 {
+	// reading config and setting up routes
+	// TO DO
+
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
 

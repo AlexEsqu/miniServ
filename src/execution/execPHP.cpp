@@ -33,7 +33,9 @@ int	execFileWithPHP(Request& request, std::string& fileToExecPath, int* pipefd)
 	// assemble into an execve approved array of char*, add EOF at end
 	std::vector<const char*> argv(buildArgv(program, flag, fileToExecPath));
 
-	execve(program, (char* const*)argv.data(), request.getRequestEnv());
+	Environment	env = request.getRequestEnv();
+
+	execve(program, (char* const*)argv.data(), env.getEnv());
 
 	// clean up
 

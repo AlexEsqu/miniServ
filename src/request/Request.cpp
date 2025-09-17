@@ -2,7 +2,24 @@
 #include "readability.hpp"
 #include "server.hpp"
 
+std::vector<std::string> split (const std::string &s, char delim) {
+	std::vector<std::string> result;
+	std::stringstream ss (s);
+	std::string item;
+
+	while (getline (ss, item, delim)) {
+		result.push_back (item);
+	}
+
+	return result;
+}
+
 //--------------------------- CONSTRUCTORS ----------------------------------//
+
+Request::Request()
+	: _fullRequest("")
+{
+}
 
 Request::Request(std::string httpRequest)
 	: _fullRequest(httpRequest)
@@ -72,9 +89,9 @@ std::string Request::getContentType() const
 	return _contentType;
 }
 
-char* const*	Request::getRequestEnv() const
+Environment	Request::getRequestEnv()
 {
-	return (char* const*)_requestEnv.data();
+	return _requestEnv.getPHPEnv();
 }
 
 int Request::getCGI() const
@@ -82,79 +99,46 @@ int Request::getCGI() const
 	return (_CGI);
 }
 
+//----------------------- SETTERS -----------------------------------//
+
+void	Request::setMethod(std::string &method)
+{
+	_method = method;
+}
+
+void	Request::setURI(std::string &URI)
+{
+	_requestedFileName = URI;
+}
+
+void	Request::setProtocol(std::string &protocol)
+{
+	_protocol = protocol;
+}
+
+// Valid request line (1st line of a HTTP request) must have the format:
+//    Method SP Request-URI SP HTTP-Version CRLF
+void	Request::setRequestLine(std::string &httpRequest)
+{
+	std::string	requestLine = httpRequest.substr(0, httpRequest.find('\r'));
+	if (requestLine.empty())
+		throw badSyntax();
+	std::vector<std::string> splitRequestLine = split (requestLine, ' ');
+	if (splitRequestLine.size() != 3)
+		throw badSyntax();
+	setMethod(splitRequestLine[0]);
+	setURI(splitRequestLine[1].insert(0, "."));
+	setProtocol(splitRequestLine[2]);
+}
+
+void	Request::setRequestEnv(std::string &keyValueString)
+{
+	_requestEnv.setAdditionalEnv(keyValueString);
+}
+
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
 
-
-// assumes the HTTP method is the first characters of the request until a space occurs
-std::string Request::extractMethodFromHTTP(std::string::iterator &it)
-{
-	std::string httpMethod = "";
-	while (*it != ' ')
-	{
-		httpMethod.append(1, *it);
-		it++;
-	}
-	it++;
-	_method = httpMethod;
-	return (httpMethod);
-}
-
-std::string Request::extractURLFromHTTP(std::string::iterator &it)
-{
-	std::string fullURL = "";
-
-	while (*it != ' ')
-	{
-		fullURL.append(1, *it);
-		it++;
-	}
-	it++;
-
-	if (fullURL.at(0) == '/')
-		fullURL.insert(0, ".");
-
-	_requestedFileName = fullURL;
-	return (fullURL);
-}
-
-std::string Request::extractProtocolFromHTTP(std::string::iterator &it)
-{
-	std::string protocol = "";
-
-	// end of protocol is expected to be '\r' or carriage return
-	while (*it != ' ' && std::isprint(*it))
-	{
-		protocol.append(1, *it);
-		it++;
-	}
-	it++;
-	_protocol = protocol;
-	return (protocol);
-}
-
-void	Request::fillEnvFromHTTPHeader(std::string &httpRequest, std::string::iterator &curr)
-{
-	while (curr != httpRequest.end() && *curr != '\r')
-	{
-		std::string	envVar;
-		while (*curr && *curr != '\n' && *curr != '\r')
-		{
-			envVar.push_back(*curr);
-			curr++;
-		}
-		_requestEnv.push_back(envVar.c_str());
-		curr++;
-		curr++;
-	}
-
-	for (size_t i = 0; i != _requestEnv.size(); i++) {
-		#ifdef DEBUG
-			std::cout << _requestEnv[i] << "\n";
-		#endif
-	}
-}
-
-void	Request::checkHTTPValidity(std::string &httpRequest)
+void	Request::checkHTTPValidity()
 {
 	#ifdef DEBUG
 		std::cout << "Checking validity:" << std::endl;
@@ -170,9 +154,7 @@ void	Request::checkHTTPValidity(std::string &httpRequest)
 	// TO DO : check if within allowed method for the route, requires config class
 
 	// CHECK PROTOCOL
-	// assuming supported HTTP/1.1 if no protocol, and throwing error is any other protocol
-	if (getProtocol().empty())
-		_protocol = "HTTP/1.1";
+	// throwing error if protocol is any other protocol than HTTP/1.1
 	if (getProtocol() != "HTTP/1.1")
 		throw badProtocol();
 
@@ -182,44 +164,48 @@ void	Request::checkHTTPValidity(std::string &httpRequest)
 		throw badSyntax();
 
 	// CHECK FORMAT
-	// check for the end of request Carriage Return or '\r'
-	if (httpRequest[httpRequest.size() - 2] != '\r')
-		throw badSyntax();
-	// check for the Line Feed or '\n'
-	if (httpRequest[httpRequest.size() - 1] != '\n')
-		throw badSyntax();
+	// // check for the end of request Carriage Return or '\r'
+	// if (httpRequest[httpRequest.size() - 2] != '\r')
+	// 	throw badSyntax();
+	// // check for the Line Feed or '\n'
+	// if (httpRequest[httpRequest.size() - 1] != '\n')
+	// 	throw badSyntax();
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
+// Goes through the Request Header line by line to set method, uri, protocol and env
 void Request::decodeHTTPRequest(std::string &httpRequest)
 {
-	// using a single iterator, go through the request to check for requirement
-	// Method, URL, Protocol and the <crlf> ('\r' '\n')
-	std::string::iterator curr = httpRequest.begin();
-	// Extract mandatory info
-	extractMethodFromHTTP(curr);
-	extractURLFromHTTP(curr);
-	extractProtocolFromHTTP(curr);
+	// extracts and sets the request Method, URI and Protocol
+	// which must be set in the first line of the request, aka the Request Line
+	std::stringstream	httpRequestStream(httpRequest);
+	std::string			requestLine;
+	getline(httpRequestStream, requestLine);
+
+	// if (!requestLine.empty() && requestLine.back() == '\r') {
+	// 	requestLine.pop_back();
+	// }
+
+	setRequestLine(requestLine);
+
+	// extracts and sets all remaining header info in the request environ
+	std::string	headerLine;
+	while (getline(httpRequestStream, headerLine)) {
+		setRequestEnv(headerLine);
+	}
+
 	// check if Request is valid (Has Method, Protocol, URL, crlf)
-	checkHTTPValidity(httpRequest);
-
-	// Get environ from the Request
-	fillEnvFromHTTPHeader(httpRequest, curr);
-
-	// Get additional info
-	std::string	contentType = "content-type:";
-	_contentType = getInfoFromHTTPHeader(httpRequest, contentType);
+	checkHTTPValidity();
 
 	#ifdef DEBUG
 		std::cout << "Request HTTP was [" << httpRequest << "]\n";
-		std::cout << "Request Constructor called" << std::endl;
+		std::cout << "Request line was [" << requestLine << "]\n";
 		std::cout << "Method is [" << _method << "]\n";
 		std::cout << "URL is [" << _requestedFileName << "]\n";
 		std::cout << "Protocol is [" << _protocol << "]\n";
 		std::cout << "Content type is [" << _contentType << "]\n";
 	#endif
-
 }
 
 

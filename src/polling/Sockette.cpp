@@ -77,8 +77,6 @@ void			Sockette::setSocketFd(int socketFd)
 	_socketFd = socketFd;
 }
 
-//------------------------ MEMBER FUNCTIONS ---------------------------------//
-
 void			Sockette::setSocketOption(int option)
 {
 	const int on = 1;
@@ -94,6 +92,14 @@ void			Sockette::setSocketNonBlocking()
 		throw failedFcntl();
 }
 
+void			Sockette::setListenMode(int maxQueue)
+{
+	if (listen(_socketFd, maxQueue) < 0)
+		throw failedSocketListen();
+}
+
+//------------------------ MEMBER FUNCTIONS ---------------------------------//
+
 void			Sockette::bindToIPAddress()
 {
 	int addrlen = sizeof(_socketAddress);
@@ -105,12 +111,6 @@ void			Sockette::bindToIPAddress()
 
 	if (bind(_socketFd, (struct sockaddr *)&_socketAddress, (socklen_t)addrlen) < 0)
 		throw failedSocketBinding();
-}
-
-void			Sockette::setListenMode(int maxQueue)
-{
-	if (listen(_socketFd, maxQueue) < 0)
-		throw failedSocketListen();
 }
 
 void			Sockette::acceptConnectionFrom(Sockette ConnectingSocket)

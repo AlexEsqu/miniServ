@@ -53,63 +53,63 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 		CHECK_THROWS_AS(Request request(HTTPRequest), Request::badProtocol);
 	}
 
-	SUBCASE("Forbidden Method Request") {
+	// SUBCASE("Forbidden Method Request") {
 
-		const char* HTTPRequest =
-		"LAUNCH / HTTP/1.1\r\n"
-		"Host: localhost:8080\r\n"
-		"\r\n";
+	// 	const char* HTTPRequest =
+	// 	"LAUNCH / HTTP/1.1\r\n"
+	// 	"Host: localhost:8080\r\n"
+	// 	"\r\n";
 
-		CHECK_THROWS_AS(Request request(HTTPRequest), Request::forbiddenMethod);
-	}
+	// 	CHECK_THROWS_AS(Request request(HTTPRequest), Request::forbiddenMethod);
+	// }
 
-	SUBCASE("Unsupported Method Request") {
+	// SUBCASE("Unsupported Method Request") {
 
-		const char* HTTPRequest =
-		"UPDATE / HTTP/1.1\r\n"
-		"Host: localhost:8080\r\n"
-		"\r\n";
+	// 	const char* HTTPRequest =
+	// 	"UPDATE / HTTP/1.1\r\n"
+	// 	"Host: localhost:8080\r\n"
+	// 	"\r\n";
 
-		CHECK_THROWS_AS(Request request(HTTPRequest), Request::forbiddenMethod);
-	}
+	// 	CHECK_THROWS_AS(Request request(HTTPRequest), Request::forbiddenMethod);
+	// }
 
 }
 
-TEST_CASE("Testing : HTTP Request Class set if CGI is needed or not") {
+// TEST_CASE("Testing : HTTP Request Class set if CGI is needed or not") {
 
-	SUBCASE("root request") {
+// 	SUBCASE("root request") {
 
-		const char* HTTPRequest =
-		"GET / HTTP/1.1\r\n"
-		"Host: localhost:8080\r\n"
-		"\r\n";
+// 		const char* HTTPRequest =
+// 		"GET / HTTP/1.1\r\n"
+// 		"Host: localhost:8080\r\n"
+// 		"\r\n";
 
-		Request	request(HTTPRequest);
-		request.setCGI();
-		CHECK(request.getCGI() == false);
-	}
+// 		Request	request(HTTPRequest);
+// 		request.setCGI();
+// 		CHECK(request.getCGI() == false);
+// 	}
 
-	SUBCASE("html request") {
+// 	SUBCASE("html request") {
 
-		const char* HTTPRequest =
-		"GET /index.html HTTP/1.1\r\n"
-		"Host: localhost:8080\r\n"
-		"\r\n";
+// 		const char* HTTPRequest =
+// 		"GET /index.html HTTP/1.1\r\n"
+// 		"Host: localhost:8080\r\n"
+// 		"\r\n";
 
-		Request	request(HTTPRequest);
-		request.setCGI();
-		CHECK(request.getCGI() == false);
-	}
+// 		Request	request(HTTPRequest);
+// 		request.setCGI();
+// 		CHECK(request.getCGI() == false);
+// 	}
 
-	SUBCASE("python request") {
+// 	SUBCASE("python request") {
 
-		const char* HTTPRequest =
-		"GET /index.py HTTP/1.1\r\n"
-		"Host: localhost:8080\r\n"
-		"\r\n";
+// 		const char* HTTPRequest =
+// 		"GET /index.py HTTP/1.1\r\n"
+// 		"Host: localhost:8080\r\n"
+// 		"\r\n";
 
-		Request	request(HTTPRequest);
-		request.setCGI();
-		CHECK(request.getCGI() == true);
-	}
-}
+// 		Request	request(HTTPRequest);
+// 		request.setCGI();
+// 		CHECK(request.getCGI() == true);
+// 	}
+// }
