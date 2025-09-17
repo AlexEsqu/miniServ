@@ -108,7 +108,10 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	this->_requestedFileName = url;
+	if (url == "./")
+		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + conf.getRoutes(0)->getDefaultFiles()[0];
+	else
+		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + url;
 	std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
 }
 
