@@ -49,11 +49,14 @@ void	EnvironmentBuilder::cutFormatAddToEnv(std::string& keyValueString)
 void	EnvironmentBuilder::setAsEnv(const std::string& key, const std::string& value)
 {
 	_requestEnvMap[key] = value;
+	#ifdef DEBUG
+		std::cout << "adding env var as [" << key << " = " << value << "]\n";
+	#endif
 }
 
 void EnvironmentBuilder::setAsHTTPVariable(const std::string& key, const std::string& value)
 {
-	std::string	formattedKey;
+	std::string	formattedKey = key;
 
 	// Replace hyphens with underscores and convert to uppercase
 	for (size_t i = 0; i < key.length(); ++i) {
@@ -64,10 +67,10 @@ void EnvironmentBuilder::setAsHTTPVariable(const std::string& key, const std::st
 	strToUpper(formattedKey);
 
 	// Convert HTTP headers to CGI format: HTTP_HEADER_NAME
-	if (formattedKey != "CONTENT-TYPE" && formattedKey != "CONTENT-LENGTH")
-		std::string cgiName = "HTTP_" + formattedKey;
-
-	setAsEnv(formattedKey, value);
+	if (formattedKey == "CONTENT_TYPE" || formattedKey == "CONTENT_LENGTH")
+		setAsEnv(formattedKey, value);
+	else
+		setAsEnv("HTTP_" + formattedKey, value);
 }
 
 void EnvironmentBuilder::setupCGIEnvironment(const Request& request)

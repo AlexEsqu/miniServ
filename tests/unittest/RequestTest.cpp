@@ -116,11 +116,11 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 
 TEST_CASE("Testing : Environment Builder is able to extract the correct key values") {
 
-	SUBCASE("Valid GET root request") {
+	SUBCASE("HTTP variable of host") {
 
 		std::string keyValueAsString = "Host: localhost:8080";
-		std::string keyValueFormattedAsString = "HOST=localhost:8080";
-		std::string key = "HOST";
+		std::string keyValueFormattedAsString = "HTTP_HOST=localhost:8080";
+		std::string key = "HTTP_HOST";
 		std::string value = "localhost:8080";
 
 		EnvironmentBuilder	testEnv;
@@ -128,6 +128,127 @@ TEST_CASE("Testing : Environment Builder is able to extract the correct key valu
 		testEnv.cutFormatAddToEnv(keyValueAsString);
 
 		CHECK(testEnv.getSpecificEnv(key) == keyValueFormattedAsString);
+	}
+
+	SUBCASE("Content type variable") {
+
+		std::string keyValueAsString = "Content-type: text/plain";
+		std::string keyValueFormattedAsString = "CONTENT_TYPE=text/plain";
+		std::string key = "CONTENT_TYPE";
+		std::string value = "text/plain";
+
+		EnvironmentBuilder	testEnv;
+
+		testEnv.cutFormatAddToEnv(keyValueAsString);
+
+		CHECK(testEnv.getSpecificEnv(key) == keyValueFormattedAsString);
+	}
+
+		SUBCASE("weird non trimmed variable") {
+
+		std::string keyValueAsString = "   Content-type:   text/plain\n";
+		std::string keyValueFormattedAsString = "CONTENT_TYPE=text/plain";
+		std::string key = "CONTENT_TYPE";
+		std::string value = "text/plain";
+
+		EnvironmentBuilder	testEnv;
+
+		testEnv.cutFormatAddToEnv(keyValueAsString);
+
+		CHECK(testEnv.getSpecificEnv(key) == keyValueFormattedAsString);
+	}
+
+}
+
+TEST_CASE("Testing : Environment Builder is able to return Environement") {
+
+	SUBCASE("HTTP variable of host") {
+
+		std::string keyValueAsString = "Host: localhost:8080";
+		std::string keyValueFormattedAsString = "HTTP_HOST=localhost:8080";
+		std::string key = "HTTP_HOST";
+		std::string value = "localhost:8080";
+
+		EnvironmentBuilder	testEnv;
+
+		testEnv.cutFormatAddToEnv(keyValueAsString);
+		assert(testEnv.getSpecificEnv(key) == keyValueFormattedAsString);
+
+		// Get the environment
+		Environment env = testEnv.getPHPEnv();
+		char** envArray = env.getEnv();
+
+		// Check that we have at least one environment variable
+		CHECK(envArray != NULL);
+		CHECK(envArray[0] != NULL);
+
+		// Check the content of the first environment variable
+		std::string firstEnvVar(envArray[0]);
+		CHECK(firstEnvVar == keyValueFormattedAsString);
+
+		// Check that the array is NULL-terminated
+		bool foundNull = false;
+		for (int i = 0; envArray[i] != NULL && i < 100; i++) {
+			if (envArray[i+1] == NULL) {
+				foundNull = true;
+				break;
+			}
+		}
+		CHECK(foundNull == true);
+
+	}
+
+	SUBCASE("Multiple environment variables") {
+
+		EnvironmentBuilder testEnv;
+
+		// Add multiple variables
+		std::string hostHeader = "Host: localhost:8080";
+		std::string contentHeader = "Content-Type: text/plain";
+
+		testEnv.cutFormatAddToEnv(hostHeader);
+		testEnv.cutFormatAddToEnv(contentHeader);
+
+		Environment env = testEnv.getPHPEnv();
+		char** envArray = env.getEnv();
+
+		// Check that we have environment variables
+		CHECK(envArray != NULL);
+		CHECK(envArray[0] != NULL);
+		CHECK(envArray[1] != NULL);
+
+		// Convert to strings for easier comparison
+		std::vector<std::string> envStrings;
+		for (int i = 0; envArray[i] != NULL; i++) {
+			envStrings.push_back(std::string(envArray[i]));
+		}
+
+		// Check that we have the expected variables (order might vary due to map)
+		bool foundHost = false;
+		bool foundContent = false;
+
+		for (size_t i = 0; i < envStrings.size(); i++) {
+			if (envStrings[i] == "HTTP_HOST=localhost:8080") {
+				foundHost = true;
+			}
+			if (envStrings[i] == "CONTENT_TYPE=text/plain") {
+				foundContent = true;
+			}
+		}
+
+		CHECK(foundHost == true);
+		CHECK(foundContent == true);
+	}
+
+	SUBCASE("Empty environment") {
+
+		EnvironmentBuilder testEnv;
+		Environment env = testEnv.getPHPEnv();
+		char** envArray = env.getEnv();
+
+		if (envArray != NULL) {
+			CHECK(envArray[0] == NULL);
+		}
 	}
 
 }
