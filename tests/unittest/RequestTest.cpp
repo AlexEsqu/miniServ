@@ -104,12 +104,24 @@ TEST_CASE("Testing : HTTP Request Class set if CGI is needed or not") {
 	SUBCASE("python request") {
 
 		const char* HTTPRequest =
-		"GET /index.py HTTP/1.1\r\n"
+		"GET /script.py HTTP/1.1\r\n"
 		"Host: localhost:8080\r\n"
 		"\r\n";
 
 		Request	request(HTTPRequest);
 		request.setCGI();
 		CHECK(request.getCGI() == PY);
+	}
+
+		SUBCASE("php request") {
+
+		const char* HTTPRequest =
+		"GET /index.php HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
+
+		Request	request(HTTPRequest);
+		request.setCGI();
+		CHECK(request.getCGI() == PHP);
 	}
 }
