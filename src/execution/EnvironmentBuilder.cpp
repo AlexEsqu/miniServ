@@ -1,4 +1,6 @@
 #include "EnvironmentBuilder.hpp"
+#include "parsing.hpp"
+#include "Request.hpp"
 
 //----------------- CONSTRUCTORS ---------------------//
 
@@ -32,19 +34,52 @@ EnvironmentBuilder& EnvironmentBuilder::operator=(const EnvironmentBuilder &orig
 
 //------------------- SETTERS ------------------------//
 
-void	EnvironmentBuilder::setAdditionalEnv(std::string& keyValueString)
+void	EnvironmentBuilder::cutFormatAddToEnv(std::string& keyValueString)
 {
 	size_t equalPos = keyValueString.find(':');
 	if (equalPos != std::string::npos) {
 		std::string key = keyValueString.substr(0, equalPos);
 		std::string value = keyValueString.substr(equalPos + 1);
-		_requestEnvMap[key] = value;
+		key = trim(key);
+		value = trim(value);
+		setAsHTTPVariable(key, value);
 	}
 }
 
-void	EnvironmentBuilder::setAdditionalEnv(const std::string& key, const std::string& value)
+void	EnvironmentBuilder::setAsEnv(const std::string& key, const std::string& value)
 {
 	_requestEnvMap[key] = value;
+}
+
+void EnvironmentBuilder::setAsHTTPVariable(const std::string& key, const std::string& value)
+{
+	std::string	formattedKey;
+
+	// Replace hyphens with underscores and convert to uppercase
+	for (size_t i = 0; i < key.length(); ++i) {
+		if (key[i] == '-' || key[i] == ' ') {
+			formattedKey[i] = '_';
+		}
+	}
+	strToUpper(formattedKey);
+
+	// Convert HTTP headers to CGI format: HTTP_HEADER_NAME
+	if (formattedKey != "CONTENT-TYPE" && formattedKey != "CONTENT-LENGTH")
+		std::string cgiName = "HTTP_" + formattedKey;
+
+	setAsEnv(formattedKey, value);
+}
+
+void EnvironmentBuilder::setupCGIEnvironment(const Request& request)
+{
+	// Standard CGI variables
+	setAsEnv("REQUEST_METHOD", request.getMethod());
+	setAsEnv("REQUEST_URI", request.getRequestedURL());
+	setAsEnv("SERVER_PROTOCOL", request.getProtocol());
+
+	// Server information
+	setAsEnv("SERVER_NAME", "localhost");		// or from config
+	setAsEnv("SERVER_PORT", "8080");			// or from config
 }
 
 //------------------- GETTERS ------------------------//

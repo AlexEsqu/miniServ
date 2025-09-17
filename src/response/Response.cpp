@@ -15,7 +15,7 @@ Response::Response(Request &req, int status) : _content("")
 {
 
 	this->_statusNum = status;
-	this->_contentType = req.getContentType();
+	// this->_contentType = req.getContentType();
 	this->_protocol = req.getProtocol();
 	Response::setUrl(req.getRequestedURL());
 	if (status >= 400 )

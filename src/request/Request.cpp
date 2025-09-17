@@ -1,18 +1,7 @@
 #include "Request.hpp"
 #include "readability.hpp"
 #include "server.hpp"
-
-std::vector<std::string> split (const std::string &s, char delim) {
-	std::vector<std::string> result;
-	std::stringstream ss (s);
-	std::string item;
-
-	while (getline (ss, item, delim)) {
-		result.push_back (item);
-	}
-
-	return result;
-}
+#include "parsing.hpp"
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
@@ -48,11 +37,16 @@ Request::~Request()
 
 Request &Request::operator=(const Request &other)
 {
-	if (this == &other)
-		return *this;
-
-	_fullRequest = other._fullRequest;
-	decodeHTTPRequest(_fullRequest);
+	if (this != &other) {
+		_fullRequest = other._fullRequest;
+		_method = other._method;
+		_protocol = other._protocol;
+		_host = other._host;
+		_connection = other._connection;
+		_requestedFileName = other._requestedFileName;
+		_contentType = other._contentType;
+		_CGI = other._CGI;
+	}
 
 	return *this;
 }
@@ -69,14 +63,16 @@ std::string Request::getProtocol() const
 	return _protocol;
 }
 
-std::string Request::getHost() const
+std::string Request::getHost()
 {
-	return _host;
+	std::string type = "HOST";
+	return _requestEnv.getSpecificEnv(type);
 }
 
-std::string Request::getConnection() const
+std::string Request::getConnection()
 {
-	return _connection;
+	std::string type = "CONNECTION";
+	return _requestEnv.getSpecificEnv(type);
 }
 
 std::string Request::getRequestedURL() const
@@ -84,9 +80,10 @@ std::string Request::getRequestedURL() const
 	return _requestedFileName;
 }
 
-std::string Request::getContentType() const
+std::string Request::getContentType()
 {
-	return _contentType;
+	std::string type = "CONTENT_TYPE";
+	return _requestEnv.getSpecificEnv(type);
 }
 
 Environment	Request::getRequestEnv()
@@ -118,22 +115,19 @@ void	Request::setProtocol(std::string &protocol)
 
 // Valid request line (1st line of a HTTP request) must have the format:
 //    Method SP Request-URI SP HTTP-Version CRLF
-void	Request::setRequestLine(std::string &httpRequest)
+void	Request::setRequestLine(std::string &requestLine)
 {
-	std::string	requestLine = httpRequest.substr(0, httpRequest.find('\r'));
-	if (requestLine.empty())
-		throw badSyntax();
-	std::vector<std::string> splitRequestLine = split (requestLine, ' ');
+	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
 		throw badSyntax();
-	setMethod(splitRequestLine[0]);
-	setURI(splitRequestLine[1].insert(0, "."));
-	setProtocol(splitRequestLine[2]);
+	setMethod(trim(splitRequestLine[0]));
+	setURI(trim(splitRequestLine[1].insert(0, ".")));
+	setProtocol(trim(splitRequestLine[2]));
 }
 
 void	Request::setRequestEnv(std::string &keyValueString)
 {
-	_requestEnv.setAdditionalEnv(keyValueString);
+	_requestEnv.cutFormatAddToEnv(keyValueString);
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
@@ -174,61 +168,44 @@ void	Request::checkHTTPValidity()
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-// Goes through the Request Header line by line to set method, uri, protocol and env
+// Goes through the Request Header line by line
+// to set method, uri, protocol and env
 void Request::decodeHTTPRequest(std::string &httpRequest)
 {
-	// extracts and sets the request Method, URI and Protocol
-	// which must be set in the first line of the request, aka the Request Line
-	std::stringstream	httpRequestStream(httpRequest);
-	std::string			requestLine;
-	getline(httpRequestStream, requestLine);
+	std::stringstream httpRequestStream(httpRequest);
+	std::string line;
+	bool isFirstLine = true;
 
-	// if (!requestLine.empty() && requestLine.back() == '\r') {
-	// 	requestLine.pop_back();
-	// }
+	while (getline(httpRequestStream, line)) {
 
-	setRequestLine(requestLine);
+		// Removes trailing '\r' if present
+		if (!line.empty() && line[line.size() - 1] == '\r') {
+			line.erase(line.size() - 1);
+		}
 
-	// extracts and sets all remaining header info in the request environ
-	std::string	headerLine;
-	while (getline(httpRequestStream, headerLine)) {
-		setRequestEnv(headerLine);
+		// If there is an empty line, it is the end of the http headers
+		// so breaking the loop
+		if (line.empty()) {
+			break;
+		}
+
+		// setting values in the request line for first line, then adding to env
+		if (isFirstLine) {
+			setRequestLine(line);
+			isFirstLine = false;
+		} else {
+			setRequestEnv(line);
+		}
 	}
 
-	// check if Request is valid (Has Method, Protocol, URL, crlf)
 	checkHTTPValidity();
 
 	#ifdef DEBUG
 		std::cout << "Request HTTP was [" << httpRequest << "]\n";
-		std::cout << "Request line was [" << requestLine << "]\n";
 		std::cout << "Method is [" << _method << "]\n";
 		std::cout << "URL is [" << _requestedFileName << "]\n";
 		std::cout << "Protocol is [" << _protocol << "]\n";
-		std::cout << "Content type is [" << _contentType << "]\n";
 	#endif
-}
-
-
-std::string	Request::getInfoFromHTTPHeader(std::string &httpRequest, std::string &infoType)
-{
-	std::string result = "";
-
-	size_t index = httpRequest.find(infoType, 0);
-	if (index == std::string::npos)
-		return ("");
-
-	std::string::iterator it = httpRequest.begin() + index + infoType.size();
-	// skip if space between infotype and info
-	if (*it == ' ')
-		it++;
-	// store info into result until newline
-	while (std::isprint(*it))
-	{
-		result.append(1, *it);
-		it++;
-	}
-
-	return (result);
 }
 
 void Request::setCGI()

@@ -6,6 +6,8 @@
 
 #include "Environment.hpp"
 
+class Request;
+
 class EnvironmentBuilder
 {
 
@@ -30,8 +32,10 @@ public:
 
 	//--------------------- SETTERS ----------------------//
 
-	void		setAdditionalEnv(std::string& keyValueString);
-	void		setAdditionalEnv(const std::string& key, const std::string& value);
+	void		cutFormatAddToEnv(std::string& keyValueString);
+	void		setAsEnv(const std::string& key, const std::string& value);
+	void		setAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
+	void		setupCGIEnvironment(const Request& request);
 
 	//---------------------- GETTERS ---------------------//
 

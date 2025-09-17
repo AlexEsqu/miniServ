@@ -113,3 +113,21 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 // 		CHECK(request.getCGI() == true);
 // 	}
 // }
+
+TEST_CASE("Testing : Environment Builder is able to extract the correct key values") {
+
+	SUBCASE("Valid GET root request") {
+
+		std::string keyValueAsString = "Host: localhost:8080";
+		std::string keyValueFormattedAsString = "HOST=localhost:8080";
+		std::string key = "HOST";
+		std::string value = "localhost:8080";
+
+		EnvironmentBuilder	testEnv;
+
+		testEnv.cutFormatAddToEnv(keyValueAsString);
+
+		CHECK(testEnv.getSpecificEnv(key) == keyValueFormattedAsString);
+	}
+
+}

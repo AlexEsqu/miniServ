@@ -55,10 +55,10 @@ public:
 
 	std::string		getMethod() const;
 	std::string		getProtocol() const;
-	std::string		getHost() const;
-	std::string		getConnection() const;
 	std::string		getRequestedURL() const;
-	std::string		getContentType() const;
+	std::string		getContentType();
+	std::string		getHost();
+	std::string		getConnection();
 	Environment		getRequestEnv();
 	int				getCGI() const;
 
@@ -69,7 +69,6 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void			decodeHTTPRequest(std::string &httpRequest);
-	std::string		getInfoFromHTTPHeader(std::string &htmlRequest, std::string &infoType);
 	void 			setCGI();
 	void			redirectIfCGI();
 	void			testFilename();
