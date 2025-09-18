@@ -18,13 +18,14 @@ void listeningLoop(Sockette &ListenerSocket)
 			// decoding the buffer into a Request object
 			Request decodedRequest(AnsweringSocket.getRequest());
 
-			// handling of request according to configured routes
-			// TO DO
+			// creating a Response handling request according to configured routes
+			Response response(decodedRequest);
 
-			// creating a Response
-			decodedRequest.redirectIfCGI();
-			Response response(decodedRequest, 200);
-			// response.setContent(execPHPwithFork(decodedRequest, requestedURL));
+
+			// if CGI needed
+			// 	response.setContent(execPHPwithFork(decodedRequest, requestedURL));
+
+
 			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
@@ -32,7 +33,7 @@ void listeningLoop(Sockette &ListenerSocket)
 
 		catch ( Request::HTTPError &e )
 		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Been Been +++++++ \n\n");
+			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
 			std::cout << "response is [" << e.getErrorPage() << "\n";
 			write(AnsweringSocket.getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
 			std::cerr << e.what() << "\n";
@@ -40,7 +41,7 @@ void listeningLoop(Sockette &ListenerSocket)
 
 		catch ( std::exception &e )
 		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Not Not Been Been +++++++ \n\n");
+			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
 			std::cerr << e.what() << "\n";
 		}
 

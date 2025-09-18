@@ -75,33 +75,33 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 
 }
 
-// TEST_CASE("Testing : HTTP Request Class set if CGI is needed or not") {
+TEST_CASE("Testing : HTTP Request Class set if CGI is needed or not") {
 
 	SUBCASE("root request") {
 
-// 		const char* HTTPRequest =
-// 		"GET / HTTP/1.1\r\n"
-// 		"Host: localhost:8080\r\n"
-// 		"\r\n";
+		const char* HTTPRequest =
+		"GET / HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
 
 		Request	request(HTTPRequest);
 		request.setCGI();
 		CHECK(request.getCGI() == false); //this test does not make sense because it will depend of if the root will be redirected to an html or a php file
 	}
 
-// 	SUBCASE("html request") {
+	SUBCASE("html request") {
 
-// 		const char* HTTPRequest =
-// 		"GET /index.html HTTP/1.1\r\n"
-// 		"Host: localhost:8080\r\n"
-// 		"\r\n";
+		const char* HTTPRequest =
+		"GET /index.html HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
 
-// 		Request	request(HTTPRequest);
-// 		request.setCGI();
-// 		CHECK(request.getCGI() == false);
-// 	}
+		Request	request(HTTPRequest);
+		request.setCGI();
+		CHECK(request.getCGI() == false);
+	}
 
-// 	SUBCASE("python request") {
+	SUBCASE("python request") {
 
 		const char* HTTPRequest =
 		"GET /script.py HTTP/1.1\r\n"
@@ -120,11 +120,11 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 		"Host: localhost:8080\r\n"
 		"\r\n";
 
-// 		Request	request(HTTPRequest);
-// 		request.setCGI();
-// 		CHECK(request.getCGI() == PHP);
-// 	}
-// }
+		Request	request(HTTPRequest);
+		request.setCGI();
+		CHECK(request.getCGI() == PHP);
+	}
+}
 
 TEST_CASE("Testing : Environment Builder is able to extract the correct key values") {
 

@@ -8,11 +8,17 @@
 Request::Request()
 	: _fullRequest("")
 {
+#ifdef DEBUG
+	std::cout << "Request Generic Constructor called" << std::endl;
+#endif
 }
 
 Request::Request(std::string httpRequest)
 	: _fullRequest(httpRequest)
 {
+#ifdef DEBUG
+	std::cout << "Request Constructor called" << std::endl;
+#endif
 	decodeHTTPRequest(httpRequest);
 }
 
@@ -41,11 +47,8 @@ Request &Request::operator=(const Request &other)
 		_fullRequest = other._fullRequest;
 		_method = other._method;
 		_protocol = other._protocol;
-		_host = other._host;
-		_connection = other._connection;
 		_requestedFileName = other._requestedFileName;
-		_contentType = other._contentType;
-		_CGI = other._CGI;
+		_additionalHeaderInfo = other._additionalHeaderInfo;
 	}
 
 	return *this;
@@ -53,47 +56,24 @@ Request &Request::operator=(const Request &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
-std::string Request::getMethod() const
+std::string		Request::getMethod() const
 {
 	return _method;
 }
 
-std::string Request::getProtocol() const
+std::string		Request::getProtocol() const
 {
 	return _protocol;
 }
 
-std::string Request::getHost()
-{
-	std::string type = "HOST";
-	return _requestEnv.getSpecificEnv(type);
-}
-
-std::string Request::getConnection()
-{
-	std::string type = "CONNECTION";
-	return _requestEnv.getSpecificEnv(type);
-}
-
-std::string Request::getRequestedURL() const
+std::string		Request::getRequestedURL() const
 {
 	return _requestedFileName;
 }
 
-std::string Request::getContentType()
+std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 {
-	std::string type = "CONTENT_TYPE";
-	return _requestEnv.getSpecificEnv(type);
-}
-
-Environment	Request::getRequestEnv()
-{
-	return _requestEnv.getPHPEnv();
-}
-
-int Request::getCGI() const
-{
-	return (_CGI);
+	return _additionalHeaderInfo;
 }
 
 //----------------------- SETTERS -----------------------------------//
@@ -125,9 +105,20 @@ void	Request::setRequestLine(std::string &requestLine)
 	setProtocol(trim(splitRequestLine[2]));
 }
 
-void	Request::setRequestEnv(std::string &keyValueString)
+void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 {
-	_requestEnv.cutFormatAddToEnv(keyValueString);
+	size_t	equalPos = keyValueString.find(':');
+
+	if (equalPos != std::string::npos) {
+		std::string key = keyValueString.substr(0, equalPos);
+		std::string value = keyValueString.substr(equalPos + 1);
+		key = trim(key);
+		value = trim(value);
+		_additionalHeaderInfo[key] = value;
+		#ifdef DEBUG
+			std::cout << "adding env var as [" << key << " = " << value << "]\n";
+		#endif
+	}
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
@@ -184,7 +175,6 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 		}
 
 		// If there is an empty line, it is the end of the http headers
-		// so breaking the loop
 		if (line.empty()) {
 			break;
 		}
@@ -194,7 +184,7 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 			setRequestLine(line);
 			isFirstLine = false;
 		} else {
-			setRequestEnv(line);
+			addAdditionalHeaderInfo(line);
 		}
 	}
 
@@ -208,113 +198,8 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 	#endif
 }
 
-void Request::setCGI()
-{
-	std::vector<std::string> acceptedCGIs;
-
-	acceptedCGIs.push_back(".py");
-	acceptedCGIs.push_back(".php");
-	std::vector<std::string>::iterator it;
-
-	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
-	{
-		std::size_t pos = this->_requestedFileName.find(*it);
-		if (pos != std::string::npos)
-		{
-			if (this->_requestedFileName.substr(pos) == ".py")
-			{
-				this->_CGI = PY;
-				return;
-			}
-			if (this->_requestedFileName.substr(pos) == ".php")
-			{
-				this->_CGI = PHP;
-				return;
-			}
-		}
-	}
-	this->_CGI = NO_CGI;
-}
-
-void Request::redirectIfCGI() // OR SET CGI?
-{
-	std::vector<std::string> acceptedCGIs;
-
-	acceptedCGIs.push_back(".py");
-	acceptedCGIs.push_back(".php");
-	std::vector<std::string>::iterator it;
-
-	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
-	{
-		std::size_t pos = this->_requestedFileName.find(*it);
-		if (pos != std::string::npos)
-		{
-			if (this->_requestedFileName.substr(pos) == ".py" || this->_requestedFileName.substr(pos) == ".php")
-				return (Request::handleCGI());
-		}
-	}
-	std::cout << CGI_FORMAT("NO CGI REQUIRED") << std::endl;
-}
-
-void Request::handleCGI()
-{
-	std::cout << CGI_FORMAT("CGI REQUIRED") << std::endl;
-}
-
-void Request::testFilename()
-{
-	Status status;
-	std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
-	std::stringstream content;
-	if (!input.is_open())
-	{
-		status.setStatusCode(404);
-		std::cerr << RED << status << STOP_COLOR << std::endl;
-	}
-}
-
 //------------------------ EXCEPTIONS ---------------------------------//
 
-Request::HTTPError::HTTPError(Request& req, int status)
-{
-	Response res(req, status);
 
-	_message = res.getHTTPResponse();
-}
-
-std::string Request::HTTPError::getErrorPage()
-{
-	return _message;
-}
-
-const char*		Request::timeout::what() const throw()
-{
-	return ERROR_FORMAT("ERROR: Request Timeout");
-}
-
-const char*		Request::badSyntax::what() const throw()
-{
-	return ERROR_FORMAT("ERROR: Request has bad syntax");
-}
-
-const char*		Request::missingLength::what() const throw()
-{
-	return ERROR_FORMAT("ERROR: Request has no content length");
-}
-
-const char*		Request::contentTooLarge::what() const throw()
-{
-	return ERROR_FORMAT("ERROR: Request content is too big");
-}
-
-const char*		Request::forbiddenMethod::what() const throw()
-{
-	return ERROR_FORMAT("ERROR: Request has a forbidden method");
-}
-
-const char*		Request::badProtocol::what() const throw()
-{
-	return ERROR_FORMAT("ERROR: Request uses unsupported protocol");
-}
 
 

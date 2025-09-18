@@ -1,15 +1,19 @@
 #pragma once
 #include <iostream>
 #include "server.hpp"
+#include "Request.hpp"
 
 class Status;
-class Request;
 
 class Response
 {
+
 private:
+
+	//------------------ ATTRIBUTES ----------------------//
+
 	int				_statusNum;
-	int				_method; // potential enum for GET,POST,DELETE... / or could be string too??
+	int				_method;			// enum for GET,POST,DELETE...
 	std::string		_contentType;
 	unsigned int	_contentLength;
 	std::string		_content;
@@ -17,26 +21,49 @@ private:
 	std::string		_response;
 	std::string		_protocol;
 	std::string		_HTTPResponse;
+	int				_CGI;
+	Request			_request;
 
 public:
+
+	//----------------- CONSTRUCTORS ---------------------//
+
 	Response();
+	Response(Request &req);
 	Response(Request &req, int status);
 	Response(const Response &copy);
-	virtual ~Response();
 
-	Response &operator=(const Response &other);
+	//----------------- DESTRUCTOR -----------------------//
 
-	void setHTTPResponse();
-	void setStatusNum(int number);
-	void setMethod(int method);
-	void setContentType(std::string type);
-	void setContentLength(int length);
-	void setContent(std::string content);
-	void setUrl(std::string url);
-	void setResponse(std::string response);
-	void setProtocol(std::string protocol);
+	virtual	~Response();
 
-	std::string getHTTPResponse() const ;
-	std::string createErrorPageContent(const Status &num);
+	//-------------------- SETTER ------------------------//
+
+	void			setHTTPResponse();
+	void			setStatusNum(int number);
+	void			setMethod(int method);
+	void			setContentType(std::string type);
+	void			setContentLength(int length);
+	void			setContent(std::string content);
+	void			setUrl(std::string url);
+	void			setResponse(std::string response);
+	void			setProtocol(std::string protocol);
+
+	//-------------------- GETTERS -----------------------//
+
+	std::string		getHTTPResponse() const ;
+	Environment&	getRequestEnvironment();
+
+	//------------------- OPERATORS ----------------------//
+
+	Response		&operator=(const Response &other);
+
+	//--------------- MEMBER FUNCTIONS -------------------//
+
+	std::string		createErrorPageContent(const Status &num);
+	void			setCGI();
+	void			redirectIfCGI();
+	void			testFilename();
+	void			handleCGI();
 
 };

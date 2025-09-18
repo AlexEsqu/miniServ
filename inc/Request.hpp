@@ -19,13 +19,9 @@ private:
 
 	std::string			_fullRequest;		// full content of the request
 	std::string			_method;			// could be set as the enum already ?
-	std::string			_protocol;			// probably not needed, unless we only support HTTP/1.1
-	std::string			_host;				// for example "example.com"
-	std::string			_connection;		// to research keep-alive
+	std::string			_protocol;			// we only support HTTP/1.1
 	std::string			_requestedFileName;	// for example "/home.html"
-	std::string			_contentType;
-	int					_CGI;				// 0 NO CGI, 1 PY, 2 PHP
-	EnvironmentBuilder	_requestEnv;
+	std::map<std::string, std::string>	_additionalHeaderInfo;
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -49,73 +45,24 @@ public:
 	void			setProtocol(std::string& httpRequest);
 	void			setURI(std::string& httpRequest);
 	void			setRequestLine(std::string& httpRequest);
-	void			setRequestEnv(std::string& keyValueString);
+	void			addAdditionalHeaderInfo(std::string& keyValueString);
 
 	//-------------------- GETTERS -----------------------//
 
 	std::string		getMethod() const;
 	std::string		getProtocol() const;
 	std::string		getRequestedURL() const;
-	std::string		getContentType();
-	std::string		getHost();
-	std::string		getConnection();
-	Environment		getRequestEnv();
-	int				getCGI() const;
+	std::map<std::string, std::string>&	getAdditionalHeaderInfo();
 
 	//------------------- OPERATORS ----------------------//
 
-	Request &operator=(const Request &other);
+	Request&		operator=(const Request &other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void			decodeHTTPRequest(std::string &httpRequest);
-	void 			setCGI();
-	void			redirectIfCGI();
-	void			testFilename();
-	void			handleCGI();
 
 	//------------------ EXCEPTIONS ----------------------//
-
-	class HTTPError : public std::exception
-	{
-	private:
-		std::string	_message;
-
-	public:
-		HTTPError(Request& req, int status);
-		~HTTPError() throw() {};
-		std::string	getErrorPage();
-	};
-
-	class timeout : public HTTPError {
-		public :
-			const char* what() const throw();
-	};
-
-	class badSyntax : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-	class missingLength : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-	class contentTooLarge : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-	class forbiddenMethod : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-	class badProtocol : public std::exception {
-		public :
-			const char* what() const throw();
-	};
 
 };
 

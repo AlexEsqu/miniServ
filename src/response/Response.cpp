@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 
 ///////////////////////////////////////////////////////////////////
-///                  CONSTRUCTORS | DESTRUCTORS                  //
+///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
 Response::Response()
@@ -11,11 +11,21 @@ Response::Response()
 	// std::cout << "Response Constructor called" << std::endl;
 }
 
-Response::Response(Request &req, int status) : _content("")
+Response::Response(Request &req)
+	: _content("")
+	, _request(req)
 {
+	this->_statusNum = 200;
+	this->_protocol = req.getProtocol();
+	Response::setUrl(req.getRequestedURL());
+	Response::setContent(this->_content);
+}
 
-	this->_statusNum = status;
-	// this->_contentType = req.getContentType();
+Response::Response(Request &req, int status)
+	: _content("")
+	, _request(req)
+{
+	this->_statusNum = status;;
 	this->_protocol = req.getProtocol();
 	Response::setUrl(req.getRequestedURL());
 	if (status >= 400 )
@@ -26,12 +36,15 @@ Response::Response(Request &req, int status) : _content("")
 	Response::setContent(this->_content);
 }
 
-
 Response::Response(const Response &copy)
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
 	*this = copy;
 }
+
+///////////////////////////////////////////////////////////////////
+///                        DESTRUCTORS                           //
+///////////////////////////////////////////////////////////////////
 
 Response::~Response()
 {
@@ -50,7 +63,7 @@ Response &Response::operator=(const Response &other)
 }
 
 ///////////////////////////////////////////////////////////////////
-///                    GETTERS | SETTERS                         //
+///                    SETTERS				                     //
 ///////////////////////////////////////////////////////////////////
 
 void Response::setStatusNum(int number)
@@ -89,10 +102,8 @@ void Response::setContent(std::string content)
 
 		if (!input.is_open() || is_directory(this->_requestedFileName.c_str()))
 		{
-			std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
+			std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
 			Response::setStatusNum(404);
-			std::cout << _statusNum << std::endl;
-
 			Response::setHTTPResponse();
 			return;
 		}
@@ -123,6 +134,67 @@ void Response::setResponse(std::string response)
 void Response::setProtocol(std::string protocol)
 {
 	this->_protocol = protocol;
+}
+
+void Response::setCGI()
+{
+	std::vector<std::string> acceptedCGIs;
+
+	acceptedCGIs.push_back(".py");
+	acceptedCGIs.push_back(".php");
+	std::vector<std::string>::iterator it;
+
+	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
+	{
+		std::size_t pos = this->_requestedFileName.find(*it);
+		if (pos != std::string::npos)
+		{
+			if (this->_requestedFileName.substr(pos) == ".py")
+			{
+				this->_CGI = PY;
+				return;
+			}
+			if (this->_requestedFileName.substr(pos) == ".php")
+			{
+				this->_CGI = PHP;
+				return;
+			}
+		}
+	}
+	this->_CGI = NO_CGI;
+}
+
+void Response::setHTTPResponse()
+{
+	std::stringstream response;
+	Status status(this->_statusNum);
+	if (status.getStatusCode() >= 400) // if its an error
+	{
+		this->_content = createErrorPageContent(status);
+	}
+	this->_contentLength = this->_content.length();
+	response << this->_protocol << " " << status
+			 << "Content-Type: " << this->_contentType << "\n"
+			 << "Content-Length: " << this->_contentLength
+			 << "\n\n"
+			 << this->_content;
+	std::cout << response.rdbuf();
+
+	this->_HTTPResponse = response.str();
+}
+
+///////////////////////////////////////////////////////////////////
+///                    GETTERS 			                         //
+///////////////////////////////////////////////////////////////////
+
+std::string		Response::getHTTPResponse() const
+{
+	return (this->_HTTPResponse);
+}
+
+Environment&	Response::getRequestEnvironment()
+{
+	return (this->_request.getRequestEnv());
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -157,26 +229,40 @@ std::string Response::createErrorPageContent(const Status &num)
 	return (outputString.str());
 }
 
-void Response::setHTTPResponse()
+void Response::redirectIfCGI() // OR SET CGI?
 {
-	std::stringstream response;
-	Status status(this->_statusNum);
-	if (status.getStatusCode() >= 400) // if its an error
-	{
-		this->_content = createErrorPageContent(status);
-	}
-	this->_contentLength = this->_content.length();
-	response << this->_protocol << " " << status
-			 << "Content-Type: " << this->_contentType << "\n"
-			 << "Content-Length: " << this->_contentLength
-			 << "\n\n"
-			 << this->_content;
-	std::cout << response.rdbuf();
+	std::vector<std::string> acceptedCGIs;
 
-	this->_HTTPResponse = response.str();
+	acceptedCGIs.push_back(".py");
+	acceptedCGIs.push_back(".php");
+	std::vector<std::string>::iterator it;
+
+	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
+	{
+		std::size_t pos = this->_requestedFileName.find(*it);
+		if (pos != std::string::npos)
+		{
+			if (this->_requestedFileName.substr(pos) == ".py" || this->_requestedFileName.substr(pos) == ".php")
+				return (Response::handleCGI());
+		}
+	}
+	std::cout << CGI_FORMAT("NO CGI REQUIRED") << std::endl;
 }
 
-std::string Response::getHTTPResponse() const
+void Response::handleCGI()
 {
-	return(this->_HTTPResponse);
+	std::cout << CGI_FORMAT("CGI REQUIRED") << std::endl;
+
+}
+
+void Response::testFilename()
+{
+	Status status;
+	std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
+	std::stringstream content;
+	if (!input.is_open())
+	{
+		status.setStatusCode(404);
+		std::cerr << RED << status << STOP_COLOR << std::endl;
+	}
 }

@@ -24,7 +24,6 @@
 # include "SocketteAnswer.hpp"
 # include "SocketteListen.hpp"
 # include "readability.hpp"
-# include "handlers.hpp"
 # include "Config.hpp"
 # include "Route.hpp"
 
