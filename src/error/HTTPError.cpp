@@ -12,32 +12,32 @@ std::string	HTTPError::getErrorPage()
 	return _message;
 }
 
-const char*		HTTPError::timeout::what() const throw()
+const char*		timeout::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request Timeout");
 }
 
-const char*		HTTPError::badSyntax::what() const throw()
+const char*		badSyntax::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request has bad syntax");
 }
 
-const char*		HTTPError::missingLength::what() const throw()
+const char*		missingLength::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request has no content length");
 }
 
-const char*		HTTPError::contentTooLarge::what() const throw()
+const char*		contentTooLarge::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request content is too big");
 }
 
-const char*		HTTPError::forbiddenMethod::what() const throw()
+const char*		forbiddenMethod::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request has a forbidden method");
 }
 
-const char*		HTTPError::badProtocol::what() const throw()
+const char*		badProtocol::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request uses unsupported protocol");
 }

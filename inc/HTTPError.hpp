@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <exception>
 
 #include "Request.hpp"
 #include "Response.hpp"
@@ -16,38 +17,32 @@ public:
 	std::string	getErrorPage();
 };
 
-namespace HTTPError {
+class timeout : public HTTPError {
+	public :
+		const char* what() const throw();
+};
 
-	class timeout : public HTTPError {
-		public :
-			const char* what() const throw();
-	};
+class badSyntax : public std::exception {
+	public :
+		const char* what() const throw();
+};
 
-	class badSyntax : public std::exception {
-		public :
-			const char* what() const throw();
-	};
+class missingLength : public std::exception {
+	public :
+		const char* what() const throw();
+};
 
-	class missingLength : public std::exception {
-		public :
-			const char* what() const throw();
-	};
+class contentTooLarge : public std::exception {
+	public :
+		const char* what() const throw();
+};
 
-	class contentTooLarge : public std::exception {
-		public :
-			const char* what() const throw();
-	};
+class forbiddenMethod : public std::exception {
+	public :
+		const char* what() const throw();
+};
 
-	class forbiddenMethod : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-	class badProtocol : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-}
-
-
+class badProtocol : public std::exception {
+	public :
+		const char* what() const throw();
+};

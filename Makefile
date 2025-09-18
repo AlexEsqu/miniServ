@@ -24,7 +24,7 @@ DIR_SIG				=	signal
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
-FUNC_ERR			=	error.cpp
+FUNC_ERR			=	HTTPError.cpp
 FUNC_ENCOD			=	Response.cpp
 FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp

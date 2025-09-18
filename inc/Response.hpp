@@ -17,9 +17,8 @@ private:
 	std::string		_contentType;
 	unsigned int	_contentLength;
 	std::string		_content;
-	std::string		_requestedFileName;
 	std::string		_response;
-	std::string		_protocol;
+	std::string		_requestedFileName;
 	std::string		_HTTPResponse;
 	int				_CGI;
 	Request			_request;
@@ -47,12 +46,11 @@ public:
 	void			setContent(std::string content);
 	void			setUrl(std::string url);
 	void			setResponse(std::string response);
-	void			setProtocol(std::string protocol);
 
 	//-------------------- GETTERS -----------------------//
 
 	std::string		getHTTPResponse() const ;
-	Environment&	getRequestEnvironment();
+	Request&		getRequest();
 
 	//------------------- OPERATORS ----------------------//
 

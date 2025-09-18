@@ -26,6 +26,7 @@
 # include "readability.hpp"
 # include "Config.hpp"
 # include "Route.hpp"
+# include "HTTPError.hpp"
 
 class Config;
 

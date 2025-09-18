@@ -14,26 +14,22 @@ Response::Response()
 Response::Response(Request &req)
 	: _content("")
 	, _request(req)
+	, _requestedFileName(_request.getRequestedURL())
+	, _statusNum(200)
 {
-	this->_statusNum = 200;
-	this->_protocol = req.getProtocol();
-	Response::setUrl(req.getRequestedURL());
-	Response::setContent(this->_content);
 }
 
 Response::Response(Request &req, int status)
 	: _content("")
 	, _request(req)
+	, _requestedFileName(_request.getRequestedURL())
+	, _statusNum(status)
 {
-	this->_statusNum = status;;
-	this->_protocol = req.getProtocol();
-	Response::setUrl(req.getRequestedURL());
-	if (status >= 400 )
+	if (status >= 400)
 	{
 		setHTTPResponse();
 		return;
 	}
-	Response::setContent(this->_content);
 }
 
 Response::Response(const Response &copy)
@@ -86,21 +82,14 @@ void Response::setContentLength(int length)
 	this->_contentLength = length;
 }
 
-int is_directory(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISDIR(path_stat.st_mode);
-}
-
 void Response::setContent(std::string content)
 {
 	if (content.empty())
 	{
-		std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
+		std::ifstream input(_requestedFileName.c_str()); // opening the file as the content for the response
 		std::stringstream content;
 
-		if (!input.is_open() || is_directory(this->_requestedFileName.c_str()))
+		if (!input.is_open() || is_directory(_requestedFileName.c_str()))
 		{
 			std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
 			Response::setStatusNum(404);
@@ -108,11 +97,11 @@ void Response::setContent(std::string content)
 			return;
 		}
 		content << input.rdbuf();
-		this->_content = content.str();
+		_content = content.str();
 	}
 	else
 	{
-		this->_content = content;
+		_content = content;
 	}
 	Response::setHTTPResponse();
 }
@@ -129,11 +118,6 @@ void Response::setUrl(std::string url)
 void Response::setResponse(std::string response)
 {
 	this->_response = response;
-}
-
-void Response::setProtocol(std::string protocol)
-{
-	this->_protocol = protocol;
 }
 
 void Response::setCGI()
@@ -173,7 +157,7 @@ void Response::setHTTPResponse()
 		this->_content = createErrorPageContent(status);
 	}
 	this->_contentLength = this->_content.length();
-	response << this->_protocol << " " << status
+	response << _request.getProtocol() << " " << status
 			 << "Content-Type: " << this->_contentType << "\n"
 			 << "Content-Length: " << this->_contentLength
 			 << "\n\n"
@@ -194,7 +178,7 @@ std::string		Response::getHTTPResponse() const
 
 Environment&	Response::getRequestEnvironment()
 {
-	return (this->_request.getRequestEnv());
+	return (_request.get );
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -265,4 +249,11 @@ void Response::testFilename()
 		status.setStatusCode(404);
 		std::cerr << RED << status << STOP_COLOR << std::endl;
 	}
+}
+
+int is_directory(const char *path)
+{
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISDIR(path_stat.st_mode);
 }
