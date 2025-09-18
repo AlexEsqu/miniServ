@@ -222,9 +222,15 @@ void Request::setCGI()
 		if (pos != std::string::npos)
 		{
 			if (this->_requestedFileName.substr(pos) == ".py")
+			{
 				this->_CGI = PY;
+				return;
+			}
 			if (this->_requestedFileName.substr(pos) == ".php")
+			{
 				this->_CGI = PHP;
+				return;
+			}
 		}
 	}
 	this->_CGI = NO_CGI;

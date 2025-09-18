@@ -25,8 +25,12 @@
 # include "SocketteListen.hpp"
 # include "readability.hpp"
 # include "handlers.hpp"
-# define PORT 8080
+# include "Config.hpp"
+# include "Route.hpp"
 
+class Config;
+
+extern Config conf; //default conf
 
 enum e_methods
 {

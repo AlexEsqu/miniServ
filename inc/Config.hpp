@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
-
+#include "Route.hpp"
 class Route;
 
 class Config
@@ -10,11 +10,10 @@ class Config
 private:
 
 	unsigned int		_port;
-	std::string			_host;
-	std::string			_serverName;
+
 	// error pages redirect ?
 	unsigned int		_maxSizeClientRequestBody;
-	std::vector<Route>	_routes;
+	std::vector<Route *>	_routes;
 
 
 public:
@@ -36,4 +35,7 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
+	unsigned int getPort() const;
+	unsigned int getMaxSizeClientRequestBody() const;
+	const Route *getRoutes(int index) const;
 };

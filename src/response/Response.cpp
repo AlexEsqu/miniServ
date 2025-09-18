@@ -108,7 +108,10 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	this->_requestedFileName = url;
+	if (url == "./")
+		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + conf.getRoutes(0)->getDefaultFiles()[0];
+	else
+		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + url;
 	std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
 }
 
@@ -129,13 +132,14 @@ void Response::setProtocol(std::string protocol)
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	inputErrorFile.open("./pages/error.html", std::ifstream::in);
+	std::string errorFile = conf.getRoutes(0)->getRootDirectory() + "error.html";
+	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;
 
 	if (!inputErrorFile.is_open())
 	{
-		std::cerr << RED << "Could not open error file" << STOP_COLOR << std::endl;
+		std::cerr << RED << "Could not open error file: " << errorFile << STOP_COLOR << std::endl;
 	}
 	/* Could be a better implementation with finding the string
 	 in the line instead of matching exactly because if i add anything

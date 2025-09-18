@@ -1,5 +1,7 @@
 #include "server.hpp"
 
+Config conf;
+
 void listeningLoop(Sockette &ListenerSocket)
 {
 	while (1)
@@ -51,14 +53,13 @@ int main()
 	// reading config and setting up routes
 	// TO DO
 
+
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
-
 	// creating a socket, binding it to an IP address and listening
-	SocketteListen ListenerSocket(PORT);
+	SocketteListen ListenerSocket(conf.getPort());
 
 	listeningLoop(ListenerSocket);
-
 	return 0;
 }
 

@@ -44,6 +44,7 @@ FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_CLAS)/, $(FUNC_CLAS)) \
 						$(addprefix $(DIR_POLL)/, $(FUNC_POLL)) \
 						$(addprefix $(DIR_SIG)/, $(FUNC_SIG)) \
+						$(addprefix $(DIR_CONF)/, $(FUNC_CONF)) \
 						main.cpp
 
 HEAD				=	server.hpp
@@ -66,7 +67,9 @@ OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_FILE) \
 						$(OBJ_DIR)/$(DIR_POLL) \
 						$(OBJ_DIR)/$(DIR_SIG) \
-						$(OBJ_DIR)/$(DIR_HAND)
+						$(OBJ_DIR)/$(DIR_HAND) \
+						$(OBJ_DIR)/$(DIR_CONF)
+
 
 OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
