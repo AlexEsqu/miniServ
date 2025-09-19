@@ -21,6 +21,7 @@ public:
 	//----------------- CONSTRUCTORS ---------------------//
 
 	Route();
+	Route(std::string root);
 	Route(const Route &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
