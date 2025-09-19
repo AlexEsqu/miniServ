@@ -89,7 +89,7 @@ void Response::setContent(std::string content)
 
 		if (!input.is_open() || is_directory(this->_requestedFileName.c_str()))
 		{
-			std::cerr << RED << "Could not open file" << STOP_COLOR << std::endl;
+			std::cerr << RED << "Could not open file" << this->_requestedFileName << STOP_COLOR << std::endl;
 			Response::setStatusNum(404);
 			std::cout << _statusNum << std::endl;
 
@@ -108,11 +108,13 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	if (url == "./")
-		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + conf.getRoutes(0)->getDefaultFiles()[0];
+	url = url.substr(1); //rm ./
+	std::string root = conf.getRootMatchForRequestedFile(url)->getRootDirectory();
+	if (url == "/")
+		this->_requestedFileName = root + conf.getRoutes(0)->getDefaultFiles()[0];
 	else
-		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + url;
-	std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
+		this->_requestedFileName = root + url;
+	// std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
 }
 
 void Response::setResponse(std::string response)
