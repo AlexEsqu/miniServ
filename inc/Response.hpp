@@ -7,7 +7,6 @@ class Status;
 
 class Response
 {
-
 private:
 
 	//------------------ ATTRIBUTES ----------------------//
@@ -51,6 +50,7 @@ public:
 
 	std::string		getHTTPResponse() const ;
 	Request&		getRequest();
+	std::string		getRoutedURL() const;
 
 	//------------------- OPERATORS ----------------------//
 
@@ -59,9 +59,5 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	std::string		createErrorPageContent(const Status &num);
-	void			setCGI();
-	void			redirectIfCGI();
 	void			testFilename();
-	void			handleCGI();
-
 };

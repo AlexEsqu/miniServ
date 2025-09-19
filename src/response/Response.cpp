@@ -120,34 +120,6 @@ void Response::setResponse(std::string response)
 	this->_response = response;
 }
 
-void Response::setCGI()
-{
-	std::vector<std::string> acceptedCGIs;
-
-	acceptedCGIs.push_back(".py");
-	acceptedCGIs.push_back(".php");
-	std::vector<std::string>::iterator it;
-
-	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
-	{
-		std::size_t pos = this->_requestedFileName.find(*it);
-		if (pos != std::string::npos)
-		{
-			if (this->_requestedFileName.substr(pos) == ".py")
-			{
-				this->_CGI = PY;
-				return;
-			}
-			if (this->_requestedFileName.substr(pos) == ".php")
-			{
-				this->_CGI = PHP;
-				return;
-			}
-		}
-	}
-	this->_CGI = NO_CGI;
-}
-
 void Response::setHTTPResponse()
 {
 	std::stringstream response;
@@ -176,9 +148,14 @@ std::string		Response::getHTTPResponse() const
 	return (this->_HTTPResponse);
 }
 
-Environment&	Response::getRequestEnvironment()
+Request&	Response::getRequest()
 {
-	return (_request.get );
+	return (_request);
+}
+
+std::string	Response::getRoutedURL() const
+{
+	return (_requestedFileName);
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -213,30 +190,11 @@ std::string Response::createErrorPageContent(const Status &num)
 	return (outputString.str());
 }
 
-void Response::redirectIfCGI() // OR SET CGI?
+int is_directory(const char *path)
 {
-	std::vector<std::string> acceptedCGIs;
-
-	acceptedCGIs.push_back(".py");
-	acceptedCGIs.push_back(".php");
-	std::vector<std::string>::iterator it;
-
-	for (it = acceptedCGIs.begin(); it != acceptedCGIs.end(); it++)
-	{
-		std::size_t pos = this->_requestedFileName.find(*it);
-		if (pos != std::string::npos)
-		{
-			if (this->_requestedFileName.substr(pos) == ".py" || this->_requestedFileName.substr(pos) == ".php")
-				return (Response::handleCGI());
-		}
-	}
-	std::cout << CGI_FORMAT("NO CGI REQUIRED") << std::endl;
-}
-
-void Response::handleCGI()
-{
-	std::cout << CGI_FORMAT("CGI REQUIRED") << std::endl;
-
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISDIR(path_stat.st_mode);
 }
 
 void Response::testFilename()
@@ -249,11 +207,4 @@ void Response::testFilename()
 		status.setStatusCode(404);
 		std::cerr << RED << status << STOP_COLOR << std::endl;
 	}
-}
-
-int is_directory(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISDIR(path_stat.st_mode);
 }
