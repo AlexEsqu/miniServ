@@ -11,7 +11,6 @@
 # include <string>
 # include <bits/stdc++.h>
 # include <iostream>
-# include <fstream>
 # include <string>
 # include <map>
 # include <csignal>
@@ -31,9 +30,7 @@
 # include "ContentFetcher.hpp"
 # include "HTTPError.hpp"
 
-class Config;
 
-extern Config conf; //default conf
 
 enum e_methods
 {
@@ -119,12 +116,6 @@ enum e_status
   LOOP_DETECTED = 508,
   NOT_EXTENDED = 510,
   NETWORK_AUTHENTICATION_REQUIRED = 511
-};
-
-enum e_pipe_fd
-{
-	READ = 0,
-	WRITE = 1,
 };
 
 

@@ -1,11 +1,14 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 
-
-#include "server.hpp"
 #include "Request.hpp"
+#include "Status.hpp"
+#include "Config.hpp"
 
-class Status;
+class Config;
+
+extern Config conf; //default conf
 
 class Response
 {
