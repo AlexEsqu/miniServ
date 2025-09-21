@@ -12,18 +12,20 @@ Response::Response()
 }
 
 Response::Response(Request &req)
-	: _content("")
+	: _statusNum(200)
+	, _content("")
+	, _requestedFileName(req.getRequestedURL())
 	, _request(req)
-	, _requestedFileName(_request.getRequestedURL())
-	, _statusNum(200)
 {
+	setUrl(_requestedFileName);
 }
 
 Response::Response(Request &req, int status)
-	: _content("")
-	, _request(req)
+	: _statusNum(status)
+	, _content("")
 	, _requestedFileName(_request.getRequestedURL())
-	, _statusNum(status)
+	, _request(req)
+
 {
 	if (status >= 400)
 	{
@@ -84,35 +86,16 @@ void Response::setContentLength(int length)
 
 void Response::setContent(std::string content)
 {
-	if (content.empty())
-	{
-		std::ifstream input(_requestedFileName.c_str()); // opening the file as the content for the response
-		std::stringstream content;
-
-		if (!input.is_open() || is_directory(_requestedFileName.c_str()))
-		{
-			std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
-			Response::setStatusNum(404);
-			Response::setHTTPResponse();
-			return;
-		}
-		content << input.rdbuf();
-		_content = content.str();
-	}
-	else
-	{
-		_content = content;
-	}
-	Response::setHTTPResponse();
+	_content = content;
 }
 
 void Response::setUrl(std::string url)
 {
 	if (url == "./")
 		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + conf.getRoutes(0)->getDefaultFiles()[0];
-	else
-		this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + url;
-	std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
+	// else
+	// 	this->_requestedFileName = conf.getRoutes(0)->getRootDirectory() + url;
+	std::cout << GREEN << _requestedFileName << "= " << url << STOP_COLOR << std::endl;
 }
 
 void Response::setResponse(std::string response)
@@ -188,23 +171,4 @@ std::string Response::createErrorPageContent(const Status &num)
 	}
 	inputErrorFile.close();
 	return (outputString.str());
-}
-
-int is_directory(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISDIR(path_stat.st_mode);
-}
-
-void Response::testFilename()
-{
-	Status status;
-	std::ifstream input(this->_requestedFileName.c_str()); // opening the file as the content for the response
-	std::stringstream content;
-	if (!input.is_open())
-	{
-		status.setStatusCode(404);
-		std::cerr << RED << status << STOP_COLOR << std::endl;
-	}
 }

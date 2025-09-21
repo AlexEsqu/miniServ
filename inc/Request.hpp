@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include "readability.hpp"
-#include "EnvironmentBuilder.hpp"
 
 class Request;
 

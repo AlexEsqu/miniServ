@@ -26,6 +26,8 @@
 # include "readability.hpp"
 # include "Config.hpp"
 # include "Route.hpp"
+# include "PHPExecutor.hpp"
+# include "ContentFetcher.hpp"
 # include "HTTPError.hpp"
 
 class Config;

@@ -4,6 +4,9 @@ Config conf;
 
 void listeningLoop(Sockette &ListenerSocket)
 {
+	ContentFetcher	cf;
+	cf.addExecutor(new PHPExecutor());
+
 	while (1)
 	{
 		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
@@ -24,14 +27,14 @@ void listeningLoop(Sockette &ListenerSocket)
 
 			// if CGI needed
 			// 	response.setContent(execPHPwithFork(decodedRequest, requestedURL));
-
+			cf.fillContent(response);
 
 			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
 			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
 		}
 
-		catch ( Request::HTTPError &e )
+		catch ( HTTPError &e )
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
 			std::cout << "response is [" << e.getErrorPage() << "\n";

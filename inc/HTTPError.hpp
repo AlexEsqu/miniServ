@@ -3,7 +3,6 @@
 #include <string>
 #include <exception>
 
-#include "Request.hpp"
 #include "Response.hpp"
 
 class HTTPError : public std::exception

@@ -2,25 +2,26 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <string>
 #include <cstring>
 
 #include "Environment.hpp"
-
-class Request;
+#include "Request.hpp"
 
 class EnvironmentBuilder
 {
 
 private:
 
-	std::map<std::string, std::string>	_requestEnvMap; //key : value
+	std::map<std::string, std::string>	_envAsMap; //key : value
+	Request								_request;
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	EnvironmentBuilder();
-	EnvironmentBuilder(const EnvironmentBuilder& copy);
+	EnvironmentBuilder(Request& req);
+	EnvironmentBuilder(const EnvironmentBuilder&);
 
 	//----------------- DESTRUCTOR -----------------------//
 
@@ -28,22 +29,21 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	EnvironmentBuilder& operator=(const EnvironmentBuilder& other);
+	EnvironmentBuilder&	operator=(const EnvironmentBuilder&);
 
 	//--------------------- SETTERS ----------------------//
 
-	void		cutFormatAddToEnv(std::string& keyValueString);
 	void		setAsEnv(const std::string& key, const std::string& value);
-	void		setAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
-	void		setupCGIEnvironment(const Request& request);
 
 	//---------------------- GETTERS ---------------------//
 
-	Environment	getPHPEnv();
-	// Environment	getPythonEnv();
-	// Environment	getEnvAsString();
 	std::string	getSpecificEnv(std::string& key);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
+
+	std::string	formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
+	std::string	formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
+	void		addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
+	Environment	generatePHPEnv();
 
 };

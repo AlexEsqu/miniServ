@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+
+
 #include "server.hpp"
 #include "Request.hpp"
 
@@ -27,9 +29,9 @@ public:
 	//----------------- CONSTRUCTORS ---------------------//
 
 	Response();
-	Response(Request &req);
-	Response(Request &req, int status);
-	Response(const Response &copy);
+	Response(Request& req);
+	Response(Request& req, int status);
+	Response(const Response& copy);
 
 	//----------------- DESTRUCTOR -----------------------//
 
@@ -54,10 +56,10 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	Response		&operator=(const Response &other);
+	Response		&operator=(const Response& other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	std::string		createErrorPageContent(const Status &num);
+	std::string		createErrorPageContent(const Status& num);
 	void			testFilename();
 };
