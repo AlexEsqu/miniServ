@@ -28,6 +28,23 @@ PHPExecutor& PHPExecutor::operator=(const PHPExecutor&)
 
 //---------------- MEMBER FUNCTION -------------------//
 
+void	PHPExecutor::readResultIntoContent(Response& response, int fd)
+{
+	std::string	s = "";
+
+	char	buff;
+	while (read(fd, &buff, 1) > 0)
+	{
+		if (buff != 0)
+			s.push_back(buff);
+	}
+	#ifdef DEBUG
+		std::cout << "Pipe read was : [" << s << "]\n";
+	#endif
+
+	response.setContent(s);
+}
+
 std::vector<std::string>	PHPExecutor::generatePHPEnvStrVec(Response& response)
 {
 	std::vector<std::string>	envAsStrVec;
@@ -145,10 +162,6 @@ void	PHPExecutor::executeFile(Response& response)
 	int	fork_pid;
 	int	pipefd[2];
 	int	exit_code = 0;
-	std::string	s = "";
-
-	if (access(response.getRoutedURL().c_str(), O_RDONLY) != 0)
-		return;
 
 	if (pipe(pipefd) != 0)
 		return;
@@ -161,18 +174,10 @@ void	PHPExecutor::executeFile(Response& response)
 
 	else {
 		close(pipefd[WRITE]);
-
-		char	buff;
-		while (read(pipefd[READ], &buff, 1) > 0)
-		{
-			if (buff != 0)
-				s.push_back(buff);
-		}
-
-		std::cout << "Pipe read was : [" << s << "]\n";
-		response.setContent(s);
+		readResultIntoContent(response, pipefd[READ]);
 		close(pipefd[READ]);
 	}
+
 	waitpid(fork_pid, &exit_code, 0);
 	exit_code = WEXITSTATUS(exit_code);
 }

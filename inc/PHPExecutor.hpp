@@ -14,6 +14,7 @@ private:
 	std::string	formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
 	void		addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
 	std::vector<std::string>	generatePHPEnvStrVec(Response& response);
+	void		readResultIntoContent(Response& response, int fd);
 
 	std::vector<const char*>	buildArgv(const char* program, const char* flag, const std::string& filePath);
 	std::vector<const char*>	buildEnv(Response& response);
