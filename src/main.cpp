@@ -6,6 +6,7 @@ void listeningLoop(Sockette &ListenerSocket)
 {
 	ContentFetcher	cf;
 	cf.addExecutor(new PHPExecutor());
+	cf.addExecutor(new PythonExecutor());
 
 	while (1)
 	{
