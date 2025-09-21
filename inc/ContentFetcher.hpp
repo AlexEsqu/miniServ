@@ -4,7 +4,6 @@
 #include <sys/stat.h>
 
 #include "Response.hpp"
-#include "EnvironmentBuilder.hpp"
 #include "IExecutor.hpp"
 
 class ContentFetcher

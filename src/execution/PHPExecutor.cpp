@@ -28,6 +28,77 @@ PHPExecutor& PHPExecutor::operator=(const PHPExecutor&)
 
 //---------------- MEMBER FUNCTION -------------------//
 
+std::vector<std::string>	PHPExecutor::generatePHPEnvStrVec(Response& response)
+{
+	std::vector<std::string>	envAsStrVec;
+
+	addCGIEnvironment(envAsStrVec, response.getRequest());
+
+	std::map<std::string, std::string>::const_iterator item;
+	for (item = response.getRequest().getAdditionalHeaderInfo().begin();
+		item != response.getRequest().getAdditionalHeaderInfo().end(); item++)
+	{
+		envAsStrVec.push_back(formatAsHTTPVariable(item->first, item->second));
+	}
+
+	return envAsStrVec;
+}
+
+std::string	PHPExecutor::formatAsHTTPVariable(const std::string& key, const std::string& value)
+{
+	std::string	formattedEnvKeyValue = "";
+
+	// Replace hyphens with underscores and convert to uppercase
+	std::string	formattedKey = key;
+	for (size_t i = 0; i < key.length(); ++i) {
+		if (key[i] == '-' || key[i] == ' ') {
+			formattedKey[i] = '_';
+		}
+	}
+	strToUpper(formattedKey);
+
+	// Convert HTTP headers to CGI format: HTTP_HEADER_NAME
+	if (formattedKey == "CONTENT_TYPE" || formattedKey == "CONTENT_LENGTH")
+		formattedEnvKeyValue = formattedKey + "=" + value;
+	else
+		formattedEnvKeyValue = "HTTP_" + formattedKey + "=" + value;
+
+	return (formattedEnvKeyValue);
+}
+
+std::string	PHPExecutor::formatKeyValueIntoSingleString(const std::string& key, const std::string& value)
+{
+	std::string	formattedEnvKeyValue = key + "=" + value;
+	return formattedEnvKeyValue;
+}
+
+void PHPExecutor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request)
+{
+	// Standard CGI variables
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethod()));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_URI", request.getRequestedURL()));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PROTOCOL", request.getProtocol()));
+
+	// Server information
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", "localhost"));		// or from config
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
+}
+
+std::vector<const char*>	PHPExecutor::buildEnv(Response& response)
+{
+	std::vector<std::string>	envAsStr = generatePHPEnvStrVec(response);
+
+	std::vector<const char*>	env;
+	env.reserve(envAsStr.size() + 1);
+	for (size_t i = 0; i != envAsStr.size(); i++)
+	{
+		env.push_back(envAsStr[i].c_str());
+	}
+	env.push_back(NULL);
+
+	return env;
+}
+
 std::vector<const char*> PHPExecutor::buildArgv(const char* program, const char* flag, const std::string& filePath)
 {
 	std::vector<const char*> argv;
@@ -35,15 +106,12 @@ std::vector<const char*> PHPExecutor::buildArgv(const char* program, const char*
 	argv.push_back(program);
 	argv.push_back(flag);
 	argv.push_back(filePath.c_str());
-	// for (const std::string& arg : args) {
-	// 	argv.push_back(arg.c_str());
-	// }
 	argv.push_back(NULL);
 	return argv;
 }
 
 
-void	PHPExecutor::execFileWithFork(Response& Response, const std::string& fileToExecPath, int* pipefd)
+void	PHPExecutor::execFileWithFork(Response& response, const std::string& fileToExecPath, int* pipefd)
 {
 	const char*		program = "/usr/bin/php";
 	const char*		flag = "-f";
@@ -60,18 +128,17 @@ void	PHPExecutor::execFileWithFork(Response& Response, const std::string& fileTo
 
 	// assemble into an execve approved array of char*, add EOF at end
 	std::vector<const char*> argv(buildArgv(program, flag, fileToExecPath));
+	std::vector<const char*> env(buildEnv(response));
 
-	EnvironmentBuilder	EnvironmentBuilder(Response.getRequest());
-	Environment			env = EnvironmentBuilder.generatePHPEnv();
+	execve(program, (char**)argv.data(), (char**)env.data());
 
-	execve(program, (char* const*)argv.data(), env.getEnv());
-
+	// error handling
 	perror("execve");
+
 	// clean up
 
 	exit(-1);
 }
-
 
 void	PHPExecutor::executeFile(Response& response)
 {
@@ -106,9 +173,7 @@ void	PHPExecutor::executeFile(Response& response)
 		response.setContent(s);
 		close(pipefd[READ]);
 	}
-	std::cerr << ERROR_FORMAT("out of reading loop\n");
 	waitpid(fork_pid, &exit_code, 0);
-	std::cerr << ERROR_FORMAT("fork waited\n");
 	exit_code = WEXITSTATUS(exit_code);
 }
 
