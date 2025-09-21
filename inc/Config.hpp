@@ -1,7 +1,12 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <sstream>
+#include <fstream>
+
 #include "Route.hpp"
+#include "readability.hpp"
+
 class Route;
 
 class Config
@@ -38,4 +43,7 @@ public:
 	unsigned int getPort() const;
 	unsigned int getMaxSizeClientRequestBody() const;
 	const Route *getRoutes(int index) const;
+
+	Route *getRootMatchForRequestedFile(std::string &requestedFile) const;
+
 };

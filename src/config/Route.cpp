@@ -23,7 +23,29 @@ Route::Route()
 	setIsPostAllowed(false);
 	setIsDeleteAllowed(false);
 
+	#ifdef DEBUG
+		std::cout << "Route Constructor called" << std::endl;
+	#endif
+}
 
+Route::Route(std::string root)
+{
+	setRootDirectory(root);
+	std::vector<std::string> defaultFiles;
+	defaultFiles.push_back("index.html");
+	defaultFiles.push_back("index.php");
+	setDefaultFiles(defaultFiles);
+
+
+	std::vector<std::string> allowedCGI;
+	allowedCGI.push_back(".php");
+	allowedCGI.push_back(".py");
+	setAllowedCGI(allowedCGI);
+
+	setUploadDirectory("/pages/upload/");
+	setIsGetAllowed(true);
+	setIsPostAllowed(false);
+	setIsDeleteAllowed(false);
 
 	#ifdef DEBUG
 		std::cout << "Route Constructor called" << std::endl;
