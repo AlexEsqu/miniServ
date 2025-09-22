@@ -101,7 +101,7 @@ void	Request::setRequestLine(std::string &requestLine)
 	if (splitRequestLine.size() != 3)
 		throw badSyntax();
 	setMethod(trim(splitRequestLine[0]));
-	setURI(trim(splitRequestLine[1].insert(0, ".")));
+	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
 }
 

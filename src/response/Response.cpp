@@ -91,7 +91,6 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	url = url.substr(1); //rm ./
 	std::string root = conf.getRootMatchForRequestedFile(url)->getRootDirectory();
 	if (url == "/")
 		this->_requestedFileName = root + conf.getRoutes(0)->getDefaultFiles()[0];
