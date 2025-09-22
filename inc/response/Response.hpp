@@ -4,11 +4,11 @@
 
 #include "Request.hpp"
 #include "Status.hpp"
-#include "Config.hpp"
+#include "ServerConf.hpp"
 
-class Config;
+class ServerConf;
 
-extern Config conf; //default conf
+extern ServerConf conf; //default conf
 
 class Response
 {

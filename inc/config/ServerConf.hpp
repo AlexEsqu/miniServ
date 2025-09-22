@@ -9,7 +9,7 @@
 
 class Route;
 
-class Config
+class ServerConf
 {
 
 private:
@@ -25,17 +25,17 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Config();
-	Config(std::string &configFilePath);
-	Config(const Config &copy);
+	ServerConf();
+	ServerConf(std::string &configFilePath);
+	ServerConf(const ServerConf &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
 
-	~Config();
+	~ServerConf();
 
 	//------------------- OPERATORS ----------------------//
 
-	Config &operator=(const Config &other);
+	ServerConf &operator=(const ServerConf &other);
 
 
 	//--------------- MEMBER FUNCTIONS -------------------//

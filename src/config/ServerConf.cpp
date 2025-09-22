@@ -1,39 +1,39 @@
-#include "Config.hpp"
+#include "ServerConf.hpp"
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-Config::Config() : _port(8080), _maxSizeClientRequestBody(__INT_MAX__)
+ServerConf::ServerConf() : _port(8080), _maxSizeClientRequestBody(__INT_MAX__)
 {
 	_routes.push_back(new Route("./pages/"));
 	_routes.push_back(new Route("./pages/img/"));
 
 #ifdef DEBUG
-	std::cout << "Config Constructor called" << std::endl;
+	std::cout << "ServerConf Constructor called" << std::endl;
 #endif
 }
 
-Config::Config(const Config &copy)
+ServerConf::ServerConf(const ServerConf &copy)
 {
 #ifdef DEBUG
-	std::cout << "Config copy Constructor called" << std::endl;
+	std::cout << "ServerConf copy Constructor called" << std::endl;
 #endif
 	*this = copy;
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
-Config::~Config()
+ServerConf::~ServerConf()
 {
 	for (std::vector<Route*>::iterator it = _routes.begin(); it != _routes.end(); it++)
 		delete *it;
 #ifdef DEBUG
-	std::cout << "Config Destructor called" << std::endl;
+	std::cout << "ServerConf Destructor called" << std::endl;
 #endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
 
-Config &Config::operator=(const Config &other)
+ServerConf &ServerConf::operator=(const ServerConf &other)
 {
 	if (this != &other)
 	{
@@ -47,17 +47,17 @@ Config &Config::operator=(const Config &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
-unsigned int Config::getPort() const
+unsigned int ServerConf::getPort() const
 {
 	return (this->_port);
 }
 
-unsigned int Config::getMaxSizeClientRequestBody() const
+unsigned int ServerConf::getMaxSizeClientRequestBody() const
 {
 	return (this->_maxSizeClientRequestBody);
 }
 
-const Route *Config::getRoutes(int index) const
+const Route *ServerConf::getRoutes(int index) const
 {
 	return (this->_routes[index]);
 }
@@ -78,7 +78,7 @@ bool doesFileExist(std::string &requestedFile)
 	return (true);
 }
 
-Route *Config::getRootMatchForRequestedFile(std::string &requestedFile) const
+Route *ServerConf::getRootMatchForRequestedFile(std::string &requestedFile) const
 {
 	std::vector<Route *>::const_iterator it;
 	std::string path;

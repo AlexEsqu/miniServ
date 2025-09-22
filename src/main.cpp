@@ -1,6 +1,6 @@
 #include "server.hpp"
 
-Config conf;
+ServerConf conf;
 
 void listeningLoop(Sockette &ListenerSocket)
 {
