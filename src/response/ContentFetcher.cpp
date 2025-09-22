@@ -59,9 +59,9 @@ void ContentFetcher::executeIfCGI(Response& response)
 		if(executors[i]->canExecuteFile(response))
 			return executors[i]->executeFile(response);
 	}
-
-	return (serveStatic(response));
+	
 	std::cout << CGI_FORMAT("NO CGI APPLICABLE") << std::endl;
+	return (serveStatic(response));
 }
 
 void	ContentFetcher::addExecutor(Executor* executor)
