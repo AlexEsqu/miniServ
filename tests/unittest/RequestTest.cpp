@@ -264,3 +264,17 @@ TEST_CASE("Testing : Environment Builder is able to return Environement") {
 	}
 
 }
+
+
+TEST_CASE("Testing : Config Parser is able to parse a config file") {
+
+	SUBCASE("Config File can open a file") {
+
+		std::string configFilePath = "./tests/nginx/conf/nginx.conf";
+
+
+		CHECK(foundNull == true);
+
+	}
+
+}
