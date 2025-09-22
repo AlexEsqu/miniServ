@@ -84,31 +84,6 @@ void	PHPExecutor::execFileWithFork(Response& response, const std::string& fileTo
 	exit(-1);
 }
 
-void	PHPExecutor::executeFile(Response& response)
-{
-	int	fork_pid;
-	int	pipefd[2];
-	int	exit_code = 0;
-
-	if (pipe(pipefd) != 0)
-		return;
-	fork_pid = fork();
-	if (fork_pid == -1)
-		return;
-
-	if (fork_pid == 0)
-		execFileWithFork(response, response.getRoutedURL(), pipefd);
-
-	else {
-		close(pipefd[WRITE]);
-		readResultIntoContent(response, pipefd[READ]);
-		close(pipefd[READ]);
-	}
-
-	waitpid(fork_pid, &exit_code, 0);
-	exit_code = WEXITSTATUS(exit_code);
-}
-
 bool	PHPExecutor::canExecuteFile(Response& response)
 {
 	const char*	allowedExtension = ".php";

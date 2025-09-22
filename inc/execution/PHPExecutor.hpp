@@ -29,7 +29,6 @@ public:
 
 	//--------------- MEMBER FUNCTION --------------------//
 
-	void	executeFile(Response& response);
 	bool	canExecuteFile(Response& response);
 
 };

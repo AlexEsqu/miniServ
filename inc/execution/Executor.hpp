@@ -40,20 +40,24 @@ public:
 
 	//-------------- MEMBER FUNCTIONS --------------------//
 
-	// read pipe, put into response content
-	
-	void		readResultIntoContent(Response& response, int fd);
+	// create a fork to execute file into a pipe
 
-	// create env
+	void			executeFile(Response& response);
+
+	// create custom env using CGI to be used when executing the file
 
 	std::string	formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
 	std::string	formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
 	void		addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
 	std::vector<std::string>	generateEnvStrVec(Response& response);
 
+	// read result from other end of pipe, put it into response content
+
+	void		readResultIntoContent(Response& response, int fd);
+
 	//-------------- ABSTRACT FUNCTIONS --------------------//
 
-	virtual void	executeFile(Response& response) = 0;
+	virtual void	execFileWithFork(Response& response, const std::string& filePath, int* pipefd) = 0;
 	virtual bool	canExecuteFile(Response& response) = 0;
 
 };

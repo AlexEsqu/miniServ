@@ -104,3 +104,28 @@ void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Req
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", "localhost"));		// or from config
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
 }
+
+void	Executor::executeFile(Response& response)
+{
+	int	fork_pid;
+	int	pipefd[2];
+	int	exit_code = 0;
+
+	if (pipe(pipefd) != 0)
+		return;
+	fork_pid = fork();
+	if (fork_pid == -1)
+		return;
+
+	if (fork_pid == 0)
+		execFileWithFork(response, response.getRoutedURL(), pipefd);
+
+	else {
+		close(pipefd[WRITE]);
+		readResultIntoContent(response, pipefd[READ]);
+		close(pipefd[READ]);
+	}
+
+	waitpid(fork_pid, &exit_code, 0);
+	exit_code = WEXITSTATUS(exit_code);
+}

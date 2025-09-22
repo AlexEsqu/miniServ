@@ -26,8 +26,7 @@ public:
 	PythonExecutor&	operator=(const PythonExecutor&);
 
 	//--------------- MEMBER FUNCTION --------------------//
-
-	void	executeFile(Response& response);
+	
 	bool	canExecuteFile(Response& response);
 
 };
