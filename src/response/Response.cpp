@@ -23,7 +23,7 @@ Response::Response(Request &req)
 Response::Response(Request &req, int status)
 	: _statusNum(status)
 	, _content("")
-	, _requestedFileName(_request.getRequestedURL())
+	, _requestedFileName(req.getRequestedURL())
 	, _request(req)
 
 {
