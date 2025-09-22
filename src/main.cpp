@@ -48,8 +48,6 @@ void listeningLoop(Sockette &ListenerSocket)
 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
 			std::cerr << e.what() << "\n";
 		}
-
-
 	}
 }
 

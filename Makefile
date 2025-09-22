@@ -16,8 +16,6 @@ DIR_ENCOD			=	response
 DIR_DECOD			=	request
 DIR_PARS			=	parsing
 DIR_EXEC			=	execution
-DIR_FILE			=	fileserv
-DIR_CLAS			=	classes
 DIR_POLL			=	polling
 DIR_CONF			=	config
 DIR_SIG				=	signal
@@ -25,12 +23,10 @@ DIR_SIG				=	signal
 #----- SOURCE FILES -----------------------------------------------------------#
 
 FUNC_ERR			=	HTTPError.cpp
-FUNC_ENCOD			=	Response.cpp
+FUNC_ENCOD			=	Response.cpp Status.cpp ContentFetcher.cpp
 FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp
-FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp ContentFetcher.cpp
-FUNC_FILE			=	fileserv.cpp
-FUNC_CLAS			=	Status.cpp
+FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
 FUNC_CONF			=	Config.cpp Route.cpp
 FUNC_POLL			=	Sockette.cpp SocketteAnswer.cpp SocketteListen.cpp
 FUNC_SIG			=	signal.cpp
@@ -40,22 +36,21 @@ FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_DECOD)/, $(FUNC_DECOD)) \
 						$(addprefix $(DIR_PARS)/, $(FUNC_PARS)) \
 						$(addprefix $(DIR_EXEC)/, $(FUNC_EXEC)) \
-						$(addprefix $(DIR_FILE)/, $(FUNC_FILE)) \
-						$(addprefix $(DIR_CLAS)/, $(FUNC_CLAS)) \
 						$(addprefix $(DIR_POLL)/, $(FUNC_POLL)) \
 						$(addprefix $(DIR_SIG)/, $(FUNC_SIG)) \
 						$(addprefix $(DIR_CONF)/, $(FUNC_CONF)) \
 						main.cpp
 
-HEAD				=	server.hpp
+DIRS				=	$(DIR_ERR) $(DIR_ENCOD) $(DIR_DECOD) $(DIR_PARS) \
+						$(DIR_EXEC) $(DIR_POLL) $(DIR_SIG) $(DIR_CONF)
 
 SRC					=	$(addprefix $(SRC_DIR)/, $(FUNC))
 
-HEADER				=	$(addprefix $(INC_DIR)/, $(HEAD))
+HEADERS				=	$(addprefix $(INC_DIR)/, $(DIRS))
 
 #----- COMPILATION VARIABLES --------------------------------------------------#
 
-INC					=	-I$(INC_DIR)
+INC					=	$(addprefix -I, $(HEADERS)) -Iinc/
 
 OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_ENCOD) \
@@ -63,13 +58,10 @@ OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_ERR) \
 						$(OBJ_DIR)/$(DIR_EXEC) \
 						$(OBJ_DIR)/$(DIR_PARS) \
-						$(OBJ_DIR)/$(DIR_CLAS) \
-						$(OBJ_DIR)/$(DIR_FILE) \
 						$(OBJ_DIR)/$(DIR_POLL) \
 						$(OBJ_DIR)/$(DIR_SIG) \
 						$(OBJ_DIR)/$(DIR_HAND) \
 						$(OBJ_DIR)/$(DIR_CONF)
-
 
 OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
@@ -145,9 +137,9 @@ utest:
 #		Debug																   #
 # **************************************************************************** #
 
-debug:				$(OBJ_DIRS) $(OBJ)
+debug:
 					@echo "Compiling with debug flag"
-					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(SRC)
+					$(CC) $(FLAGS) -g $(HEADER) -o $(NAME) $(SRC)
 
 verbose:			$(OBJ_DIRS) $(OBJ)
 					@echo "Compiling with additional logging info"
