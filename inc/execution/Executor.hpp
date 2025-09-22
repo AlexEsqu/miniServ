@@ -40,8 +40,13 @@ public:
 
 	//-------------- MEMBER FUNCTIONS --------------------//
 
-	std::string	formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
+	// read pipe, put into response content
+	
 	void		readResultIntoContent(Response& response, int fd);
+
+	// create env
+
+	std::string	formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
 	std::string	formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
 	void		addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
 	std::vector<std::string>	generateEnvStrVec(Response& response);
