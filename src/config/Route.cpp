@@ -4,7 +4,6 @@
 
 Route::Route()
 {
-	
 	setRootDirectory("./pages/");
 
 	std::vector<std::string> defaultFiles;
@@ -54,10 +53,19 @@ Route::Route(std::string root)
 
 Route::Route(const Route &copy)
 {
+
+	this->_rootDirectory = copy._rootDirectory;
+	this->_defaultFiles = copy._defaultFiles;
+	this->_directoryListing = copy._directoryListing;
+	this->_allowedCGI = copy._allowedCGI;
+	this->_uploadDirectory = copy._uploadDirectory;
+	this->_isGetAllowed = copy._isGetAllowed;
+	this->_isPostAllowed = copy._isPostAllowed;
+	this->_isDeleteAllowed = copy._isDeleteAllowed;
+	
 	#ifdef DEBUG
 		std::cout << "Route copy Constructor called" << std::endl;
 	#endif
-	*this = copy;
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//

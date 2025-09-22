@@ -1,8 +1,7 @@
 #include "server.hpp"
 
-ServerConf conf;
 
-void listeningLoop(Sockette &ListenerSocket)
+void listeningLoop(ServerConf &conf, Sockette &ListenerSocket)
 {
 	ContentFetcher	cf;
 	cf.addExecutor(new PHPExecutor());
@@ -14,16 +13,15 @@ void listeningLoop(Sockette &ListenerSocket)
 
 		// create a socket to receive incoming communication
 		SocketteAnswer AnsweringSocket(ListenerSocket);
-
 		try {
 			// reading the request into the Sockette buffer
 			AnsweringSocket.readRequest();
 
 			// decoding the buffer into a Request object
-			Request decodedRequest(AnsweringSocket.getRequest());
+			Request decodedRequest(conf, AnsweringSocket.getRequest());
 
 			// creating a Response handling request according to configured routes
-			Response response(decodedRequest);
+			Response response(conf, decodedRequest);
 
 
 			// if CGI needed
@@ -53,6 +51,7 @@ void listeningLoop(Sockette &ListenerSocket)
 
 int main()
 {
+	ServerConf conf;
 	// reading config and setting up routes
 	// TO DO
 
@@ -62,7 +61,7 @@ int main()
 	// creating a socket, binding it to an IP address and listening
 	SocketteListen ListenerSocket(conf.getPort());
 
-	listeningLoop(ListenerSocket);
+	listeningLoop(conf, ListenerSocket);
 	return 0;
 }
 

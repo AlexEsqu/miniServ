@@ -14,20 +14,23 @@ ServerConf::ServerConf() : _port(8080), _maxSizeClientRequestBody(__INT_MAX__)
 
 ServerConf::ServerConf(const ServerConf &copy)
 {
+
+	this->_port = copy._port;
+	this->_maxSizeClientRequestBody = copy._maxSizeClientRequestBody;
+	this->_routes = copy._routes;
 #ifdef DEBUG
 	std::cout << "ServerConf copy Constructor called" << std::endl;
 #endif
-	*this = copy;
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 ServerConf::~ServerConf()
 {
-	for (std::vector<Route*>::iterator it = _routes.begin(); it != _routes.end(); it++)
-		delete *it;
+	_routes.erase(_routes.begin(), _routes.end());
 #ifdef DEBUG
-	std::cout << "ServerConf Destructor called" << std::endl;
+	std::cout
+		<< "ServerConf Destructor called" << std::endl;
 #endif
 }
 
@@ -41,7 +44,6 @@ ServerConf &ServerConf::operator=(const ServerConf &other)
 		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
 		// ...
 	}
-	return *this;
 	return (*this);
 }
 
