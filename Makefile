@@ -46,11 +46,13 @@ DIRS				=	$(DIR_ERR) $(DIR_ENCOD) $(DIR_DECOD) $(DIR_PARS) \
 
 SRC					=	$(addprefix $(SRC_DIR)/, $(FUNC))
 
-HEADERS				=	$(addprefix $(INC_DIR)/, $(DIRS))
+#----- HEADER FILES -----------------------------------------------------------#
+
+HEAD_DIR			=	$(addprefix $(INC_DIR)/, $(DIRS))
 
 #----- COMPILATION VARIABLES --------------------------------------------------#
 
-INC					=	$(addprefix -I, $(HEADERS)) -Iinc/
+INC					=	$(addprefix -I, $(HEAD_DIR)) -I$(INC_DIR)
 
 OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_ENCOD) \
@@ -139,9 +141,9 @@ utest:
 
 debug:
 					@echo "Compiling with debug flag"
-					$(CC) $(FLAGS) -g $(HEADER) -o $(NAME) $(SRC)
+					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(SRC)
 
-verbose:			$(OBJ_DIRS) $(OBJ)
+verbose:
 					@echo "Compiling with additional logging info"
 					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC)
 
