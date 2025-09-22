@@ -43,7 +43,7 @@ ConfigParser& ConfigParser::operator=(const ConfigParser& other)
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 
-void	parseServerBlock(std::vector<Config*> dest, std::ifstream& configFileStream, std::string line)
+void	parseServerBlock(std::vector<ServerConf*> dest, std::ifstream& configFileStream, std::string line)
 {
 	if (line.find("server") != std::string::npos)
 	{
@@ -52,13 +52,13 @@ void	parseServerBlock(std::vector<Config*> dest, std::ifstream& configFileStream
 }
 
 
-std::vector<Config*>	ConfigParser::readConfigs(std::string& configFilePath)
+std::vector<ServerConf*>	ConfigParser::readConfigs(std::string& configFilePath)
 {
 	std::ifstream	configFileStream(configFilePath);
 	if (!configFileStream)
 		throw std::runtime_error("Failed to read config file");
 
-	std::vector<Config*>	configs;
+	std::vector<ServerConf*>	configs;
 
 	std::string	line;
 	while (getline(configFileStream, line))

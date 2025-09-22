@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "Config.hpp"
+#include "ServerConf.hpp"
 #include "parsing.hpp"
 
 class ConfigParser
@@ -28,6 +28,6 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	static std::vector<Config*>	readConfigs(std::string& configFilePath);
+	static std::vector<ServerConf*>	readConfigs(std::string& configFilePath);
 
 };
