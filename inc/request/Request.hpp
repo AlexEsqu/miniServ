@@ -22,7 +22,7 @@ private:
 	std::string			_protocol;			// we only support HTTP/1.1
 	std::string			_requestedFileName;	// for example "/home.html"
 	std::map<std::string, std::string>	_additionalHeaderInfo;
-	ServerConf			_conf;
+	ServerConf&			_conf;
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -32,7 +32,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Request(); // empty constructor for testing purposes
+	// Request(); // empty constructor for testing purposes
 	Request(ServerConf& conf, std::string httpRequest);
 	Request(const Request &copy);
 

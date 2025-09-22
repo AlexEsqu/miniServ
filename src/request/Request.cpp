@@ -5,13 +5,13 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-Request::Request()
-	: _fullRequest("")
-{
-#ifdef DEBUG
-	std::cout << "Request Generic Constructor called" << std::endl;
-#endif
-}
+// Request::Request()
+// 	: _fullRequest(""), _conf()
+// {
+// #ifdef DEBUG
+// 	std::cout << "Request Generic Constructor called" << std::endl;
+// #endif
+// }
 
 Request::Request(ServerConf& conf,std::string httpRequest)
 	: _fullRequest(httpRequest),_conf(conf)
@@ -23,6 +23,7 @@ Request::Request(ServerConf& conf,std::string httpRequest)
 }
 
 Request::Request(const Request &copy)
+: _conf(copy._conf)
 {
 #ifdef DEBUG
 	std::cout << "Request copy Constructor called" << std::endl;

@@ -6,10 +6,10 @@
 ///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
-Response::Response()
-{
-	// std::cout << "Response Constructor called" << std::endl;
-}
+// Response::Response()
+// {
+// 	// std::cout << "Response Constructor called" << std::endl;
+// }
 
 Response::Response(ServerConf &conf, Request &req)
 	: _statusNum(200), _content(""), _requestedFileName(req.getRequestedURL()), _request(req),
@@ -30,6 +30,8 @@ Response::Response(ServerConf &conf, Request &req, int status)
 }
 
 Response::Response(const Response &copy)
+	: _request(copy._request)
+	, _conf(copy._conf) 
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
 	*this = copy;
