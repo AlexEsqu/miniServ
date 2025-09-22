@@ -24,6 +24,8 @@ Config::Config(const Config &copy)
 
 Config::~Config()
 {
+	for (std::vector<Route*>::iterator it = _routes.begin(); it != _routes.end(); it++)
+		delete *it;
 #ifdef DEBUG
 	std::cout << "Config Destructor called" << std::endl;
 #endif
@@ -64,7 +66,6 @@ const Route *Config::getRoutes(int index) const
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-
 bool doesFileExist(std::string &requestedFile)
 {
 	std::ifstream input(requestedFile.c_str()); // opening the file as the content for the response
@@ -72,26 +73,24 @@ bool doesFileExist(std::string &requestedFile)
 	if (!input.is_open())
 	{
 		std::cerr << RED << "Could not open file " << requestedFile << STOP_COLOR << std::endl;
-		return(false);
+		return (false);
 	}
-	return(true);
-
+	return (true);
 }
-
 
 Route *Config::getRootMatchForRequestedFile(std::string &requestedFile) const
 {
 	std::vector<Route *>::const_iterator it;
 	std::string path;
-	if (requestedFile[0] == '/') //if the request starts with / the return the first root
-		return(*this->_routes.begin());
+	if (requestedFile[0] == '/') // if the request starts with / the return the first root
+		return (*this->_routes.begin());
 	for (it = this->_routes.begin(); it != this->_routes.end(); it++)
 	{
 		path = (*it)->getRootDirectory() + requestedFile;
 		if (doesFileExist(path) == true)
 		{
 			std::cout << GREEN << "FOUND ROOT " << (*it)->getRootDirectory() << STOP_COLOR << std::endl;
-			return(*it);
+			return (*it);
 		}
 	}
 	std::cout << RED << "ROOT NOT FOUND FOR " << requestedFile << STOP_COLOR << std::endl;
