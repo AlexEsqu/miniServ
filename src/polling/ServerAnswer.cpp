@@ -1,12 +1,12 @@
-#include "SocketteAnswer.hpp"
+#include "ServerAnswer.hpp"
 #include "server.hpp"
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-SocketteAnswer::SocketteAnswer(Sockette &Source)
+ServerAnswer::ServerAnswer(Sockette &Source)
 {
 	#ifdef DEBUG
-		std::cout << "SocketteAnswer Constructor called" << std::endl;
+		std::cout << "ServerAnswer Constructor called" << std::endl;
 	#endif
 
 	int addrlen = sizeof(Source.getSocketAddr());
@@ -28,14 +28,14 @@ SocketteAnswer::SocketteAnswer(Sockette &Source)
 
 //------------------------------ GETTER --------------------------------------//
 
-char	*SocketteAnswer::getRequest()
+char	*ServerAnswer::getRequest()
 {
 	return (_buffer);
 }
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
-void	SocketteAnswer::readRequest()
+void	ServerAnswer::readRequest()
 {
 	int valread = read(getSocketFd(), _buffer, 30000);
 

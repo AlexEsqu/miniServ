@@ -28,7 +28,7 @@ FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
 FUNC_CONF			=	ServerConf.cpp Route.cpp
-FUNC_POLL			=	Sockette.cpp SocketteAnswer.cpp ServerSocket.cpp
+FUNC_POLL			=	Sockette.cpp ServerAnswer.cpp ServerSocket.cpp
 FUNC_SIG			=	signal.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \

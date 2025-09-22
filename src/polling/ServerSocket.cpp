@@ -62,7 +62,7 @@ void			ServerSocket::waitForEvents()
 void			ServerSocket::acceptNewConnection(epoll_event &event)
 {
 	// allocating new acccepting socket to be used
-	SocketteAnswer*	Connecting = new SocketteAnswer(*this);
+	ServerAnswer*	Connecting = new ServerAnswer(*this);
 
 	Connecting->setSocketNonBlocking();
 
@@ -93,7 +93,7 @@ void			ServerSocket::acceptNewConnection(epoll_event &event)
 
 void			ServerSocket::handleExistingConnection(epoll_event &event)
 {
-	SocketteAnswer* Connecting = reinterpret_cast<SocketteAnswer*>(event.data.ptr);
+	ServerAnswer* Connecting = reinterpret_cast<ServerAnswer*>(event.data.ptr);
 
 	std::cout << Connecting->getRequest() << std::endl;
 
