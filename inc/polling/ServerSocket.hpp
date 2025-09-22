@@ -2,9 +2,9 @@
 #include <iostream>
 #include <sys/epoll.h>
 
-#include "SocketteAnswer.hpp"
+#include "ClientSocket.hpp"
 
-class SocketteListen: public Sockette
+class ServerSocket: public Sockette
 {
 
 private:
@@ -18,7 +18,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	SocketteListen(int port);
+	ServerSocket(int port);
 
 	//----------------- DESTRUCTOR -----------------------//
 

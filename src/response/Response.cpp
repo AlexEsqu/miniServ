@@ -6,25 +6,20 @@
 ///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
-Response::Response()
-{
-	// std::cout << "Response Constructor called" << std::endl;
-}
+// Response::Response()
+// {
+// 	// std::cout << "Response Constructor called" << std::endl;
+// }
 
-Response::Response(Request &req)
-	: _statusNum(200)
-	, _content("")
-	, _requestedFileName(req.getRequestedURL())
-	, _request(req)
+Response::Response(ServerConf &conf, Request &req)
+	: _statusNum(200), _content(""), _requestedFileName(req.getRequestedURL()), _request(req),
+	  _conf(conf)
 {
 	setUrl(_requestedFileName);
 }
 
-Response::Response(Request &req, int status)
-	: _statusNum(status)
-	, _content("")
-	, _requestedFileName(req.getRequestedURL())
-	, _request(req)
+Response::Response(ServerConf &conf, Request &req, int status)
+	: _statusNum(status), _content(""), _requestedFileName(req.getRequestedURL()), _request(req), _conf(conf)
 
 {
 	if (status >= 400)
@@ -35,6 +30,8 @@ Response::Response(Request &req, int status)
 }
 
 Response::Response(const Response &copy)
+	: _request(copy._request)
+	, _conf(copy._conf) 
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
 	*this = copy;
@@ -91,9 +88,9 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	std::string root = conf.getRootMatchForRequestedFile(url)->getRootDirectory();
+	std::string root = _conf.getRootMatchForRequestedFile(url)->getRootDirectory();
 	if (url == "/")
-		this->_requestedFileName = root + conf.getRoutes(0)->getDefaultFiles()[0];
+		this->_requestedFileName = root + _conf.getRoutes(0)->getDefaultFiles()[0];
 	else
 		this->_requestedFileName = root + url;
 	// std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
@@ -127,17 +124,17 @@ void Response::setHTTPResponse()
 ///                    GETTERS 			                         //
 ///////////////////////////////////////////////////////////////////
 
-std::string		Response::getHTTPResponse() const
+std::string Response::getHTTPResponse() const
 {
 	return (this->_HTTPResponse);
 }
 
-Request&	Response::getRequest()
+Request &Response::getRequest()
 {
 	return (_request);
 }
 
-std::string	Response::getRoutedURL() const
+std::string Response::getRoutedURL() const
 {
 	return (_requestedFileName);
 }
@@ -149,7 +146,7 @@ std::string	Response::getRoutedURL() const
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = conf.getRoutes(0)->getRootDirectory() + "error.html";
+	std::string errorFile = _conf.getRoutes(0)->getRootDirectory() + "error.html";
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;

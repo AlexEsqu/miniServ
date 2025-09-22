@@ -4,11 +4,7 @@
 
 #include "Request.hpp"
 #include "Status.hpp"
-#include "Config.hpp"
-
-class Config;
-
-extern Config conf; //default conf
+#include "ServerConf.hpp"
 
 class Response
 {
@@ -26,14 +22,15 @@ private:
 	std::string		_HTTPResponse;
 	int				_CGI;
 	Request			_request;
+	ServerConf&		_conf;
 
 public:
+	// Response();
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Response();
-	Response(Request& req);
-	Response(Request& req, int status);
+	Response(ServerConf& conf, Request& req);
+	Response(ServerConf& conf, Request& req, int status);
 	Response(const Response& copy);
 
 	//----------------- DESTRUCTOR -----------------------//

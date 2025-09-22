@@ -27,8 +27,8 @@ FUNC_ENCOD			=	Response.cpp Status.cpp ContentFetcher.cpp
 FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
-FUNC_CONF			=	Config.cpp Route.cpp
-FUNC_POLL			=	Sockette.cpp SocketteAnswer.cpp SocketteListen.cpp
+FUNC_CONF			=	ServerConf.cpp Route.cpp
+FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp
 FUNC_SIG			=	signal.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \

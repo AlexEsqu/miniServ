@@ -2,7 +2,7 @@
 
 HTTPError::HTTPError(Request& req, int status)
 {
-	Response res(req, status);
+	Response res(req.getConf(), req, status);
 
 	_message = res.getHTTPResponse();
 }
