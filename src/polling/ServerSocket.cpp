@@ -1,11 +1,11 @@
-# include "SocketteListen.hpp"
+# include "ServerSocket.hpp"
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-SocketteListen::SocketteListen(int port)
+ServerSocket::ServerSocket(int port)
 {
 	#ifdef DEBUG
-		std::cout << "SocketteListen Constructor called" << std::endl;
+		std::cout << "ServerSocket Constructor called" << std::endl;
 	#endif
 
 	setPort(port);
@@ -36,14 +36,14 @@ SocketteListen::SocketteListen(int port)
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 
-void			SocketteListen::createEpollInstance()
+void			ServerSocket::createEpollInstance()
 {
 	_epollFd = epoll_create(1);
 	if (_epollFd == -1)
 		throw failedEpollCreate();
 }
 
-void			SocketteListen::attachEpollToSocket()
+void			ServerSocket::attachEpollToSocket()
 {
 	_event.events = EPOLLIN;
 	_event.data.fd = getSocketFd();
@@ -52,14 +52,14 @@ void			SocketteListen::attachEpollToSocket()
 	}
 }
 
-void			SocketteListen::waitForEvents()
+void			ServerSocket::waitForEvents()
 {
 	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);
 	if (_eventsReadyForProcess == -1)
 		throw failedEpollWait();
 }
 
-void			SocketteListen::acceptNewConnection(epoll_event &event)
+void			ServerSocket::acceptNewConnection(epoll_event &event)
 {
 	// allocating new acccepting socket to be used
 	SocketteAnswer*	Connecting = new SocketteAnswer(*this);
@@ -91,7 +91,7 @@ void			SocketteListen::acceptNewConnection(epoll_event &event)
 
 }
 
-void			SocketteListen::handleExistingConnection(epoll_event &event)
+void			ServerSocket::handleExistingConnection(epoll_event &event)
 {
 	SocketteAnswer* Connecting = reinterpret_cast<SocketteAnswer*>(event.data.ptr);
 
@@ -104,7 +104,7 @@ void			SocketteListen::handleExistingConnection(epoll_event &event)
 }
 
 
-void			SocketteListen::processEvents()
+void			ServerSocket::processEvents()
 {
 	for (int i = 0; i < _eventsReadyForProcess; ++i) {
 		if (_eventQueue[i].data.fd == getSocketFd()) {
@@ -115,7 +115,7 @@ void			SocketteListen::processEvents()
 	}
 }
 
-void			SocketteListen::launchEpollListenLoop()
+void			ServerSocket::launchEpollListenLoop()
 {
 	createEpollInstance();
 	attachEpollToSocket();
@@ -128,17 +128,17 @@ void			SocketteListen::launchEpollListenLoop()
 
 //--------------------------- EXCEPTIONS ------------------------------------//
 
-const char*		SocketteListen::failedEpollCreate::what() const throw()
+const char*		ServerSocket::failedEpollCreate::what() const throw()
 {
 	return "ERROR: Failed to create epoll instance in call to epoll_create()";
 }
 
-const char*		SocketteListen::failedEpollCtl::what() const throw()
+const char*		ServerSocket::failedEpollCtl::what() const throw()
 {
 	return "ERROR: Failed to modify epoll instance in call to epoll_ctl()";
 }
 
-const char*		SocketteListen::failedEpollWait::what() const throw()
+const char*		ServerSocket::failedEpollWait::what() const throw()
 {
 	return "ERROR: Failed to wait with epoll instance in call to epoll_wait()";
 }

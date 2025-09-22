@@ -59,7 +59,7 @@ int main()
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
 	// creating a socket, binding it to an IP address and listening
-	SocketteListen ListenerSocket(conf.getPort());
+	ServerSocket ListenerSocket(conf.getPort());
 
 	listeningLoop(conf, ListenerSocket);
 	return 0;

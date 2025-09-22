@@ -4,7 +4,7 @@
 
 #include "SocketteAnswer.hpp"
 
-class SocketteListen: public Sockette
+class ServerSocket: public Sockette
 {
 
 private:
@@ -18,7 +18,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	SocketteListen(int port);
+	ServerSocket(int port);
 
 	//----------------- DESTRUCTOR -----------------------//
 
