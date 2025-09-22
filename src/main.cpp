@@ -12,7 +12,7 @@ void listeningLoop(ServerConf &conf, Sockette &ListenerSocket)
 		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
 
 		// create a socket to receive incoming communication
-		ServerAnswer AnsweringSocket(ListenerSocket);
+		ClientSocket AnsweringSocket(ListenerSocket);
 		try {
 			// reading the request into the Sockette buffer
 			AnsweringSocket.readRequest();
