@@ -101,7 +101,7 @@ HTTP_TEST			=	$(TEST_REQ_DIR)/correct.http
 #------ Unit Test -------------------------------------------------------------#
 
 UNIT_TEST_DIR		=	$(TEST_DIR)/unittest
-UNIT_TEST_SRC		=	$(UNIT_TEST_DIR)/RequestTest.cpp
+UNIT_TEST_SRC		=	$(UNIT_TEST_DIR)/*.cpp
 UNIT_TEST_FRAME		=	$(UNIT_TEST_DIR)/doctest/doctest/
 SRC_NO_MAIN			=	$(filter-out $(SRC_DIR)/main.cpp, $(SRC))
 UNIT_TEST_BIN		=	utest_$(NAME)
@@ -134,6 +134,7 @@ $(CCLIENT_NAME):
 
 utest:
 					$(CC) -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
+					./utest_webserv -ni -nv
 
 # **************************************************************************** #
 #		Debug																   #
