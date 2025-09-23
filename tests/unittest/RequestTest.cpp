@@ -1,6 +1,4 @@
-# define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 # include "doctest.h"
-
 # include "server.hpp"
 
 TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
@@ -83,28 +81,6 @@ TEST_CASE("Testing : HTTP Request Class can use config to check if the method is
 		"\r\n";
 
 		CHECK_THROWS_AS(Request request(config, HTTPRequest), forbiddenMethod);
-	}
-
-}
-
-
-
-
-TEST_CASE("Testing : Config Parser is able to parse a config file") {
-
-	SUBCASE("Config Parser can open a file") {
-
-		std::string configFilePath = "./tests/nginx/conf/nginx.conf";
-
-		ConfigParser::readConfigs(configFilePath);
-
-	}
-
-	SUBCASE("Config Parser sets default error if no file is found / it cannot be opened") {
-
-		std::string configFilePath = "./tests/nginx/beep.txt";
-
-		CHECK_THROWS_AS(ConfigParser::readConfigs(configFilePath), std::runtime_error);
 	}
 
 }
