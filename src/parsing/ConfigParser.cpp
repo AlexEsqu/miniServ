@@ -42,14 +42,14 @@ ConfigParser& ConfigParser::operator=(const ConfigParser& other)
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-bool	isClosedCurlyBrace(std::string& line)
+bool	ConfigParser::isClosedCurlyBrace(std::string& line)
 {
 	if (trim(line) == "}")
 		return true;
 	return false;
 }
 
-void	addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string> paramMap)
+void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string>& paramMap)
 {
 	// removes leading/trailing whitespace
 	line = trim(line);
@@ -67,8 +67,8 @@ void	addLineAsServerKeyValue(std::string& line, std::map<std::string, std::strin
 
 		// Remove semicolon from value if present
 		if (!value.empty() && value.back() == ';') {
-			value.pop_back();
-			value = trim(value);
+			value.erase(value.size() - 1);
+			trim(value);
 		}
 
 		paramMap[key] = value;
@@ -76,7 +76,7 @@ void	addLineAsServerKeyValue(std::string& line, std::map<std::string, std::strin
 }
 
 
-ServerConf	parseServerBlock(std::ifstream& configFileStream)
+ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 {
 	std::map<std::string, std::string>	paramMap;
 
@@ -95,6 +95,14 @@ ServerConf	parseServerBlock(std::ifstream& configFileStream)
 		if (line.find("location") != std::string::npos && line.back() == '{') {
 
 			// TO DO : parse location block
+			// for now skipping the block entirely
+			int braceCount = 1;
+			while (getline(configFileStream, line) && braceCount > 0) {
+				if (line.find('{') != std::string::npos) braceCount++;
+				if (line.find('}') != std::string::npos) braceCount--;
+				if (braceCount == 0)
+					break;
+			}
 
 			continue;
 		}
@@ -112,11 +120,13 @@ ServerConf	parseServerBlock(std::ifstream& configFileStream)
 	if (paramMap.find("listen") != paramMap.end())
 		serverConf.setPort(std::atoi(paramMap["listen"].c_str()));
 
-	if (paramMap.find("server_name") != paramMap.end())
-		serverConf.setServerName(paramMap["server_name"]);
+	// if (paramMap.find("server_name") != paramMap.end())
+	// 	serverConf.setServerName(paramMap["server_name"]);
 
 	if (paramMap.find("root") != paramMap.end())
 		serverConf.setRoot(paramMap["root"]);
+
+	return serverConf;
 }
 
 
