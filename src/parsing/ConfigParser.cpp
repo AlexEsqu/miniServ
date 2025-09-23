@@ -42,14 +42,6 @@ ConfigParser& ConfigParser::operator=(const ConfigParser& other)
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-
-bool	isOpenCurlyBrace(std::string& line)
-{
-	if (trim(line) == "{")
-		return true;
-	return false;
-}
-
 bool	isClosedCurlyBrace(std::string& line)
 {
 	if (trim(line) == "}")
@@ -57,35 +49,99 @@ bool	isClosedCurlyBrace(std::string& line)
 	return false;
 }
 
-
-void	parseServerBlock(std::vector<ServerConf*> dest, std::ifstream& configFileStream)
+void	addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string> paramMap)
 {
-	std::string	firstLine;
-	getline(configFileStream, firstLine);
-	if (!isOpenCurlyBrace(firstLine))
-		throw std::runtime_error("Invalid config file");
+	// removes leading/trailing whitespace
+	line = trim(line);
 
-	std::string	line;
-	while (getline(configFileStream, line) && !isClosedCurlyBrace(line))
-	{
+	// skips empty lines
+	if (line.empty())
+		return;
 
+	// find the first space or tab (separator between key and value)
+	size_t pos = line.find_first_of(" \t");
+	if (pos != std::string::npos) {
+		std::string key = line.substr(0, pos);
+		std::string value = line.substr(pos + 1);
+		trim(value);
+
+		// Remove semicolon from value if present
+		if (!value.empty() && value.back() == ';') {
+			value.pop_back();
+			value = trim(value);
+		}
+
+		paramMap[key] = value;
 	}
 }
 
 
-std::vector<ServerConf*>	ConfigParser::readConfigs(std::string& configFilePath)
+ServerConf	parseServerBlock(std::ifstream& configFileStream)
+{
+	std::map<std::string, std::string>	paramMap;
+
+	// goes through the server config block until the closing bracket
+	std::string	line;
+	while (getline(configFileStream, line) && !isClosedCurlyBrace(line))
+	{
+		// Remove whitespace
+		trim(line);
+
+		// ignores empty line and comments
+		if (line.empty() || ltrim(line)[0] == '#')
+			continue;
+
+		// Handle nested blocks (like location blocks)
+		if (line.find("location") != std::string::npos && line.back() == '{') {
+
+			// TO DO : parse location block
+
+			continue;
+		}
+
+		// adds all lines to a map of key setting and value
+		addLineAsServerKeyValue(line, paramMap);
+	}
+
+	// check the server block is closed
+	if (!isClosedCurlyBrace(line))
+		throw std::runtime_error("Invalid config file");
+
+	ServerConf serverConf;
+
+	if (paramMap.find("listen") != paramMap.end())
+		serverConf.setPort(std::atoi(paramMap["listen"].c_str()));
+
+	if (paramMap.find("server_name") != paramMap.end())
+		serverConf.setServerName(paramMap["server_name"]);
+
+	if (paramMap.find("root") != paramMap.end())
+		serverConf.setRoot(paramMap["root"]);
+}
+
+
+std::vector<ServerConf>	ConfigParser::readConfigs(std::string& configFilePath)
 {
 	std::ifstream	configFileStream(configFilePath);
 	if (!configFileStream)
 		throw std::runtime_error("Failed to read config file");
 
-	std::vector<ServerConf*>	configs;
+	std::vector<ServerConf>	configs;
 
 	std::string	line;
 	while (getline(configFileStream, line))
 	{
-		if (ltrim(line).substr(0, 7) == "server")
-			parseServerBlock(configs, configFileStream);
+		line = trim(line);
+
+		// skips comment and empty lines
+		if (line.empty() || line[0] == '#')
+			continue;
+
+		// if a line starts with server and ends with {, initiate parse server block
+		if (line.rfind("server", 0) != std::string::npos && line.back() == '{') {
+			configs.push_back(parseServerBlock(configFileStream));
+		}
 	}
 
+	return configs;
 }

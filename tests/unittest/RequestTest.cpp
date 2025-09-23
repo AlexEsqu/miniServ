@@ -90,15 +90,21 @@ TEST_CASE("Testing : HTTP Request Class can use config to check if the method is
 
 
 
-// TEST_CASE("Testing : Config Parser is able to parse a config file") {
+TEST_CASE("Testing : Config Parser is able to parse a config file") {
 
-// 	SUBCASE("Config File can open a file") {
+	SUBCASE("Config Parser can open a file") {
 
-// 		std::string configFilePath = "./tests/nginx/conf/nginx.conf";
+		std::string configFilePath = "./tests/nginx/conf/nginx.conf";
 
+		ConfigParser::readConfigs(configFilePath);
 
-// 		CHECK(foundNull == true);
+	}
 
-// 	}
+	SUBCASE("Config Parser sets default error if no file is found / it cannot be opened") {
 
-// }
+		std::string configFilePath = "./tests/nginx/beep.txt";
+
+		CHECK_THROWS_AS(ConfigParser::readConfigs(configFilePath), std::runtime_error);
+	}
+
+}

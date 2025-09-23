@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include "ServerConf.hpp"
 #include "parsing.hpp"
@@ -28,6 +29,6 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	static std::vector<ServerConf*>	readConfigs(std::string& configFilePath);
+	static std::vector<ServerConf>	readConfigs(std::string& configFilePath);
 
 };
