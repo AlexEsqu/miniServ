@@ -17,7 +17,7 @@ private:
 
 	unsigned int		_port;
 	unsigned int		_maxSizeClientRequestBody;
-	Route				_root;
+	std::string			_root;
 	std::vector<Route*>	_routes;
 	std::map<std::string, std::string>	_paramMap;
 
@@ -35,24 +35,24 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	ServerConf&		operator=(const ServerConf &other);
+	ServerConf&			operator=(const ServerConf &other);
 
 	//------------------- GETTERS ------------------------//
 
-	unsigned int	getPort() const;
-	unsigned int	getMaxSizeClientRequestBody() const;
-	const Route*	getRoutes(int index) const;
-
+	unsigned int		getPort() const;
+	unsigned int		getMaxSizeClientRequestBody() const;
+	const Route*		getRoutes(int index) const;
+	const std::string&	getRoot() const;
 
 	//------------------- SETTERS ------------------------//
 
-	void			setPort(int portNum);
-	void			setServerName(std::string serverName);
-	void			setRoot(std::string root);
-	void			setParamMap(std::map<std::string, std::string> paramMap);
+	void				setPort(int portNum);
+	void				setServerName(std::string serverName);
+	void				setRoot(std::string root);
+	void				setParamMap(std::map<std::string, std::string> &paramMap);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	Route*			getRootMatchForRequestedFile(std::string &requestedFile) const;
+	Route*				getRootMatchForRequestedFile(std::string &requestedFile) const;
 
 };

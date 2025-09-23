@@ -18,7 +18,18 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 	: _paramMap(paramMap)
 	, _maxSizeClientRequestBody(__INT_MAX__)
 	, _routes(routes)
+	, _port(8080)
 {
+	// Initialize _root from paramMap
+	if (_paramMap.find("root") != _paramMap.end()) {
+		_root = _paramMap["root"];
+	}
+
+	// Initialize _port from paramMap
+	if (_paramMap.find("listen") != _paramMap.end()) {
+		_port = std::atoi(_paramMap["listen"].c_str());
+	}
+
 
 #ifdef DEBUG
 	std::cout << "ServerConf Custom Constructor called" << std::endl;
@@ -27,9 +38,7 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 
 ServerConf::ServerConf(const ServerConf &copy)
 {
-	_port = copy._port;
-	_maxSizeClientRequestBody = copy._maxSizeClientRequestBody;
-	_routes = copy._routes;
+	*this = copy;
 
 #ifdef DEBUG
 	std::cout << "ServerConf copy Constructor called" << std::endl;
@@ -55,26 +64,33 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 	{
 		_port = other._port;
 		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
-		// ...
+		_root = other._root;
+		_paramMap = other._paramMap;
+		_routes = other._routes;
 	}
 	return (*this);
 }
 
 //---------------------------- GUETTERS -------------------------------------//
 
-unsigned int	ServerConf::getPort() const
+unsigned int		ServerConf::getPort() const
 {
 	return (_port);
 }
 
-unsigned int	ServerConf::getMaxSizeClientRequestBody() const
+unsigned int		ServerConf::getMaxSizeClientRequestBody() const
 {
 	return (_maxSizeClientRequestBody);
 }
 
-const Route*	ServerConf::getRoutes(int index) const
+const Route*		ServerConf::getRoutes(int index) const
 {
 	return (_routes[index]);
+}
+
+const std::string&	ServerConf::getRoot() const
+{
+	return (_root);
 }
 
 //---------------------------- SETTERS --------------------------------------//
@@ -86,10 +102,10 @@ void			ServerConf::setPort(int portNum)
 
 void			ServerConf::setRoot(std::string root)
 {
-	_root = Route(root);
+	_root = root;
 }
 
-void			ServerConf::setParamMap(std::map<std::string, std::string> paramMap)
+void			ServerConf::setParamMap(std::map<std::string, std::string>& paramMap)
 {
 	_paramMap = paramMap;
 }
