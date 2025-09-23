@@ -43,9 +43,30 @@ ConfigParser& ConfigParser::operator=(const ConfigParser& other)
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 
-void	parseServerBlock(std::vector<ServerConf*> dest, std::ifstream& configFileStream, std::string line)
+bool	isOpenCurlyBrace(std::string& line)
 {
-	if (line.find("server") != std::string::npos)
+	if (trim(line) == "{")
+		return true;
+	return false;
+}
+
+bool	isClosedCurlyBrace(std::string& line)
+{
+	if (trim(line) == "}")
+		return true;
+	return false;
+}
+
+
+void	parseServerBlock(std::vector<ServerConf*> dest, std::ifstream& configFileStream)
+{
+	std::string	firstLine;
+	getline(configFileStream, firstLine);
+	if (!isOpenCurlyBrace(firstLine))
+		throw std::runtime_error("Invalid config file");
+
+	std::string	line;
+	while (getline(configFileStream, line) && !isClosedCurlyBrace(line))
 	{
 
 	}
@@ -64,7 +85,7 @@ std::vector<ServerConf*>	ConfigParser::readConfigs(std::string& configFilePath)
 	while (getline(configFileStream, line))
 	{
 		if (ltrim(line).substr(0, 7) == "server")
-			parseServerBlock(configs, configFileStream, line);
+			parseServerBlock(configs, configFileStream);
 	}
 
 }
