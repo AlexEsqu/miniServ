@@ -10,7 +10,7 @@ static void createTempConfigFile(const std::string& filename, const std::string&
 	file.close();
 }
 
-TEST_CASE("Testing : ConfigParser utility functions") {
+TEST_CASE("ConfigParser utility functions") {
 
 	SUBCASE("isClosedCurlyBrace function") {
 		std::string closingBrace = "}";
@@ -50,7 +50,7 @@ TEST_CASE("Testing : ConfigParser utility functions") {
 	}
 }
 
-TEST_CASE("Testing : ConfigParser parseServerBlock function") {
+TEST_CASE("ConfigParser parseServerBlock function") {
 
 	SUBCASE("Simple server block parsing") {
 		std::string configContent =
@@ -124,7 +124,7 @@ TEST_CASE("Testing : ConfigParser parseServerBlock function") {
 	}
 }
 
-TEST_CASE("Testing : ConfigParser readConfigs function") {
+TEST_CASE("ConfigParser readConfigs function") {
 
 	SUBCASE("Single server configuration") {
 		createTempConfigFile("test_single_server.conf",
@@ -231,7 +231,7 @@ TEST_CASE("Testing : ConfigParser readConfigs function") {
 	}
 }
 
-TEST_CASE("Testing : ConfigParser edge cases and error handling") {
+TEST_CASE("ConfigParser edge cases and error handling") {
 
 	SUBCASE("Server block without closing brace") {
 		createTempConfigFile("test_no_closing_brace.conf",

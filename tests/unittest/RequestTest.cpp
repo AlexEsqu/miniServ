@@ -1,7 +1,7 @@
 # include "doctest.h"
 # include "server.hpp"
 
-TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
+TEST_CASE("Request constructor extracts correct values") {
 
 	ServerConf	config;
 
@@ -59,7 +59,7 @@ TEST_CASE("Testing : HTTP Request Class can extract the correct values") {
 }
 
 
-TEST_CASE("Testing : HTTP Request Class can use config to check if the method is allowed") {
+TEST_CASE("Request constructor use config to check method") {
 
 	ServerConf	config;
 
