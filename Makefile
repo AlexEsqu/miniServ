@@ -25,7 +25,7 @@ DIR_SIG				=	signal
 FUNC_ERR			=	HTTPError.cpp
 FUNC_ENCOD			=	Response.cpp Status.cpp ContentFetcher.cpp
 FUNC_DECOD			=	Request.cpp
-FUNC_PARS			=	parsing.cpp
+FUNC_PARS			=	parsing.cpp ConfigParser.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
 FUNC_CONF			=	ServerConf.cpp Route.cpp
 FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp
@@ -101,7 +101,7 @@ HTTP_TEST			=	$(TEST_REQ_DIR)/correct.http
 #------ Unit Test -------------------------------------------------------------#
 
 UNIT_TEST_DIR		=	$(TEST_DIR)/unittest
-UNIT_TEST_SRC		=	$(UNIT_TEST_DIR)/RequestTest.cpp
+UNIT_TEST_SRC		=	$(UNIT_TEST_DIR)/*.cpp
 UNIT_TEST_FRAME		=	$(UNIT_TEST_DIR)/doctest/doctest/
 SRC_NO_MAIN			=	$(filter-out $(SRC_DIR)/main.cpp, $(SRC))
 UNIT_TEST_BIN		=	utest_$(NAME)
@@ -132,8 +132,9 @@ nginx:
 $(CCLIENT_NAME):
 					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
 
-utest:
-					$(CC) -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
+test:
+					$(CC) -g -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
+					./utest_webserv -ni -nv
 
 # **************************************************************************** #
 #		Debug																   #

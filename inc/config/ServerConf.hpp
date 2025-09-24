@@ -3,6 +3,8 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <map>
+#include <cstdlib>
 
 #include "Route.hpp"
 #include "readability.hpp"
@@ -15,19 +17,18 @@ class ServerConf
 private:
 
 	unsigned int		_port;
-
-	// error pages redirect ?
 	unsigned int		_maxSizeClientRequestBody;
-	std::vector<Route *>	_routes;
-
+	std::string			_root;
+	std::vector<Route*>	_routes;
+	std::map<std::string, std::string>	_paramMap;
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
 	ServerConf();
-	ServerConf(std::string &configFilePath);
-	ServerConf(const ServerConf &copy);
+	ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route*> routes);
+	ServerConf(const ServerConf& copy);
 
 	//----------------- DESTRUCTOR -----------------------//
 
@@ -35,15 +36,24 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	ServerConf &operator=(const ServerConf &other);
+	ServerConf&			operator=(const ServerConf &other);
 
+	//------------------- GETTERS ------------------------//
+
+	unsigned int		getPort() const;
+	unsigned int		getMaxSizeClientRequestBody() const;
+	const Route*		getRoutes(int index) const;
+	const std::string&	getRoot() const;
+
+	//------------------- SETTERS ------------------------//
+
+	void				setPort(int portNum);
+	void				setServerName(std::string serverName);
+	void				setRoot(std::string root);
+	void				setParamMap(std::map<std::string, std::string> &paramMap);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	unsigned int getPort() const;
-	unsigned int getMaxSizeClientRequestBody() const;
-	const Route *getRoutes(int index) const;
-
-	Route *getRootMatchForRequestedFile(std::string &requestedFile) const;
+	Route*				getRootMatchForRequestedFile(std::string &requestedFile) const;
 
 };

@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <map>
+#include <cstdlib>
+#include <fstream>
 
 #include "ServerConf.hpp"
 #include "parsing.hpp"
@@ -28,6 +31,9 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	static std::vector<ServerConf*>	readConfigs(std::string& configFilePath);
+	static std::vector<ServerConf>	readConfigs(std::string& configFilePath);
+	static ServerConf	parseServerBlock(std::ifstream& configFileStream);
+	static void			addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string>& paramMap);
+	static bool			isClosedCurlyBrace(std::string& line);
 
 };

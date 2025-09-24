@@ -6,5 +6,4 @@ C_client
 obj/*
 obj
 /client
-.vscode
 utest_webserv
