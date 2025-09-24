@@ -17,8 +17,10 @@ ClientSocket::ClientSocket(Sockette &Source)
 
 	setSocketFd(socketFd);
 
-	if (socketFd < 0)
+	if (socketFd < 0) {
+		perror("accept() failed with error");
 		throw failedSocketAccept();
+	}
 
 	memset(_buffer, '\0', sizeof _buffer);
 }

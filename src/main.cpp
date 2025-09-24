@@ -70,6 +70,9 @@ int main(int argc, char** argv)
 		servers.push_back(serv);
 	}
 
+	// initializing and handling signals
+	signal(SIGINT, singalHandler);
+
 	listeningLoop(servers);
 
 	return 0;

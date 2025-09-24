@@ -103,11 +103,9 @@ void			ServerSocket::acceptNewConnection(epoll_event &event)
 	// adding new socket pointer as context in the event itself
 	event.data.ptr = &Connecting;
 
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &_event) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &event) == -1) {
 		throw failedEpollCtl();
 	}
-
-	Connecting->readRequest();
 
 	#ifdef DEBUG
 		std::cout << "Connection established" << std::endl;
@@ -126,7 +124,17 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 {
 	ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(event.data.ptr);
 
-	std::cout << Connecting->getRequest() << std::endl;
+	// Socket ready to read
+	if (event.events & EPOLLIN) {
+		Connecting->readRequest();
+		std::cout << "Read: " << Connecting->getRequest() << std::endl;
+	}
+
+	// Socket ready to write
+	if (event.events & EPOLLOUT) {
+		std::cout << "Socket ready for writing response" << std::endl;
+
+	}
 
 	#ifdef DEBUG
 		std::cout << "Connection handled" << std::endl;
