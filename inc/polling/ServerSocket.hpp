@@ -3,6 +3,11 @@
 #include <sys/epoll.h>
 
 #include "ClientSocket.hpp"
+#include "ServerConf.hpp"
+#include "ContentFetcher.hpp"
+#include "HTTPError.hpp"
+#include "PHPExecutor.hpp"
+#include "PythonExecutor.hpp"
 
 class ServerSocket: public Sockette
 {
@@ -13,18 +18,24 @@ private:
 	int					_eventsReadyForProcess;
 	struct epoll_event	_event;
 	struct epoll_event	_eventQueue[MAX_EVENTS];
+	ServerConf			_conf;
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
 	ServerSocket(int port);
+	ServerSocket(ServerConf conf);
 
 	//----------------- DESTRUCTOR -----------------------//
 
 
 	//------------------- OPERATORS ----------------------//
 
+
+	//--------------------- GETTER -----------------------//
+
+	const ServerConf&	getConf() const;
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
@@ -35,6 +46,7 @@ public:
 	void				acceptNewConnection(epoll_event &event);
 	void				handleExistingConnection(epoll_event &event);
 	void				launchEpollListenLoop();
+	void				listeningLoop();
 
 	//------------------ EXCEPTIONS ----------------------//
 

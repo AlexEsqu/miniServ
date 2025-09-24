@@ -25,12 +25,43 @@ ServerSocket::ServerSocket(int port)
 	setListenMode(10);
 }
 
+ServerSocket::ServerSocket(ServerConf conf)
+	: _conf(conf)
+{
+	#ifdef DEBUG
+		std::cout << "ServerSocket Constructor called" << std::endl;
+	#endif
+
+	setPort(conf.getPort());
+
+	// Creating socket and file descriptor referring it
+	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
+	if (getSocketFd() < 0)
+		throw failedSocketCreation();
+
+	// allow socket to be reused and webserv to reload faster with SO_REUSEADDR
+	setSocketOption(SO_REUSEADDR);
+
+	// bind serv socket to IP address using the standard IP options and provided port
+	bindToIPAddress();
+
+	// set serv sock to listen for incomming connections with max incomming
+	setListenMode(10);
+}
+
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 
 
 //---------------------------- OPERATORS ------------------------------------//
 
+
+//---------------------------- GETTERS --------------------------------------//
+
+const ServerConf&		ServerSocket::getConf() const
+{
+	return _conf;
+}
 
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
@@ -103,7 +134,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 
 }
 
-
 void			ServerSocket::processEvents()
 {
 	for (int i = 0; i < _eventsReadyForProcess; ++i) {
@@ -123,6 +153,51 @@ void			ServerSocket::launchEpollListenLoop()
 	{
 		waitForEvents();
 		processEvents();
+	}
+}
+
+void			ServerSocket::listeningLoop()
+{
+	ContentFetcher	cf;
+	cf.addExecutor(new PHPExecutor());
+	cf.addExecutor(new PythonExecutor());
+
+	while (1)
+	{
+		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
+
+		// create a socket to receive incoming communication
+		ClientSocket AnsweringSocket(*this);
+		try {
+			// reading the request into the Sockette buffer
+			AnsweringSocket.readRequest();
+
+			// decoding the buffer into a Request object
+			Request decodedRequest(_conf, AnsweringSocket.getRequest());
+
+			// creating a Response handling request according to configured routes
+			Response response(_conf, decodedRequest);
+
+			cf.fillContent(response);
+
+			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
+
+			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
+		}
+
+		catch ( HTTPError &e )
+		{
+			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
+			std::cout << "response is [" << e.getErrorPage() << "\n";
+			write(AnsweringSocket.getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
+			std::cerr << e.what() << "\n";
+		}
+
+		catch ( std::exception &e )
+		{
+			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
+			std::cerr << e.what() << "\n";
+		}
 	}
 }
 
