@@ -15,10 +15,10 @@ ServerConf::ServerConf()
 }
 
 ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route*> routes)
-	: _paramMap(paramMap)
+	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
 	, _routes(routes)
-	, _port(8080)
+	, _paramMap(paramMap)
 {
 	// Initialize _root from paramMap
 	if (_paramMap.find("root") != _paramMap.end()) {
@@ -27,7 +27,7 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 
 	// Initialize _port from paramMap
 	if (_paramMap.find("listen") != _paramMap.end()) {
-		_port = std::atoi(_paramMap["listen"].c_str());
+		_port = atoi(_paramMap["listen"].c_str());
 	}
 
 

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <map>
+#include <cstdlib>
 
 #include "Route.hpp"
 #include "readability.hpp"
