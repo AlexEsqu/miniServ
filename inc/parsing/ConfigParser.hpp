@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cstdlib>
+#include <fstream>
 
 #include "ServerConf.hpp"
 #include "parsing.hpp"

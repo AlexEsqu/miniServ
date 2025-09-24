@@ -28,9 +28,8 @@ ConfigParser::~ConfigParser()
 
 //---------------------------- OPERATORS ------------------------------------//
 
-ConfigParser& ConfigParser::operator=(const ConfigParser& other)
+ConfigParser& ConfigParser::operator=(const ConfigParser&)
 {
-	// code
 	return (*this);
 }
 
@@ -66,7 +65,7 @@ void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::stri
 		trim(value);
 
 		// Remove semicolon from value if present
-		if (!value.empty() && value.back() == ';') {
+		if (!value.empty() && value[value.size() - 1] == ';') {
 			value.erase(value.size() - 1);
 			trim(value);
 		}
@@ -92,7 +91,7 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 			continue;
 
 		// Handle nested blocks (like location blocks)
-		if (line.find("location") != std::string::npos && line.back() == '{') {
+		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{') {
 
 			// TO DO : parse location block
 			// for now skipping the block entirely
@@ -118,7 +117,7 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 	ServerConf serverConf;
 
 	if (paramMap.find("listen") != paramMap.end())
-		serverConf.setPort(std::atoi(paramMap["listen"].c_str()));
+		serverConf.setPort(atoi(paramMap["listen"].c_str()));
 
 	// if (paramMap.find("server_name") != paramMap.end())
 	// 	serverConf.setServerName(paramMap["server_name"]);
@@ -132,7 +131,7 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 
 std::vector<ServerConf>	ConfigParser::readConfigs(std::string& configFilePath)
 {
-	std::ifstream	configFileStream(configFilePath);
+	std::ifstream	configFileStream(configFilePath.c_str());
 	if (!configFileStream)
 		throw std::runtime_error("Failed to read config file");
 
@@ -148,7 +147,7 @@ std::vector<ServerConf>	ConfigParser::readConfigs(std::string& configFilePath)
 			continue;
 
 		// if a line starts with server and ends with {, initiate parse server block
-		if (line.rfind("server", 0) != std::string::npos && line.back() == '{') {
+		if (line.rfind("server", 0) != std::string::npos && line[line.size() - 1] == '{') {
 			configs.push_back(parseServerBlock(configFileStream));
 		}
 	}
