@@ -156,50 +156,50 @@ void			ServerSocket::launchEpollListenLoop()
 	}
 }
 
-void			ServerSocket::listeningLoop()
-{
-	ContentFetcher	cf;
-	cf.addExecutor(new PHPExecutor());
-	cf.addExecutor(new PythonExecutor());
+// void			ServerSocket::listeningLoop()
+// {
+// 	ContentFetcher	cf;
+// 	cf.addExecutor(new PHPExecutor());
+// 	cf.addExecutor(new PythonExecutor());
 
-	while (1)
-	{
-		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
+// 	while (1)
+// 	{
+// 		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
 
-		// create a socket to receive incoming communication
-		ClientSocket AnsweringSocket(*this);
-		try {
-			// reading the request into the Sockette buffer
-			AnsweringSocket.readRequest();
+// 		// create a socket to receive incoming communication
+// 		ClientSocket AnsweringSocket(*this);
+// 		try {
+// 			// reading the request into the Sockette buffer
+// 			AnsweringSocket.readRequest();
 
-			// decoding the buffer into a Request object
-			Request decodedRequest(_conf, AnsweringSocket.getRequest());
+// 			// decoding the buffer into a Request object
+// 			Request decodedRequest(_conf, AnsweringSocket.getRequest());
 
-			// creating a Response handling request according to configured routes
-			Response response(_conf, decodedRequest);
+// 			// creating a Response handling request according to configured routes
+// 			Response response(_conf, decodedRequest);
 
-			cf.fillContent(response);
+// 			cf.fillContent(response);
 
-			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
+// 			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
-			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
-		}
+// 			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
+// 		}
 
-		catch ( HTTPError &e )
-		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-			std::cout << "response is [" << e.getErrorPage() << "\n";
-			write(AnsweringSocket.getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
-			std::cerr << e.what() << "\n";
-		}
+// 		catch ( HTTPError &e )
+// 		{
+// 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
+// 			std::cout << "response is [" << e.getErrorPage() << "\n";
+// 			write(AnsweringSocket.getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
+// 			std::cerr << e.what() << "\n";
+// 		}
 
-		catch ( std::exception &e )
-		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
-			std::cerr << e.what() << "\n";
-		}
-	}
-}
+// 		catch ( std::exception &e )
+// 		{
+// 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
+// 			std::cerr << e.what() << "\n";
+// 		}
+// 	}
+// }
 
 //--------------------------- EXCEPTIONS ------------------------------------//
 

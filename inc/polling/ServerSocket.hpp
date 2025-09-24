@@ -18,14 +18,14 @@ private:
 	int					_eventsReadyForProcess;
 	struct epoll_event	_event;
 	struct epoll_event	_eventQueue[MAX_EVENTS];
-	ServerConf			_conf;
+	const ServerConf	_conf;
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
 	ServerSocket(int port);
-	ServerSocket(ServerConf conf);
+	ServerSocket(const ServerConf conf);
 
 	//----------------- DESTRUCTOR -----------------------//
 

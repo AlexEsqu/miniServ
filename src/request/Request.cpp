@@ -13,8 +13,9 @@
 // #endif
 // }
 
-Request::Request(ServerConf& conf,std::string httpRequest)
-	: _fullRequest(httpRequest),_conf(conf)
+Request::Request(const ServerConf& conf,std::string httpRequest)
+	: _fullRequest(httpRequest)
+	, _conf(conf)
 {
 #ifdef DEBUG
 	std::cout << "Request Constructor called" << std::endl;
@@ -77,7 +78,7 @@ std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 	return _additionalHeaderInfo;
 }
 
-ServerConf&	Request::getConf()
+const ServerConf&	Request::getConf() const
 {
 	return _conf;
 }

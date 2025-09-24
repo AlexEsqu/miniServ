@@ -21,7 +21,7 @@ void listeningLoop(std::vector<ServerSocket>& servers)
 			Request decodedRequest(servers[0].getConf(), AnsweringSocket.getRequest());
 
 			// creating a Response handling request according to configured routes
-			Response response(servers[0].getConf(), decodedRequest);
+			Response response(decodedRequest);
 
 
 			// if CGI needed

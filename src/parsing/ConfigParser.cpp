@@ -129,9 +129,9 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 }
 
 
-std::vector<ServerConf>	ConfigParser::readConfigs(std::string& configFilePath)
+std::vector<ServerConf>	ConfigParser::readConfigs(char* configFilePath)
 {
-	std::ifstream	configFileStream(configFilePath.c_str());
+	std::ifstream	configFileStream(configFilePath);
 	if (!configFileStream)
 		throw std::runtime_error("Failed to read config file");
 

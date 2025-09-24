@@ -12,6 +12,15 @@ Sockette::Sockette()
 	#endif
 }
 
+Sockette::Sockette(const Sockette &other)
+{
+	*this = other;
+
+	#ifdef DEBUG
+		std::cout << "Sockette copy Constructor called" << std::endl;
+	#endif
+}
+
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 Sockette::~Sockette()

@@ -11,16 +11,20 @@
 // 	// std::cout << "Response Constructor called" << std::endl;
 // }
 
-Response::Response(ServerConf &conf, Request &req)
-	: _statusNum(200), _content(""), _requestedFileName(req.getRequestedURL()), _request(req),
-	  _conf(conf)
+Response::Response(Request &req)
+	: _statusNum(200)
+	, _content("")
+	, _requestedFileName(req.getRequestedURL())
+	, _request(req)
 {
 	setUrl(_requestedFileName);
 }
 
-Response::Response(ServerConf &conf, Request &req, int status)
-	: _statusNum(status), _content(""), _requestedFileName(req.getRequestedURL()), _request(req), _conf(conf)
-
+Response::Response(Request &req, int status)
+	: _statusNum(status)
+	, _content("")
+	, _requestedFileName(req.getRequestedURL())
+	, _request(req)
 {
 	if (status >= 400)
 	{
@@ -31,7 +35,6 @@ Response::Response(ServerConf &conf, Request &req, int status)
 
 Response::Response(const Response &copy)
 	: _request(copy._request)
-	, _conf(copy._conf) 
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
 	*this = copy;
@@ -88,9 +91,9 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	std::string root = _conf.getRootMatchForRequestedFile(url)->getRootDirectory();
+	std::string root = _request.getConf().getRootMatchForRequestedFile(url)->getRootDirectory();
 	if (url == "/")
-		this->_requestedFileName = root + _conf.getRoutes(0)->getDefaultFiles()[0];
+		this->_requestedFileName = root + _request.getConf().getRoutes(0)->getDefaultFiles()[0];
 	else
 		this->_requestedFileName = root + url;
 	// std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
@@ -146,7 +149,7 @@ std::string Response::getRoutedURL() const
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = _conf.getRoutes(0)->getRootDirectory() + "error.html";
+	std::string errorFile = _request.getConf().getRoutes(0)->getRootDirectory() + "error.html";
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;
