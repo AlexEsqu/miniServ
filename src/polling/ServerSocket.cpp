@@ -128,11 +128,7 @@ void			ServerSocket::acceptNewConnection(epoll_event &event)
 	ClientSocket*	Connecting = new ClientSocket(*this);
 
 	Connecting->setSocketNonBlocking();
-
-	event.events = EPOLLIN | EPOLLOUT | EPOLLET;
-
-	// adding new socket pointer as context in the event itself
-	event.data.ptr = &Connecting;
+	Connecting->setEvent(EPOLLIN | EPOLLOUT | EPOLLET);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &event) == -1) {
 		throw failedEpollCtl();
@@ -141,7 +137,6 @@ void			ServerSocket::acceptNewConnection(epoll_event &event)
 	#ifdef DEBUG
 		std::cout << "Connection established" << std::endl;
 		std::cout << "Fd is " << Connecting->getSocketFd() << std::endl;
-		std::cout << Connecting->getRequest() << std::endl;
 	#endif
 
 }

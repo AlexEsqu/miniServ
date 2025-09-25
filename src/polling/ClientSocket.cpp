@@ -22,8 +22,6 @@ ClientSocket::ClientSocket(ServerSocket &server)
 
 	setSocketFd(socketFd);
 
-	// server.addSocketToEpoll(*this);
-
 	memset(_buffer, '\0', sizeof _buffer);
 }
 
@@ -36,6 +34,9 @@ void	ClientSocket::setEvent(uint32_t epollEventMask)
 {
 	_event.events = epollEventMask;
 	_event.data.fd = getSocketFd();
+
+	// adding new socket pointer as context in the event itself
+	_event.data.ptr = this;
 }
 
 //------------------------------ GETTER --------------------------------------//

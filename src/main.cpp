@@ -9,9 +9,6 @@ void listeningLoop(std::vector<ServerSocket*>& servers)
 
 		servers[0]->launchEpollListenLoop();
 
-		// // create a socket to receive incoming communication, adds to Epoll
-		// ClientSocket AnsweringSocket(*servers[0]);
-
 	}
 }
 
