@@ -22,7 +22,7 @@ ClientSocket::ClientSocket(ServerSocket &server)
 
 	setSocketFd(socketFd);
 
-	server.addSocketToEpoll(*this);
+	// server.addSocketToEpoll(*this);
 
 	memset(_buffer, '\0', sizeof _buffer);
 }
@@ -30,11 +30,24 @@ ClientSocket::ClientSocket(ServerSocket &server)
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 
+//------------------------------ SETTER --------------------------------------//
+
+void	ClientSocket::setEvent(uint32_t epollEventMask)
+{
+	_event.events = epollEventMask;
+	_event.data.fd = getSocketFd();
+}
+
 //------------------------------ GETTER --------------------------------------//
 
-char	*ClientSocket::getRequest()
+char*	ClientSocket::getRequest()
 {
 	return (_buffer);
+}
+
+struct epoll_event&	ClientSocket::getEvent()
+{
+	return (_event);
 }
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
