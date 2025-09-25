@@ -31,15 +31,14 @@ private:
 	std::string		_HTTPResponse;
 	int				_CGI;
 	Request			_request;
-	ServerConf&		_conf;
 
 public:
 	// Response();
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Response(ServerConf& conf, Request& req);
-	Response(ServerConf& conf, Request& req, int status);
+	Response(Request& req);
+	Response(Request& req, int status);
 	Response(const Response& copy);
 
 	//----------------- DESTRUCTOR -----------------------//

@@ -75,7 +75,7 @@ void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::stri
 }
 
 
-ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
+ServerConf*	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 {
 	std::map<std::string, std::string>	paramMap;
 
@@ -91,8 +91,8 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 			continue;
 
 		// Handle nested blocks (like location blocks)
-		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{') {
-
+		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{')
+		{
 			// TO DO : parse location block
 			// for now skipping the block entirely
 			int braceCount = 1;
@@ -114,28 +114,28 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 	if (!isClosedCurlyBrace(line))
 		throw std::runtime_error("Invalid config file");
 
-	ServerConf serverConf;
+	ServerConf* serverConf = new ServerConf;
 
 	if (paramMap.find("listen") != paramMap.end())
-		serverConf.setPort(atoi(paramMap["listen"].c_str()));
+		serverConf->setPort(atoi(paramMap["listen"].c_str()));
 
 	// if (paramMap.find("server_name") != paramMap.end())
 	// 	serverConf.setServerName(paramMap["server_name"]);
 
 	if (paramMap.find("root") != paramMap.end())
-		serverConf.setRoot(paramMap["root"]);
+		serverConf->setRoot(paramMap["root"]);
 
 	return serverConf;
 }
 
 
-std::vector<ServerConf>	ConfigParser::readConfigs(std::string& configFilePath)
+std::vector<ServerConf*>	ConfigParser::readConfigs(char* configFilePath)
 {
-	std::ifstream	configFileStream(configFilePath.c_str());
+	std::ifstream	configFileStream(configFilePath);
 	if (!configFileStream)
 		throw std::runtime_error("Failed to read config file");
 
-	std::vector<ServerConf>	configs;
+	std::vector<ServerConf*>	configs;
 
 	std::string	line;
 	while (getline(configFileStream, line))

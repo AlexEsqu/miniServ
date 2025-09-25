@@ -5,6 +5,8 @@
 #include "server.hpp"
 #include <algorithm>
 
+class ServerSocket;
+
 class ClientSocket: public Sockette
 {
 
@@ -19,7 +21,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	ClientSocket(Sockette &ListenSocket);
+	ClientSocket(ServerSocket &server);
 
 	//----------------- DESTRUCTOR -----------------------//
 

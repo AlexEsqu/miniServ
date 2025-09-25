@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 
-void listeningLoop(ServerConf &conf, Sockette &ListenerSocket)
+void listeningLoop(std::vector<ServerSocket*>& servers)
 {
 	ContentFetcher	cf;
 	cf.addExecutor(new PHPExecutor());
@@ -12,16 +12,17 @@ void listeningLoop(ServerConf &conf, Sockette &ListenerSocket)
 		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
 
 		// create a socket to receive incoming communication
-		ClientSocket AnsweringSocket(ListenerSocket);
+		ClientSocket AnsweringSocket(*servers[0]);
+
 		try {
 			// reading the request into the Sockette buffer
 			AnsweringSocket.readRequest();
 
 			// decoding the buffer into a Request object
-			Request decodedRequest(conf, AnsweringSocket.getRequest());
+			Request decodedRequest(servers[0]->getConf(), AnsweringSocket.getRequest());
 
 			// creating a Response handling request according to configured routes
-			Response response(conf, decodedRequest);
+			Response response(decodedRequest);
 
 
 			// if CGI needed
@@ -49,19 +50,25 @@ void listeningLoop(ServerConf &conf, Sockette &ListenerSocket)
 	}
 }
 
-int main()
+int main(int argc, char** argv)
 {
-	ServerConf conf;
 	// reading config and setting up routes
-	// TO DO
+	std::vector<ServerConf*>	serversConfs;
+	if (argc > 1)
+		serversConfs = ConfigParser::readConfigs(argv[1]);
+	else
+		serversConfs.push_back(new ServerConf());
 
+	// constructing servers matching the configs
+	std::vector<ServerSocket*>	servers;
+	for (size_t i = 0; i < serversConfs.size(); i++)
+		servers.push_back(new ServerSocket(*serversConfs[i]));
 
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
-	// creating a socket, binding it to an IP address and listening
-	ServerSocket ListenerSocket(conf.getPort());
 
-	listeningLoop(conf, ListenerSocket);
+	listeningLoop(servers);
+
 	return 0;
 }
 

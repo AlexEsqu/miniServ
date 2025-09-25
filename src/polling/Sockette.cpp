@@ -12,6 +12,15 @@ Sockette::Sockette()
 	#endif
 }
 
+Sockette::Sockette(const Sockette &other)
+{
+	*this = other;
+
+	#ifdef DEBUG
+		std::cout << "Sockette copy Constructor called" << std::endl;
+	#endif
+}
+
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 Sockette::~Sockette()
@@ -94,8 +103,10 @@ void			Sockette::setSocketNonBlocking()
 
 void			Sockette::setListenMode(int maxQueue)
 {
-	if (listen(_socketFd, maxQueue) < 0)
+	if (listen(_socketFd, maxQueue) < 0) {
+		perror("listen() failed");
 		throw failedSocketListen();
+	}
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
@@ -110,7 +121,10 @@ void			Sockette::bindToIPAddress()
 	memset(_socketAddress.sin_zero, '\0', sizeof _socketAddress.sin_zero);
 
 	if (bind(_socketFd, (struct sockaddr *)&_socketAddress, (socklen_t)addrlen) < 0)
+	{
+		perror("bind() failed");
 		throw failedSocketBinding();
+	}
 }
 
 void			Sockette::acceptConnectionFrom(Sockette ConnectingSocket)

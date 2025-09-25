@@ -3,22 +3,26 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-ClientSocket::ClientSocket(Sockette &Source)
+ClientSocket::ClientSocket(ServerSocket &server)
 {
 #ifdef DEBUG
 	std::cout << "ClientSocket Constructor called" << std::endl;
 #endif
 
-	int addrlen = sizeof(Source.getSocketAddr());
+	int addrlen = sizeof(server.getSocketAddr());
 
-	int socketFd = accept(Source.getSocketFd(),
-						  (struct sockaddr *)Source.getSocketAddr(),
-						  (socklen_t *)&addrlen);
+	int socketFd = accept(server.getSocketFd(), \
+		(struct sockaddr *)server.getSocketAddr(), \
+		(socklen_t *)&addrlen);
+
+	if (socketFd < 0) {
+		perror("accept() failed with error");
+		throw failedSocketAccept();
+	}
 
 	setSocketFd(socketFd);
 
-	if (socketFd < 0)
-		throw failedSocketAccept();
+	server.addSocketToEpoll(*this);
 
 	memset(_buffer, '\0', sizeof _buffer);
 }
