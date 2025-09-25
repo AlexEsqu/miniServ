@@ -85,7 +85,7 @@ void ClientSocket::readRequestHeader()
 	int valread = -1;
 	std::string line;
 	bool isHeader = true;
-
+	(void)_isChunked;
 	valread = read(getSocketFd(), _buffer, BUFFSIZE);
 	if (valread < 0)
 		throw failedSocketRead();
