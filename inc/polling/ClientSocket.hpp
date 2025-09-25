@@ -1,6 +1,8 @@
 #pragma once
 # include "Sockette.hpp"
 
+class ServerSocket;
+
 class ClientSocket: public Sockette
 {
 
@@ -12,7 +14,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	ClientSocket(Sockette &ListenSocket);
+	ClientSocket(ServerSocket &server);
 
 	//----------------- DESTRUCTOR -----------------------//
 

@@ -23,6 +23,8 @@ ServerSocket::ServerSocket(int port)
 
 	// set serv sock to listen for incomming connections with max incomming
 	setListenMode(10);
+
+	createEpollInstance();
 }
 
 ServerSocket::ServerSocket(ServerConf conf)
@@ -47,11 +49,24 @@ ServerSocket::ServerSocket(ServerConf conf)
 
 	// set serv sock to listen for incomming connections with max incomming
 	setListenMode(10);
+
+	createEpollInstance();
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
+ServerSocket::~ServerSocket()
+{
+	for (int i = 0; _eventQueue[i].data.ptr != NULL; ++i) { // horrible loop, to be fixed
+		ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(_eventQueue[i].data.ptr);
 
+		// Remove from epoll
+		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+
+		// Clean up memory
+		delete Connecting;
+	}
+}
 
 //---------------------------- OPERATORS ------------------------------------//
 
@@ -74,11 +89,13 @@ void			ServerSocket::createEpollInstance()
 		throw failedEpollCreate();
 }
 
-void			ServerSocket::attachEpollToSocket()
+void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 {
-	_event.events = EPOLLIN;
-	_event.data.fd = getSocketFd();
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, getSocketFd(), &_event) == -1) {
+	struct epoll_event event;
+	event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+	event.data.fd = newSocket.getSocketFd();
+
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &event) == -1) {
 		throw failedEpollCtl();
 	}
 }
@@ -97,8 +114,7 @@ void			ServerSocket::acceptNewConnection(epoll_event &event)
 
 	Connecting->setSocketNonBlocking();
 
-	event.events = EPOLLIN | EPOLLET;
-	// event.data.fd = Connecting->getSocketFd();
+	event.events = EPOLLIN | EPOLLOUT | EPOLLET;
 
 	// adding new socket pointer as context in the event itself
 	event.data.ptr = &Connecting;
@@ -112,11 +128,6 @@ void			ServerSocket::acceptNewConnection(epoll_event &event)
 		std::cout << "Fd is " << Connecting->getSocketFd() << std::endl;
 		std::cout << Connecting->getRequest() << std::endl;
 	#endif
-
-	handleExistingConnection(event);
-
-	// close(Connecting->getSocketFd());
-	// delete Connecting;
 
 }
 
@@ -134,6 +145,17 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 	if (event.events & EPOLLOUT) {
 		std::cout << "Socket ready for writing response" << std::endl;
 
+	}
+
+	if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
+		std::cout << "Connection closed or error occurred" << std::endl;
+
+		// Remove from epoll
+		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+
+		// Clean up memory
+		delete Connecting;
+		return;
 	}
 
 	#ifdef DEBUG
@@ -155,13 +177,8 @@ void			ServerSocket::processEvents()
 
 void			ServerSocket::launchEpollListenLoop()
 {
-	createEpollInstance();
-	attachEpollToSocket();
-	while (1)
-	{
-		waitForEvents();
-		processEvents();
-	}
+	waitForEvents();
+	processEvents();
 }
 
 // void			ServerSocket::listeningLoop()

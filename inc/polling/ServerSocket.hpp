@@ -14,11 +14,11 @@ class ServerSocket: public Sockette
 
 private:
 
-	int					_epollFd;
-	int					_eventsReadyForProcess;
-	struct epoll_event	_event;
-	struct epoll_event	_eventQueue[MAX_EVENTS];
-	const ServerConf	_conf;
+	int							_epollFd;
+	int							_eventsReadyForProcess;
+	struct epoll_event			_event;
+	struct epoll_event			_eventQueue[MAX_EVENTS];
+	const ServerConf			_conf;
 
 public:
 
@@ -29,6 +29,7 @@ public:
 
 	//----------------- DESTRUCTOR -----------------------//
 
+	~ServerSocket();
 
 	//------------------- OPERATORS ----------------------//
 
@@ -40,7 +41,7 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void				createEpollInstance();
-	void				attachEpollToSocket();
+	void				addSocketToEpoll(ClientSocket& socket);
 	void				waitForEvents();
 	void				processEvents();
 	void				acceptNewConnection(epoll_event &event);
