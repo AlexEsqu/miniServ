@@ -2,7 +2,7 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-ServerSocket::ServerSocket(int port)
+ServerSocket::ServerSocket(int port) // TO BE DESTROYED
 {
 	#ifdef DEBUG
 		std::cout << "ServerSocket Constructor called" << std::endl;
@@ -36,6 +36,11 @@ ServerSocket::ServerSocket(ServerConf conf)
 
 	setPort(conf.getPort());
 
+	_cf = new ContentFetcher();
+	_cf->addExecutor(new PHPExecutor());
+	_cf->addExecutor(new PythonExecutor());
+
+
 	// Creating socket and file descriptor referring it
 	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
 	if (getSocketFd() < 0)
@@ -66,6 +71,8 @@ ServerSocket::~ServerSocket()
 		// Clean up memory
 		delete Connecting;
 	}
+
+	delete _cf;
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -78,7 +85,6 @@ const ServerConf&		ServerSocket::getConf() const
 	return _conf;
 }
 
-
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 
@@ -87,15 +93,22 @@ void			ServerSocket::createEpollInstance()
 	_epollFd = epoll_create(1);
 	if (_epollFd == -1)
 		throw failedEpollCreate();
+
+	_event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+	_event.data.fd = getSocketFd();
+
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, getSocketFd(), &_event) == -1) {
+		throw failedEpollCtl();
+	}
 }
 
 void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 {
-	struct epoll_event event;
-	event.events = EPOLLIN | EPOLLOUT | EPOLLET;
-	event.data.fd = newSocket.getSocketFd();
+	newSocket.setEvent(EPOLLIN | EPOLLOUT | EPOLLET);
 
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &event) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &newSocket.getEvent()) == -1)
+	{
+		perror("Failed to add server socket to epoll");
 		throw failedEpollCtl();
 	}
 }
@@ -103,8 +116,10 @@ void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 void			ServerSocket::waitForEvents()
 {
 	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);
-	if (_eventsReadyForProcess == -1)
+	if (_eventsReadyForProcess == -1) {
+		perror("failed call to epoll_wait():");
 		throw failedEpollWait();
+	}
 }
 
 void			ServerSocket::acceptNewConnection(epoll_event &event)
@@ -137,8 +152,39 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 
 	// Socket ready to read
 	if (event.events & EPOLLIN) {
-		Connecting->readRequest();
-		std::cout << "Read: " << Connecting->getRequest() << std::endl;
+
+		try {
+
+			// reading the request into the Sockette buffer
+			Connecting->readRequest();
+			std::cout << "Read: " << Connecting->getRequest() << std::endl;
+
+			// decoding the buffer into a Request object
+			Request decodedRequest(getConf(), Connecting->getRequest());
+
+			// creating a Response handling request according to configured routes
+			Response response(decodedRequest);
+
+			_cf->fillContent(response);
+
+			write(Connecting->getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
+
+			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
+		}
+
+		catch ( HTTPError &e )
+		{
+			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
+			std::cout << "response is [" << e.getErrorPage() << "\n";
+			write(Connecting->getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
+			std::cerr << e.what() << "\n";
+		}
+
+		catch ( std::exception &e )
+		{
+			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
+			std::cerr << e.what() << "\n";
+		}
 	}
 
 	// Socket ready to write
