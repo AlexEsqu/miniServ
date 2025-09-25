@@ -12,9 +12,14 @@
 // }
 
 Response::Response(ServerConf &conf, Request &req)
-	: _statusNum(200), _content(""), _requestedFileName(req.getRequestedURL()), _request(req),
+	: _content(""), _requestedFileName(req.getRequestedURL()), _request(req),
 	  _conf(conf)
 {
+	setMethod(_request.getMethod());
+	if (this->_method == "POST")
+		setStatusNum(201);
+	if (this->_method == "GET")
+		setStatusNum(200);
 	setUrl(_requestedFileName);
 }
 
@@ -30,8 +35,7 @@ Response::Response(ServerConf &conf, Request &req, int status)
 }
 
 Response::Response(const Response &copy)
-	: _request(copy._request)
-	, _conf(copy._conf) 
+	: _request(copy._request), _conf(copy._conf)
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
 	*this = copy;
@@ -66,7 +70,7 @@ void Response::setStatusNum(int number)
 	this->_statusNum = number;
 }
 
-void Response::setMethod(int method)
+void Response::setMethod(std::string method)
 {
 	this->_method = method;
 }
@@ -110,11 +114,19 @@ void Response::setHTTPResponse()
 		this->_content = createErrorPageContent(status);
 	}
 	this->_contentLength = this->_content.length();
-	response << _request.getProtocol() << " " << status
-			 << "Content-Type: " << this->_contentType << "\n"
-			 << "Content-Length: " << this->_contentLength
-			 << "\n\n"
-			 << this->_content;
+	response << _request.getProtocol() << " " << status;
+	if (this->_method == "GET")
+	{
+		response << "Content-Type: " << this->_contentType << "\r\n"
+				 << "Content-Length: " << this->_contentLength
+				 << "/\r\n\r\n"
+				 << this->_content;
+	}
+	if (this->_method == "POST")
+	{
+		response << "Content-Type: text/html\r\n"<<
+				 "Refresh: 0; url=/\r\n\r\n";
+	}
 	std::cout << response.rdbuf();
 
 	this->_HTTPResponse = response.str();
