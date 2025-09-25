@@ -18,9 +18,10 @@ Route::Route()
 	setAllowedCGI(allowedCGI);
 
 	setUploadDirectory("/pages/upload/");
-	setIsGetAllowed(true);
-	setIsPostAllowed(false);
-	setIsDeleteAllowed(false);
+	std::vector<std::string> allowedMethods;
+	allowedMethods.push_back("GET");
+	allowedMethods.push_back("POST");
+	allowedMethods.push_back("DELETE");
 
 	#ifdef DEBUG
 		std::cout << "Route Constructor called" << std::endl;
@@ -42,10 +43,7 @@ Route::Route(std::string root)
 	setAllowedCGI(allowedCGI);
 
 	setUploadDirectory("/pages/upload/");
-	setIsGetAllowed(true);
-	setIsPostAllowed(false);
-	setIsDeleteAllowed(false);
-
+	
 	#ifdef DEBUG
 		std::cout << "Route Constructor called" << std::endl;
 	#endif
@@ -59,9 +57,6 @@ Route::Route(const Route &copy)
 	this->_directoryListing = copy._directoryListing;
 	this->_allowedCGI = copy._allowedCGI;
 	this->_uploadDirectory = copy._uploadDirectory;
-	this->_isGetAllowed = copy._isGetAllowed;
-	this->_isPostAllowed = copy._isPostAllowed;
-	this->_isDeleteAllowed = copy._isDeleteAllowed;
 	
 	#ifdef DEBUG
 		std::cout << "Route copy Constructor called" << std::endl;
@@ -113,20 +108,6 @@ std::string Route::getUploadDirectory() const
 	return (this->_uploadDirectory);
 }
 
-bool Route::getIsGetAllowed() const
-{
-	return (this->_isGetAllowed);
-}
-
-bool Route::getIsPostAllowed() const
-{
-	return (this->_isPostAllowed);
-}
-
-bool Route::getIsDeleteAllowed() const
-{
-	return (this->_isDeleteAllowed);
-}
 
 //---------------------------- SETTERS --------------------------------------//
 
@@ -153,21 +134,6 @@ void Route::setAllowedCGI(std::vector<std::string> &allowedCGI)
 void Route::setUploadDirectory(std::string uploadDirectory)
 {
 	this->_uploadDirectory = uploadDirectory;
-}
-
-void Route::setIsGetAllowed(bool isGetAllowed)
-{
-	this->_isGetAllowed = isGetAllowed;
-}
-
-void Route::setIsPostAllowed(bool isPostAllowed)
-{
-	this->_isPostAllowed = isPostAllowed;
-}
-
-void Route::setIsDeleteAllowed(bool isDeleteAllowed)
-{
-	this->_isDeleteAllowed = isDeleteAllowed;
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
