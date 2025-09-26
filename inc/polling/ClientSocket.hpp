@@ -9,8 +9,10 @@ class ClientSocket: public Sockette
 
 private:
 
+	ServerSocket&		_serv;
 	char				_buffer[30000];
 	struct epoll_event	_event;
+	Request*			_request;
 
 public:
 
@@ -23,15 +25,16 @@ public:
 
 	//----------------------- SETTER ---------------------//
 
-	void	setEvent(uint32_t epollEventMask);
+	void				setEvent(uint32_t epollEventMask);
 
 	//----------------------- GETTER ---------------------//
 
-	char*				getRequest();
+	char*				getBuffer();
 	struct epoll_event&	getEvent();
+	Request*			getRequest();
 
 	//----------------- MEMBER FUNCTION ------------------//
 
-	void	readRequest();
+	void				readRequest();
 
 };

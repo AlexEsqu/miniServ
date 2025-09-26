@@ -45,7 +45,7 @@ public:
 	void				addSocketToEpoll(ClientSocket& socket);
 	void				waitForEvents();
 	void				processEvents();
-	void				acceptNewConnection(epoll_event &event);
+	void				acceptNewConnection();
 	void				handleExistingConnection(epoll_event &event);
 	void				launchEpollListenLoop();
 	void				listeningLoop();

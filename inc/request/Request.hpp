@@ -23,6 +23,7 @@ private:
 	std::string			_requestedFileName;	// for example "/home.html"
 	std::map<std::string, std::string>	_additionalHeaderInfo;
 	const ServerConf&	_conf;
+	bool				_isComplete;
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -42,30 +43,29 @@ public:
 
 	//-------------------- SETTER ------------------------//
 
-	void			setMethod(std::string& httpRequest);
-	void			setProtocol(std::string& httpRequest);
-	void			setURI(std::string& httpRequest);
-	void			setRequestLine(std::string& httpRequest);
-	void			addAdditionalHeaderInfo(std::string& keyValueString);
+	void				setMethod(std::string& httpRequest);
+	void				setProtocol(std::string& httpRequest);
+	void				setURI(std::string& httpRequest);
+	void				setRequestLine(std::string& httpRequest);
+	void				addAdditionalHeaderInfo(std::string& keyValueString);
 
 	//-------------------- GETTERS -----------------------//
 
-	std::string		getMethod() const;
-	std::string		getProtocol() const;
-	std::string		getRequestedURL() const;
+	std::string			getMethod() const;
+	std::string			getProtocol() const;
+	std::string			getRequestedURL() const;
 	std::map<std::string, std::string>&	getAdditionalHeaderInfo();
 	const ServerConf&	getConf() const;
-
+	bool				isComplete() const;
 
 	//------------------- OPERATORS ----------------------//
 
-	Request&		operator=(const Request &other);
+	Request&			operator=(const Request &other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void			decodeHTTPRequest(std::string &httpRequest);
-
-	//------------------ EXCEPTIONS ----------------------//
+	void				decodeHTTPRequest(std::string &httpRequest);
+	void				addRequestChunk(std::string httpRequest);
 
 };
 

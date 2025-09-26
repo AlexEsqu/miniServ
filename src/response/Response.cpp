@@ -11,19 +11,19 @@
 // 	// std::cout << "Response Constructor called" << std::endl;
 // }
 
-Response::Response(Request &req)
+Response::Response(Request *req)
 	: _statusNum(200)
 	, _content("")
-	, _requestedFileName(req.getRequestedURL())
+	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
 	setUrl(_requestedFileName);
 }
 
-Response::Response(Request &req, int status)
+Response::Response(Request *req, int status)
 	: _statusNum(status)
 	, _content("")
-	, _requestedFileName(req.getRequestedURL())
+	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
 	if (status >= 400)
@@ -91,9 +91,9 @@ void Response::setContent(std::string content)
 
 void Response::setUrl(std::string url)
 {
-	std::string root = _request.getConf().getRootMatchForRequestedFile(url)->getRootDirectory();
+	std::string root = _request->getConf().getRootMatchForRequestedFile(url)->getRootDirectory();
 	if (url == "/")
-		this->_requestedFileName = root + _request.getConf().getRoutes(0)->getDefaultFiles()[0];
+		this->_requestedFileName = root + _request->getConf().getRoutes(0)->getDefaultFiles()[0];
 	else
 		this->_requestedFileName = root + url;
 	// std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
@@ -113,7 +113,7 @@ void Response::setHTTPResponse()
 		this->_content = createErrorPageContent(status);
 	}
 	this->_contentLength = this->_content.length();
-	response << _request.getProtocol() << " " << status
+	response << _request->getProtocol() << " " << status
 			 << "Content-Type: " << this->_contentType << "\n"
 			 << "Content-Length: " << this->_contentLength
 			 << "\n\n"
@@ -132,7 +132,7 @@ std::string Response::getHTTPResponse() const
 	return (this->_HTTPResponse);
 }
 
-Request &Response::getRequest()
+Request *Response::getRequest()
 {
 	return (_request);
 }
@@ -149,7 +149,7 @@ std::string Response::getRoutedURL() const
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = _request.getConf().getRoutes(0)->getRootDirectory() + "error.html";
+	std::string errorFile = _request->getConf().getRoutes(0)->getRootDirectory() + "error.html";
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;

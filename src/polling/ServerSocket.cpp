@@ -122,7 +122,7 @@ void			ServerSocket::waitForEvents()
 	}
 }
 
-void			ServerSocket::acceptNewConnection(epoll_event &event)
+void			ServerSocket::acceptNewConnection()
 {
 	// allocating new acccepting socket to be used
 	ClientSocket*	Connecting = new ClientSocket(*this);
@@ -130,7 +130,7 @@ void			ServerSocket::acceptNewConnection(epoll_event &event)
 	Connecting->setSocketNonBlocking();
 	Connecting->setEvent(EPOLLIN | EPOLLOUT | EPOLLET);
 
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &event) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1) {
 		throw failedEpollCtl();
 	}
 
@@ -152,19 +152,24 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 
 			// reading the request into the Sockette buffer
 			Connecting->readRequest();
-			std::cout << "Read: " << Connecting->getRequest() << std::endl;
 
-			// decoding the buffer into a Request object
-			Request decodedRequest(getConf(), Connecting->getRequest());
+			if (Connecting->getRequest()->isComplete())
+			{
+				// creating a Response handling request according to configured routes
+				Response response(Connecting->getRequest());
 
-			// creating a Response handling request according to configured routes
-			Response response(decodedRequest);
+				_cf->fillContent(response);
 
-			_cf->fillContent(response);
+				write(Connecting->getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
 
-			write(Connecting->getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
+				std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
 
-			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
+			}
+			else
+			{
+
+			}
+
 		}
 
 		catch ( HTTPError &e )
@@ -180,12 +185,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
 			std::cerr << e.what() << "\n";
 		}
-	}
-
-	// Socket ready to write
-	if (event.events & EPOLLOUT) {
-		std::cout << "Socket ready for writing response" << std::endl;
-
 	}
 
 	if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
@@ -209,7 +208,7 @@ void			ServerSocket::processEvents()
 {
 	for (int i = 0; i < _eventsReadyForProcess; ++i) {
 		if (_eventQueue[i].data.fd == getSocketFd()) {
-			acceptNewConnection(_eventQueue[i]);
+			acceptNewConnection();
 		} else {
 			handleExistingConnection(_eventQueue[i]);
 		}

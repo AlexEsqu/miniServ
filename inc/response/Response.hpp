@@ -21,15 +21,15 @@ private:
 	std::string		_requestedFileName;
 	std::string		_HTTPResponse;
 	int				_CGI;
-	Request			_request;
+	Request*		_request;
 
 public:
 	// Response();
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Response(Request& req);
-	Response(Request& req, int status);
+	Response(Request* req);
+	Response(Request* req, int status);
 	Response(const Response& copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -50,7 +50,7 @@ public:
 	//-------------------- GETTERS -----------------------//
 
 	std::string		getHTTPResponse() const ;
-	Request&		getRequest();
+	Request*		getRequest();
 	std::string		getRoutedURL() const;
 
 	//------------------- OPERATORS ----------------------//

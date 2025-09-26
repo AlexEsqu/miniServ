@@ -5,14 +5,6 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-// Request::Request()
-// 	: _fullRequest(""), _conf()
-// {
-// #ifdef DEBUG
-// 	std::cout << "Request Generic Constructor called" << std::endl;
-// #endif
-// }
-
 Request::Request(const ServerConf& conf,std::string httpRequest)
 	: _fullRequest(httpRequest)
 	, _conf(conf)
@@ -81,6 +73,11 @@ std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 const ServerConf&	Request::getConf() const
 {
 	return _conf;
+}
+
+bool				Request::isComplete() const
+{
+	return _isComplete;
 }
 
 //----------------------- SETTERS -----------------------------------//
@@ -205,7 +202,10 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 	#endif
 }
 
-//------------------------ EXCEPTIONS ---------------------------------//
+void	Request::addRequestChunk(std::string httpRequest)
+{
+
+}
 
 
 
