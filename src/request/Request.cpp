@@ -10,18 +10,15 @@ Request::Request(const ServerConf& conf, std::string httpRequest, size_t byteRea
 	, _conf(conf)
 	, _byteRead(byteRead)
 {
-#ifdef DEBUG
-	std::cout << "Request Constructor called" << std::endl;
-#endif
+// #ifdef DEBUG
+// 	std::cerr << "Request Constructor called" << std::endl;
+// #endif
 	decodeRequestHeader(httpRequest);
 }
 
 Request::Request(const Request &copy)
 : _conf(copy._conf)
 {
-#ifdef DEBUG
-	std::cout << "Request copy Constructor called" << std::endl;
-#endif
 	*this = copy;
 }
 
@@ -29,9 +26,9 @@ Request::Request(const Request &copy)
 
 Request::~Request()
 {
-#ifdef DEBUG
-	std::cout << "Request Destructor called" << std::endl;
-#endif
+// #ifdef DEBUG
+// 	std::cerr << "Request Destructor called" << std::endl;
+// #endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -74,6 +71,13 @@ std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 const ServerConf&	Request::getConf() const
 {
 	return _conf;
+}
+
+bool				Request::isKeepAlive()
+{
+	if (_additionalHeaderInfo.find("Connection") != _additionalHeaderInfo.end())
+		return (_additionalHeaderInfo["Connection"] != "close");
+	return true;
 }
 
 //----------------------- SETTERS -----------------------------------//
@@ -123,9 +127,6 @@ void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 		key = trim(key);
 		value = trim(value);
 		_additionalHeaderInfo[key] = value;
-		#ifdef DEBUG
-			// std::cout << "adding env var as [" << key << " = " << value << "]\n";
-		#endif
 	}
 }
 
@@ -133,13 +134,6 @@ void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 
 void	Request::checkHTTPValidity()
 {
-	#ifdef DEBUG
-		std::cout << "Checking validity:" << std::endl;
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedFileName << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
-	#endif
-
 	// CHECK METHOD
 	// empty method is not valid HTTP request
 	if (getMethod().empty())
@@ -197,10 +191,7 @@ void Request::decodeRequestHeader(std::string &httpRequest)
 	}
 
 	#ifdef DEBUG
-		std::cout << "Request HTTP was [" << httpRequest << "]\n";
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedFileName << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
+		std::cout << "Request " << _method << " for " << _requestedFileName;
 	#endif
 }
 

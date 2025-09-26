@@ -7,27 +7,27 @@ Sockette::Sockette()
 	, _socketAddrLen(sizeof(_socketAddress))
 	,  _port(8080)
 {
-	#ifdef DEBUG
-		std::cout << "Sockette generic Constructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Sockette generic Constructor called" << std::endl;
+	// #endif
 }
 
 Sockette::Sockette(const Sockette &other)
 {
 	*this = other;
 
-	#ifdef DEBUG
-		std::cout << "Sockette copy Constructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Sockette copy Constructor called" << std::endl;
+	// #endif
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 Sockette::~Sockette()
 {
-	#ifdef DEBUG
-		std::cout << "Sockette Destructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Sockette Destructor called" << std::endl;
+	// #endif
 
 	if (_socketFd >= 0)
 		close(_socketFd);

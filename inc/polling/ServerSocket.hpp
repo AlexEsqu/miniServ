@@ -39,6 +39,7 @@ public:
 	//--------------------- GETTER -----------------------//
 
 	const ServerConf&	getConf() const;
+	int					getEpoll() const;
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 

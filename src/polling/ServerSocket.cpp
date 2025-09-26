@@ -4,9 +4,9 @@
 
 ServerSocket::ServerSocket(int port) // TO BE DESTROYED
 {
-	#ifdef DEBUG
-		std::cout << "ServerSocket Constructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cerr << "ServerSocket Constructor called" << std::endl;
+	// #endif
 
 	setPort(port);
 
@@ -30,9 +30,9 @@ ServerSocket::ServerSocket(int port) // TO BE DESTROYED
 ServerSocket::ServerSocket(ServerConf conf)
 	: _conf(conf)
 {
-	#ifdef DEBUG
-		std::cout << "ServerSocket Constructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cerr << "ServerSocket Constructor called" << std::endl;
+	// #endif
 
 	setPort(conf.getPort());
 
@@ -65,9 +65,9 @@ ServerSocket::~ServerSocket()
 		ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(_eventQueue[i].data.ptr);
 
 		// Remove from epoll
-		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+		// epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
 
-		// Clean up memory
+		// destructor removes from Epoll and cleans memory
 		delete Connecting;
 	}
 
@@ -82,6 +82,11 @@ ServerSocket::~ServerSocket()
 const ServerConf&		ServerSocket::getConf() const
 {
 	return _conf;
+}
+
+int						ServerSocket::getEpoll() const
+{
+	return _epollFd;
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
@@ -134,8 +139,8 @@ void			ServerSocket::acceptNewConnection()
 	}
 
 	#ifdef DEBUG
-		std::cout << "Connection established" << std::endl;
-		std::cout << "Fd is " << Connecting->getSocketFd() << std::endl;
+		std::cout << CONNEX_FORMAT("\n++++ Accepted Connection on Socket ";
+		std::cout  << Connecting->getSocketFd() << " ++++ \n");
 	#endif
 
 }
@@ -154,7 +159,11 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 
 		try {
 
-			// reading the request into the Sockette buffer
+			#ifdef DEBUG
+				std::cout << "\nClient Socket " << Connecting->getSocketFd() << " ";
+			#endif
+
+			// reading the request or request chunk into a Request object
 			Connecting->readRequest();
 
 			if (Connecting->getRequest()->isComplete())
@@ -162,13 +171,27 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 				// creating a Response handling request according to configured routes
 				Response response(Connecting->getRequest());
 				_cf->fillContent(response);
+				#ifdef DEBUG
+					std::cout << response.getStatus() << std::endl;
+				#endif
 				if (write(Connecting->getSocketFd(),
 					response.getHTTPResponse().c_str(),
 					response.getHTTPResponse().size()) < 0)
 					throw std::runtime_error("write fail");
-				std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
-				Connecting->resetRequest();
+				std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 
+
+				// if (!Connecting->getRequest()->isKeepAlive())
+					Connecting->resetRequest();
+				// else {
+				// 	// Remove from epoll
+				// 	epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+				// 	// Close the socket
+				// 	close(Connecting->getSocketFd());
+				// 	// Delete the object
+				// 	delete Connecting;
+				// 	return;
+				// }
 			}
 
 		}
@@ -201,10 +224,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		return;
 	}
 
-	#ifdef DEBUG
-		std::cout << "Connection handled" << std::endl;
-	#endif
-
 }
 
 void			ServerSocket::processEvents()
@@ -223,51 +242,6 @@ void			ServerSocket::launchEpollListenLoop()
 	waitForEvents();
 	processEvents();
 }
-
-// void			ServerSocket::listeningLoop()
-// {
-// 	ContentFetcher	cf;
-// 	cf.addExecutor(new PHPExecutor());
-// 	cf.addExecutor(new PythonExecutor());
-
-// 	while (1)
-// 	{
-// 		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
-
-// 		// create a socket to receive incoming communication
-// 		ClientSocket AnsweringSocket(*this);
-// 		try {
-// 			// reading the request into the Sockette buffer
-// 			AnsweringSocket.readRequest();
-
-// 			// decoding the buffer into a Request object
-// 			Request decodedRequest(_conf, AnsweringSocket.getRequest());
-
-// 			// creating a Response handling request according to configured routes
-// 			Response response(_conf, decodedRequest);
-
-// 			cf.fillContent(response);
-
-// 			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
-
-// 			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
-// 		}
-
-// 		catch ( HTTPError &e )
-// 		{
-// 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-// 			std::cout << "response is [" << e.getErrorPage() << "\n";
-// 			write(AnsweringSocket.getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
-// 			std::cerr << e.what() << "\n";
-// 		}
-
-// 		catch ( std::exception &e )
-// 		{
-// 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
-// 			std::cerr << e.what() << "\n";
-// 		}
-// 	}
-// }
 
 //--------------------------- EXCEPTIONS ------------------------------------//
 

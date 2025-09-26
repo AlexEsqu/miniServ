@@ -29,6 +29,7 @@ public:
 
 	//----------------- DESTRUCTOR -----------------------//
 
+	~ClientSocket();
 
 	//----------------------- SETTER ---------------------//
 
@@ -44,6 +45,4 @@ public:
 	//----------------- MEMBER FUNCTION ------------------//
 
 	void				readRequest();
-	void 				readRequestHeader();
-	std::string 		readRequestBody(std::istringstream &buffer);
 };

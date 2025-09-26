@@ -6,11 +6,6 @@
 ///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
-// Response::Response()
-// {
-// 	// std::cout << "Response Constructor called" << std::endl;
-// }
-
 Response::Response(Request *req)
 	: _statusNum(200)
 	, _content("")
@@ -131,8 +126,7 @@ void Response::setHTTPResponse()
 		response << "Content-Type: text/html\r\n"<<
 				 "Refresh: 0; url=/\r\n\r\n";
 	}
-	std::cout << response.rdbuf();
-
+	// std::cout << response.rdbuf();
 	this->_HTTPResponse = response.str();
 }
 
@@ -153,6 +147,11 @@ Request *Response::getRequest()
 std::string Response::getRoutedURL() const
 {
 	return (_requestedFileName);
+}
+
+int			Response::getStatus() const
+{
+	return (_statusNum);
 }
 
 ///////////////////////////////////////////////////////////////////

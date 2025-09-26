@@ -58,6 +58,7 @@ public:
 	std::string			getRequestedURL() const;
 	std::map<std::string, std::string>&	getAdditionalHeaderInfo();
 	const ServerConf&	getConf() const;
+	bool				isKeepAlive();
 
 
 	//------------------- OPERATORS ----------------------//

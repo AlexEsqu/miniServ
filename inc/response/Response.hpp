@@ -22,7 +22,7 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	int				_statusNum;
-	std::string			_method;			// enum for GET,POST,DELETE...
+	std::string		_method;			// enum for GET,POST,DELETE...
 	std::string		_contentType;
 	unsigned int	_contentLength;
 	std::string		_content;
@@ -61,6 +61,7 @@ public:
 	std::string		getHTTPResponse() const ;
 	Request*		getRequest();
 	std::string		getRoutedURL() const;
+	int				getStatus() const;
 
 	//------------------- OPERATORS ----------------------//
 

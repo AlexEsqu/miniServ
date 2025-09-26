@@ -6,9 +6,9 @@
 ClientSocket::ClientSocket(ServerSocket &server)
 	:_serv(server)
 {
-#ifdef DEBUG
-	std::cout << "ClientSocket Constructor called" << std::endl;
-#endif
+// #ifdef DEBUG
+// 	std::cerr << "ClientSocket Constructor called" << std::endl;
+// #endif
 
 	int addrlen = sizeof(server.getSocketAddr());
 
@@ -28,6 +28,11 @@ ClientSocket::ClientSocket(ServerSocket &server)
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
+ClientSocket::~ClientSocket()
+{
+	epoll_ctl(_serv.getEpoll(), EPOLL_CTL_DEL, getSocketFd(), NULL);
+	close(getSocketFd());
+}
 
 //------------------------------ SETTER --------------------------------------//
 
@@ -63,16 +68,16 @@ Request*	ClientSocket::getRequest()
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
-void ClientSocket::readRequest()
+void	ClientSocket::readRequest()
 {
 	// read the Client's request into a buffer
 	int valread = read(getSocketFd(), _buffer, BUFFSIZE);
 	if (valread < 0)
 		throw failedSocketRead();
 
-	#ifdef DEBUG
-		std::cout << "Answer socket read " << valread << " bytes: [" << _buffer << "]\n" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Answer socket read " << valread << " bytes: [" << _buffer << "]\n" << std::endl;
+	// #endif
 
 	// add buffer content to a Request object
 	if (_request == NULL)
@@ -83,7 +88,6 @@ void ClientSocket::readRequest()
 	// clear buffer for further use
 	memset(_buffer, '\0', sizeof _buffer);
 }
-
 
 
 //    A process for decoding the chunked transfer coding can be represented
