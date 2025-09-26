@@ -144,6 +144,11 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 {
 	ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(event.data.ptr);
 
+	if (!Connecting) {
+		std::cerr << "Invalid connection pointer!" << std::endl;
+		return;
+	}
+
 	// Socket ready to read
 	if (event.events & EPOLLIN) {
 
@@ -156,16 +161,13 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			{
 				// creating a Response handling request according to configured routes
 				Response response(Connecting->getRequest());
-
 				_cf->fillContent(response);
-
-				write(Connecting->getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
-
+				if (write(Connecting->getSocketFd(),
+					response.getHTTPResponse().c_str(),
+					response.getHTTPResponse().size()) < 0)
+					throw std::runtime_error("write fail");
 				std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
-
-			}
-			else
-			{
+				Connecting->resetRequest();
 
 			}
 
@@ -183,6 +185,8 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
 			std::cerr << e.what() << "\n";
+			delete Connecting;
+			return;
 		}
 	}
 

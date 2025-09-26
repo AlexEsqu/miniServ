@@ -34,10 +34,14 @@ ClientSocket::ClientSocket(ServerSocket &server)
 void	ClientSocket::setEvent(uint32_t epollEventMask)
 {
 	_event.events = epollEventMask;
-	_event.data.fd = getSocketFd();
-
 	// adding new socket pointer as context in the event itself
 	_event.data.ptr = this;
+}
+
+void	ClientSocket::resetRequest()
+{
+	delete _request;
+	_request = NULL;
 }
 
 //------------------------------ GETTER --------------------------------------//

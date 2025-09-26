@@ -53,11 +53,11 @@ std::vector<std::string>	Executor::generateEnvStrVec(Response& response)
 {
 	std::vector<std::string>	envAsStrVec;
 
-	addCGIEnvironment(envAsStrVec, response.getRequest());
+	addCGIEnvironment(envAsStrVec, *(response.getRequest()));
 
 	std::map<std::string, std::string>::const_iterator item;
-	for (item = response.getRequest().getAdditionalHeaderInfo().begin();
-		item != response.getRequest().getAdditionalHeaderInfo().end(); item++)
+	for (item = response.getRequest()->getAdditionalHeaderInfo().begin();
+		item != response.getRequest()->getAdditionalHeaderInfo().end(); item++)
 	{
 		envAsStrVec.push_back(formatAsHTTPVariable(item->first, item->second));
 	}

@@ -20,10 +20,6 @@ private:
 	char				_buffer[BUFFSIZE];
 	struct epoll_event	_event;
 	Request*			_request;
-	std::string	_header;
-	std::string _body;
-	bool	_isChunked;
-	size_t	_contentLength;
 
 public:
 
@@ -37,6 +33,7 @@ public:
 	//----------------------- SETTER ---------------------//
 
 	void				setEvent(uint32_t epollEventMask);
+	void				resetRequest();
 
 	//----------------------- GETTER ---------------------//
 
