@@ -32,14 +32,6 @@
 # include "ConfigParser.hpp"
 
 
-enum e_methods
-{
-	GET,
-	POST,
-	DELETE,
-	UNSUPPOTRTED
-};
-
 enum e_CGI
 {
 	NO_CGI,

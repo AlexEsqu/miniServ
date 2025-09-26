@@ -12,9 +12,7 @@ private:
 	bool						_directoryListing; // what does that mean?
 	std::vector<std::string>	_allowedCGI;
 	std::string					_uploadDirectory;
-	bool						_isGetAllowed;
-	bool						_isPostAllowed;
-	bool						_isDeleteAllowed;
+	std::vector<std::string>	_allowedMethods;
 
 public:
 
@@ -26,7 +24,7 @@ public:
 
 	//----------------- DESTRUCTOR -----------------------//
 
-	~Route();
+	virtual ~Route();
 
 	//------------------- OPERATORS ----------------------//
 
@@ -39,16 +37,12 @@ public:
 	void setDirectoryListing(bool directoryListing);
 	void setAllowedCGI(std::vector<std::string> &allowedCGI);
 	void setUploadDirectory(std::string uploadDirectory);
-	void setIsGetAllowed(bool isGetAllowed);
-	void setIsPostAllowed(bool isPostAllowed);
-	void setIsDeleteAllowed(bool isDeleteAllowed);
+
 
 	std::string getRootDirectory() const;
 	std::vector<std::string> getDefaultFiles() const;
 	bool getDirectoryListing() const;
 	std::vector<std::string> getAllowedCGI() const;
 	std::string getUploadDirectory() const;
-	bool getIsGetAllowed() const;
-	bool getIsPostAllowed() const;
-	bool getIsDeleteAllowed() const;
+
 };

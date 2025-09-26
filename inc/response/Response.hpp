@@ -6,6 +6,15 @@
 #include "Status.hpp"
 #include "ServerConf.hpp"
 
+
+enum e_methods
+{
+	GET,
+	POST,
+	DELETE,
+	UNSUPPOTRTED
+};
+
 class Response
 {
 private:
@@ -13,7 +22,7 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	int				_statusNum;
-	int				_method;			// enum for GET,POST,DELETE...
+	std::string			_method;			// enum for GET,POST,DELETE...
 	std::string		_contentType;
 	unsigned int	_contentLength;
 	std::string		_content;
@@ -40,7 +49,7 @@ public:
 
 	void			setHTTPResponse();
 	void			setStatusNum(int number);
-	void			setMethod(int method);
+	void			setMethod(std::string method);
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
 	void			setContent(std::string content);

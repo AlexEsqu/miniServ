@@ -71,7 +71,10 @@ void	ContentFetcher::addExecutor(Executor* executor)
 
 void	ContentFetcher::fillContent(Response& response)
 {
-	executeIfCGI(response);
+	if (response.getRequest().getMethod() == "GET")
+		executeIfCGI(response);
+
+
 	response.setHTTPResponse();
 }
 

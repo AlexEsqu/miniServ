@@ -112,6 +112,10 @@ UNIT_TEST_BIN		=	utest_$(NAME)
 
 all:				$(NAME)
 
+start:				
+					make re
+					./$(NAME)
+
 $(NAME):			$(OBJ_DIRS) $(OBJ)
 					$(CC) $(FLAGS) $(INC) -o $(NAME) $(OBJ)
 

@@ -120,7 +120,7 @@ void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 		value = trim(value);
 		_additionalHeaderInfo[key] = value;
 		#ifdef DEBUG
-			std::cout << "adding env var as [" << key << " = " << value << "]\n";
+			// std::cout << "adding env var as [" << key << " = " << value << "]\n";
 		#endif
 	}
 }

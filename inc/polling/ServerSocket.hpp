@@ -9,6 +9,7 @@
 #include "PHPExecutor.hpp"
 #include "PythonExecutor.hpp"
 
+class ClientSocket;
 class ServerSocket: public Sockette
 {
 
