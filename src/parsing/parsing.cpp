@@ -34,10 +34,16 @@ std::string& trim(std::string& s)
 	return ltrim(rtrim(s));
 }
 
-std::string& strToUpper(std::string& s)
+std::string strToUpper(std::string& s)
 {
-	for (std::string::iterator i = s.begin(); i != s.end(); i++) {
-		*i = toupper(*i);
-	}
+	for (size_t i = 0; i < s.length(); i++)
+		s[i] = toupper(s[i]);
 	return s;
+}
+
+std::string strToLower(std::string& s)
+{
+	for (size_t i = 0; i < s.length(); i++)
+		s[i] = tolower(s[i]);
+	return (s);
 }
