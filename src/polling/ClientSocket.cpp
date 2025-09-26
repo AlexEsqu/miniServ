@@ -63,7 +63,6 @@ void ClientSocket::readRequest()
 {
 	// read the Client's request into a buffer
 	int valread = read(getSocketFd(), _buffer, BUFFSIZE);
-
 	if (valread < 0)
 		throw failedSocketRead();
 
@@ -73,20 +72,15 @@ void ClientSocket::readRequest()
 
 	// add buffer content to a Request object
 	if (_request == NULL)
-		_request = new Request(_serv.getConf(), _buffer);
+		_request = new Request(_serv.getConf(), _buffer, valread);
 	else
-		_request->addRequestChunk(_buffer);
+		_request->addRequestChunk(_buffer, valread);
 
 	// clear buffer for further use
 	memset(_buffer, '\0', sizeof _buffer);
 }
 
-std::string tolower(std::string str)
-{
-	for (size_t i = 0; i < str.length(); i++)
-		str[i] = tolower(str[i]);
-	return (str);
-}
+
 
 //    A process for decoding the chunked transfer coding can be represented
 //    in pseudo-code as:
@@ -110,44 +104,9 @@ std::string tolower(std::string str)
 //      Remove "chunked" from Transfer-Encoding
 //      Remove Trailer from existing header fields
 
-void ClientSocket::readRequestHeader()
-{
-	int valread = -1;
-	std::string line;
-	bool isHeader = true;
-	(void)_isChunked;
-	valread = read(getSocketFd(), _buffer, BUFFSIZE);
-	if (valread < 0)
-		throw failedSocketRead();
-	if (valread == 0)
-		return;
-	std::istringstream buffer(_buffer);
-	while (std::getline(buffer, line) && isHeader)
-	{
-		_header += line + '\n';
-		if (line == "\r")
-		{
-			isHeader = false;
-			break;
-		}
-	}
-	std::cout << MAGENTA << _header << STOP_COLOR << std::endl;
-	if (_contentLength > 0)
-		readRequestBody(buffer);
-}
-
 // void readRequestHeader
 // read request header into buffer
 // to be then used by Request Object and decoded, so we have content length for further reading OR throwing out error cuz bad request
 
-std::string ClientSocket::readRequestBody(std::istringstream &buffer)
-{
-	std::string line;
-	while (std::getline(buffer, line))
-	{
-		_body += line + '\n';
-	}
-	std::cerr << GREEN << _body << STOP_COLOR << std::endl;
-	return (_body);
-}
+
 // once we have content length from header, we can read the body into a string (if it can hold enough ???)

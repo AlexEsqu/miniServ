@@ -1,6 +1,6 @@
 #include "HTTPError.hpp"
 
-HTTPError::HTTPError(Request& req, int status)
+HTTPError::HTTPError(Request* req, int status)
 {
 	Response res(req, status);
 

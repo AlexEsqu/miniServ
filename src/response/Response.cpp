@@ -17,7 +17,7 @@ Response::Response(Request *req)
 	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
-	setMethod(_request.getMethod());
+	setMethod(_request->getMethod());
 	if (this->_method == "POST")
 		setStatusNum(201);
 	if (this->_method == "GET")
@@ -118,7 +118,7 @@ void Response::setHTTPResponse()
 		this->_content = createErrorPageContent(status);
 	}
 	this->_contentLength = this->_content.length();
-	response << _request.getProtocol() << " " << status;
+	response << _request->getProtocol() << " " << status;
 	if (this->_method == "GET")
 	{
 		response << "Content-Type: " << this->_contentType << "\r\n"

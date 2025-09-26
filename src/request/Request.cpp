@@ -5,14 +5,15 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-Request::Request(const ServerConf& conf,std::string httpRequest)
+Request::Request(const ServerConf& conf, std::string httpRequest, size_t byteRead)
 	: _fullRequest(httpRequest)
 	, _conf(conf)
+	, _byteRead(byteRead)
 {
 #ifdef DEBUG
 	std::cout << "Request Constructor called" << std::endl;
 #endif
-	decodeHTTPRequest(httpRequest);
+	decodeRequestHeader(httpRequest);
 }
 
 Request::Request(const Request &copy)
@@ -75,11 +76,6 @@ const ServerConf&	Request::getConf() const
 	return _conf;
 }
 
-bool				Request::isComplete() const
-{
-	return _isComplete;
-}
-
 //----------------------- SETTERS -----------------------------------//
 
 void	Request::setMethod(std::string &method)
@@ -95,6 +91,14 @@ void	Request::setURI(std::string &URI)
 void	Request::setProtocol(std::string &protocol)
 {
 	_protocol = protocol;
+}
+
+void	Request::setContentLength()
+{
+	if (_additionalHeaderInfo.find("Content-Length") != _additionalHeaderInfo.end())
+		_contentLength = atoi(_additionalHeaderInfo["Content-Length"].c_str());
+	else
+		_contentLength = 0;
 }
 
 // Valid request line (1st line of a HTTP request) must have the format:
@@ -165,7 +169,7 @@ void	Request::checkHTTPValidity()
 
 // Goes through the Request Header line by line
 // to set method, uri, protocol and env
-void Request::decodeHTTPRequest(std::string &httpRequest)
+void Request::decodeRequestHeader(std::string &httpRequest)
 {
 	std::stringstream httpRequestStream(httpRequest);
 	std::string line;
@@ -192,8 +196,6 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 		}
 	}
 
-	checkHTTPValidity();
-
 	#ifdef DEBUG
 		std::cout << "Request HTTP was [" << httpRequest << "]\n";
 		std::cout << "Method is [" << _method << "]\n";
@@ -202,9 +204,29 @@ void Request::decodeHTTPRequest(std::string &httpRequest)
 	#endif
 }
 
-void	Request::addRequestChunk(std::string httpRequest)
+void	Request::addRequestChunk(std::string httpRequest, size_t byteRead)
 {
+	_fullRequest.append(httpRequest);
+	_byteRead += byteRead;
+}
 
+// std::string Request::readRequestBody(std::istringstream &buffer)
+// {
+// 	std::string line;
+// 	while (std::getline(buffer, line))
+// 	{
+// 		_body += line + '\n';
+// 	}
+// 	std::cerr << GREEN << _body << STOP_COLOR << std::endl;
+// 	return (_body);
+// }
+
+bool				Request::isComplete()
+{
+	if (_contentLength)
+		return (_byteRead == _contentLength);
+	else
+		return (true);
 }
 
 

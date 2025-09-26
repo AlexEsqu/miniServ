@@ -11,7 +11,7 @@ private:
 	std::string	_message;
 
 public:
-	HTTPError(Request& req, int status);
+	HTTPError(Request* req, int status);
 	~HTTPError() throw() {};
 	std::string	getErrorPage();
 };

@@ -22,8 +22,10 @@ private:
 	std::string			_protocol;			// we only support HTTP/1.1
 	std::string			_requestedFileName;	// for example "/home.html"
 	std::map<std::string, std::string>	_additionalHeaderInfo;
+
 	const ServerConf&	_conf;
-	bool				_isComplete;
+	size_t				_byteRead;
+	size_t				_contentLength;		// set at 0 if absent from Request
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -33,8 +35,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	// Request(); // empty constructor for testing purposes
-	Request(const ServerConf& conf, std::string httpRequest);
+	Request(const ServerConf& conf, std::string httpRequest, size_t byteRead);
 	Request(const Request &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -48,6 +49,7 @@ public:
 	void				setURI(std::string& httpRequest);
 	void				setRequestLine(std::string& httpRequest);
 	void				addAdditionalHeaderInfo(std::string& keyValueString);
+	void				setContentLength();
 
 	//-------------------- GETTERS -----------------------//
 
@@ -56,7 +58,7 @@ public:
 	std::string			getRequestedURL() const;
 	std::map<std::string, std::string>&	getAdditionalHeaderInfo();
 	const ServerConf&	getConf() const;
-	bool				isComplete() const;
+
 
 	//------------------- OPERATORS ----------------------//
 
@@ -64,8 +66,9 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void				decodeHTTPRequest(std::string &httpRequest);
-	void				addRequestChunk(std::string httpRequest);
+	void				decodeRequestHeader(std::string &httpRequest);
+	void				addRequestChunk(std::string httpRequest, size_t byteRead);
+	bool				isComplete();
 
 };
 

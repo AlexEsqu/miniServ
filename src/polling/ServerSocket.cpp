@@ -40,7 +40,6 @@ ServerSocket::ServerSocket(ServerConf conf)
 	_cf->addExecutor(new PHPExecutor());
 	_cf->addExecutor(new PythonExecutor());
 
-
 	// Creating socket and file descriptor referring it
 	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
 	if (getSocketFd() < 0)

@@ -71,7 +71,7 @@ void	ContentFetcher::addExecutor(Executor* executor)
 
 void	ContentFetcher::fillContent(Response& response)
 {
-	if (response.getRequest().getMethod() == "GET")
+	if (response.getRequest()->getMethod() == "GET")
 		executeIfCGI(response);
 
 
