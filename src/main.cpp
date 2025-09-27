@@ -1,6 +1,5 @@
 #include "server.hpp"
 
-
 void listeningLoop(std::vector<ServerSocket*>& servers)
 {
 	while (1)
@@ -12,14 +11,11 @@ void listeningLoop(std::vector<ServerSocket*>& servers)
 	}
 }
 
-int main(int argc, char** argv)
+int main(int , char** argv)
 {
-	// reading config and setting up routes
+	// parsing config and setting up routes, or if no config setting up default
 	std::vector<ServerConf*>	serversConfs;
-	if (argc > 1)
-		serversConfs = ConfigParser::readConfigs(argv[1]);
-	else
-		serversConfs.push_back(new ServerConf());
+	serversConfs = ConfigParser::parseConfigFile(argv[1]);
 
 	// constructing servers matching the configs
 	std::vector<ServerSocket*>	servers;

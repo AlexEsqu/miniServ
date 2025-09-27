@@ -124,7 +124,7 @@ TEST_CASE("ConfigParser parseServerBlock function") {
 	}
 }
 
-TEST_CASE("ConfigParser readConfigs function") {
+TEST_CASE("ConfigParser parseConfigFile function") {
 
 	SUBCASE("Single server configuration") {
 		createTempConfigFile("test_single_server.conf",
@@ -135,7 +135,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 			"}\n");
 
 		std::string configPath = "test_single_server.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);
@@ -159,7 +159,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 			"}\n");
 
 		std::string configPath = "test_multiple_servers.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
 
 		CHECK(configs.size() == 2);
 		CHECK(configs[0].getPort() == 8080);
@@ -188,7 +188,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 
 		ConfigParser parser;
 		std::string configPath = "test_global_directives.conf";
-		std::vector<ServerConf> configs = parser.readConfigs(configPath);
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath);
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);
@@ -201,7 +201,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 
 		ConfigParser parser;
 		std::string configPath = "test_empty.conf";
-		std::vector<ServerConf> configs = parser.readConfigs(configPath);
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath);
 
 		CHECK(configs.size() == 0);
 
@@ -216,7 +216,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 
 		ConfigParser parser;
 		std::string configPath = "test_only_comments.conf";
-		std::vector<ServerConf> configs = parser.readConfigs(configPath);
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath);
 
 		CHECK(configs.size() == 0);
 
@@ -227,7 +227,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 		ConfigParser parser;
 		std::string configPath = "non_existent_file.conf";
 
-		CHECK_THROWS_AS(parser.readConfigs(configPath), std::runtime_error);
+		CHECK_THROWS_AS(parser.parseConfigFile(configPath), std::runtime_error);
 	}
 }
 
@@ -241,7 +241,7 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 
 		std::string configPath = "test_no_closing_brace.conf";
 
-		CHECK_THROWS_AS(ConfigParser::readConfigs(configPath), std::runtime_error);
+		CHECK_THROWS_AS(ConfigParser::parseConfigFile(configPath), std::runtime_error);
 
 		std::remove("test_no_closing_brace.conf");
 	}
@@ -260,7 +260,7 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 			"}\n");
 
 		std::string configPath = "test_nested_locations.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);
@@ -278,7 +278,7 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 			"}\n");
 
 		std::string configPath = "test_various_formats.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);

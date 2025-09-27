@@ -2,31 +2,6 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-ServerSocket::ServerSocket(int port) // TO BE DESTROYED
-{
-	// #ifdef DEBUG
-	// 	std::cerr << "ServerSocket Constructor called" << std::endl;
-	// #endif
-
-	setPort(port);
-
-	// Creating socket and file descriptor referring it
-	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
-	if (getSocketFd() < 0)
-		throw failedSocketCreation();
-
-	// allow socket to be reused and webserv to reload faster with SO_REUSEADDR
-	setSocketOption(SO_REUSEADDR);
-
-	// bind serv socket to IP address using the standard IP options and provided port
-	bindToIPAddress();
-
-	// set serv sock to listen for incomming connections with max incomming
-	setListenMode(10);
-
-	createEpollInstance();
-}
-
 ServerSocket::ServerSocket(ServerConf conf)
 	: _conf(conf)
 {
@@ -64,10 +39,8 @@ ServerSocket::~ServerSocket()
 	for (int i = 0; _eventQueue[i].data.ptr != NULL; ++i) { // horrible loop, to be fixed
 		ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(_eventQueue[i].data.ptr);
 
-		// Remove from epoll
-		// epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-
-		// destructor removes from Epoll and cleans memory
+		// remove from epoll
+		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
 		delete Connecting;
 	}
 
@@ -112,7 +85,7 @@ void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &newSocket.getEvent()) == -1)
 	{
-		perror("Failed to add server socket to epoll");
+		perror("Failed to add server socket to epoll in call to epoll_ctl()");
 		throw failedEpollCtl();
 	}
 }
@@ -135,6 +108,7 @@ void			ServerSocket::acceptNewConnection()
 	Connecting->setEvent(EPOLLIN | EPOLLOUT | EPOLLET);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1) {
+		perror("Failed to accept new connection in call to epoll_ctl()");
 		throw failedEpollCtl();
 	}
 
@@ -148,11 +122,6 @@ void			ServerSocket::acceptNewConnection()
 void			ServerSocket::handleExistingConnection(epoll_event &event)
 {
 	ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(event.data.ptr);
-
-	if (!Connecting) {
-		std::cerr << "Invalid connection pointer!" << std::endl;
-		return;
-	}
 
 	// Socket ready to read
 	if (event.events & EPOLLIN) {
