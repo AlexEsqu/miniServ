@@ -76,7 +76,7 @@ const ServerConf&	Request::getConf() const
 bool				Request::isKeepAlive()
 {
 	if (_additionalHeaderInfo.find("Connection") != _additionalHeaderInfo.end())
-		return (_additionalHeaderInfo["Connection"] != "close");
+		return (_additionalHeaderInfo["Connection"] != "keep-alive");
 	return true;
 }
 

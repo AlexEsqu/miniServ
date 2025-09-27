@@ -5,10 +5,6 @@
 ServerSocket::ServerSocket(ServerConf conf)
 	: _conf(conf)
 {
-	// #ifdef DEBUG
-	// 	std::cerr << "ServerSocket Constructor called" << std::endl;
-	// #endif
-
 	setPort(conf.getPort());
 
 	_cf = new ContentFetcher();
@@ -150,17 +146,17 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 				std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 
 
-				// if (!Connecting->getRequest()->isKeepAlive())
+				if (Connecting->getRequest()->isKeepAlive())
 					Connecting->resetRequest();
-				// else {
-				// 	// Remove from epoll
-				// 	epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-				// 	// Close the socket
-				// 	close(Connecting->getSocketFd());
-				// 	// Delete the object
-				// 	delete Connecting;
-				// 	return;
-				// }
+				else {
+					// Remove from epoll
+					epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+					// Close the socket
+					close(Connecting->getSocketFd());
+					// Delete the object
+					delete Connecting;
+					return;
+				}
 			}
 
 		}
