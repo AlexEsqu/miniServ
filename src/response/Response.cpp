@@ -8,7 +8,6 @@
 
 Response::Response(Request *req)
 	: _statusNum(200)
-	, _content("")
 	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
@@ -22,7 +21,6 @@ Response::Response(Request *req)
 
 Response::Response(Request *req, int status)
 	: _statusNum(status)
-	, _content("")
 	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
@@ -86,6 +84,11 @@ void Response::setContentLength(int length)
 
 void Response::setContent(std::string content)
 {
+	_content = std::vector<char>(content.begin(), content.end());
+}
+
+void Response::setContent(std::vector<char> content)
+{
 	_content = content;
 }
 
@@ -106,28 +109,28 @@ void Response::setResponse(std::string response)
 
 void Response::setHTTPResponse()
 {
-	std::stringstream response;
 	Status status(this->_statusNum);
 	if (status.getStatusCode() >= 400) // if its an error
-	{
-		this->_content = createErrorPageContent(status);
-	}
-	this->_contentLength = this->_content.length();
-	response << _request->getProtocol() << " " << status;
+		this->_content = std::vector<char>(createErrorPageContent(status).begin(), createErrorPageContent(status).end());
+	this->_contentLength = this->_content.size();
+
+	std::stringstream	header;
+	header << _request->getProtocol() << " " << status;
 	if (this->_method == "GET")
 	{
-		response << "Content-Type: " << this->_contentType << "\r\n"
-				 << "Content-Length: " << this->_contentLength
-				 << "/\r\n\r\n"
-				 << this->_content;
+		header << "Content-Type: " << _contentType << "\r\n"
+				 << "Content-Length: " << _contentLength << "\r\n"
+				 << "\r\n";
 	}
 	if (this->_method == "POST")
 	{
-		response << "Content-Type: text/html\r\n"<<
-				 "Refresh: 0; url=/\r\n\r\n";
+		header << "Content-Type: text/html\r\n"
+				<< "Content-Length: 0\r\n"
+				<< "Refresh: 0; url=/\r\n"
+				<< "\r\n";
 	}
-	// std::cout << response.rdbuf();
-	this->_HTTPResponse = response.str();
+
+	this->_HTTPResponse = header.str() + _content.data();
 }
 
 ///////////////////////////////////////////////////////////////////

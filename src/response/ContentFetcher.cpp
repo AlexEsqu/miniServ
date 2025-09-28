@@ -29,6 +29,37 @@ ContentFetcher::~ContentFetcher()
 
 //------------------- MEMBER FUNCTIONS ------------------------//
 
+std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
+{
+	size_t dotPos = filePath.find_last_of('.');
+	if (dotPos == std::string::npos)
+		return "application/octet-stream";
+
+	std::string extension = filePath.substr(dotPos + 1);
+
+	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+	if (extension == "html" || extension == "htm") return "text/html";
+	if (extension == "css") return "text/css";
+	if (extension == "js") return "application/javascript";
+	if (extension == "jpg" || extension == "jpeg") return "image/jpeg";
+	if (extension == "png") return "image/png";
+	if (extension == "gif") return "image/gif";
+	if (extension == "svg") return "image/svg+xml";
+	if (extension == "ico") return "image/x-icon";
+	if (extension == "txt") return "text/plain";
+	if (extension == "pdf") return "application/pdf";
+
+	return "application/octet-stream";
+}
+
+size_t	ContentFetcher::getSizeOfFile(const std::string& filename) {
+	struct stat st;
+	if(stat(filename.c_str(), &st) != 0) {
+		return 0;
+	}
+	return st.st_size;
+}
+
 bool	ContentFetcher::isDirectory(const char *path)
 {
 	struct stat path_stat;
@@ -38,18 +69,24 @@ bool	ContentFetcher::isDirectory(const char *path)
 
 void	ContentFetcher::serveStatic(Response& response)
 {
-	std::ifstream input(response.getRoutedURL().c_str()); // opening the file as the content for the response
+	std::string	fileURL(response.getRoutedURL());
+
+	std::ifstream input(fileURL.c_str(), std::ios::binary); // opening the file as the content for the response
 	std::stringstream content;
 
-	if (!input.is_open() || isDirectory(response.getRoutedURL().c_str()))
+	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
 		response.setStatusNum(404);
 		response.setHTTPResponse();
 		return;
 	}
-	content << input.rdbuf();
-	response.setContent(content.str());
+
+	response.setContentType(getTypeBasedOnExtension(fileURL));
+	size_t	size = getSizeOfFile(fileURL);
+	std::vector<char> buffer(size);
+	input.read(buffer.data(), size);
+	response.setContent(buffer);
 }
 
 void ContentFetcher::executeIfCGI(Response& response)

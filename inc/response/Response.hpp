@@ -21,16 +21,16 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	int				_statusNum;
-	std::string		_method;			// enum for GET,POST,DELETE...
-	std::string		_contentType;
-	unsigned int	_contentLength;
-	std::string		_content;
-	std::string		_response;
-	std::string		_requestedFileName;
-	std::string		_HTTPResponse;
-	int				_CGI;
-	Request*		_request;
+	int					_statusNum;
+	std::string			_method;			// enum for GET,POST,DELETE...
+	std::string			_contentType;
+	unsigned int		_contentLength;
+	std::vector<char>	_content;
+	std::string			_response;
+	std::string			_requestedFileName;
+	std::string			_HTTPResponse;
+	int					_CGI;
+	Request*			_request;
 
 public:
 	// Response();
@@ -53,6 +53,7 @@ public:
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
 	void			setContent(std::string content);
+	void			setContent(std::vector<char> content);
 	void			setUrl(std::string url);
 	void			setResponse(std::string response);
 
