@@ -110,6 +110,11 @@ void			ServerConf::setParamMap(std::map<std::string, std::string>& paramMap)
 	_paramMap = paramMap;
 }
 
+void			ServerConf::setServerName(std::string serverName)
+{
+	_serverName = serverName;
+}
+
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 bool doesFileExist(std::string &requestedFile)

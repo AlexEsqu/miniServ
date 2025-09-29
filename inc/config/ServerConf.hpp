@@ -17,6 +17,7 @@ class ServerConf
 private:
 
 	unsigned int		_port;
+	std::string			_serverName;
 	unsigned int		_maxSizeClientRequestBody;
 	std::string			_root;
 	std::vector<Route*>	_routes;

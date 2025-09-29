@@ -28,6 +28,20 @@ Route::Route()
 	#endif
 }
 
+Route::Route(std::string root, std::vector<std::string> defaultFiles,
+		std::vector<std::string> allowedCGI, std::vector<std::string> allowedMethods,
+		std::string uploadDirectory)
+	: _rootDirectory(root)
+	, _defaultFiles(defaultFiles)
+	, _allowedCGI(allowedCGI)
+	, _uploadDirectory(uploadDirectory)
+	, _allowedMethods(allowedMethods)
+{
+	#ifdef DEBUG
+		std::cout << "Route Constructor called" << std::endl;
+	#endif
+}
+
 Route::Route(std::string root)
 {
 	setRootDirectory(root);
@@ -43,7 +57,7 @@ Route::Route(std::string root)
 	setAllowedCGI(allowedCGI);
 
 	setUploadDirectory("/pages/upload/");
-	
+
 	#ifdef DEBUG
 		std::cout << "Route Constructor called" << std::endl;
 	#endif
@@ -57,7 +71,7 @@ Route::Route(const Route &copy)
 	this->_directoryListing = copy._directoryListing;
 	this->_allowedCGI = copy._allowedCGI;
 	this->_uploadDirectory = copy._uploadDirectory;
-	
+
 	#ifdef DEBUG
 		std::cout << "Route copy Constructor called" << std::endl;
 	#endif

@@ -42,9 +42,9 @@ void	Executor::readResultIntoContent(Response& response, int fd)
 		if (buff != 0)
 			s.push_back(buff);
 	}
-	#ifdef DEBUG
-		std::cout << "Pipe read was : [" << s << "]\n";
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Pipe read was : [" << s << "]\n";
+	// #endif
 
 	response.setContent(s);
 }

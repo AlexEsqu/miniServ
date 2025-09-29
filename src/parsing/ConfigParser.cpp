@@ -119,8 +119,8 @@ ServerConf*	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 	if (paramMap.find("listen") != paramMap.end())
 		serverConf->setPort(atoi(paramMap["listen"].c_str()));
 
-	// if (paramMap.find("server_name") != paramMap.end())
-	// 	serverConf.setServerName(paramMap["server_name"]);
+	if (paramMap.find("server_name") != paramMap.end())
+		serverConf->setServerName(paramMap["server_name"]);
 
 	if (paramMap.find("root") != paramMap.end())
 		serverConf->setRoot(paramMap["root"]);

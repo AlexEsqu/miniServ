@@ -20,6 +20,11 @@ public:
 
 	Route();
 	Route(std::string root);
+	Route(std::string root,
+		std::vector<std::string> defaultFiles,
+		std::vector<std::string> allowedCGI,
+		std::vector<std::string> allowedMethods,
+		std::string uploadDirectory);
 	Route(const Route &copy);
 
 	//----------------- DESTRUCTOR -----------------------//

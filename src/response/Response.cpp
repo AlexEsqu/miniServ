@@ -99,6 +99,10 @@ void Response::setUrl(std::string url)
 		this->_requestedFileName = root + _request->getConf().getRoutes(0)->getDefaultFiles()[0];
 	else
 		this->_requestedFileName = root + url;
+
+	// GET /admin/truc => GET /www/var/etc/admin/
+	// GET /bidule/chose => GET /start/truc
+	// GET / => GET <root>/index.html ou <root>/index.php
 	// std::cout << GREEN << _requestedFileName << STOP_COLOR;
 }
 
