@@ -75,7 +75,7 @@ void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::stri
 }
 
 
-ServerConf*	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
+ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 {
 	std::map<std::string, std::string>	paramMap;
 
@@ -114,29 +114,27 @@ ServerConf*	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 	if (!isClosedCurlyBrace(line))
 		throw std::runtime_error("Invalid config file");
 
-	ServerConf* serverConf = new ServerConf;
+	ServerConf serverConf;
 
 	if (paramMap.find("listen") != paramMap.end())
-		serverConf->setPort(atoi(paramMap["listen"].c_str()));
+		serverConf.setPort(atoi(paramMap["listen"].c_str()));
 
 	if (paramMap.find("server_name") != paramMap.end())
-		serverConf->setServerName(paramMap["server_name"]);
+		serverConf.setServerName(paramMap["server_name"]);
 
 	if (paramMap.find("root") != paramMap.end())
-		serverConf->setRoot(paramMap["root"]);
-
-	
+		serverConf.setRoot(paramMap["root"]);
 
 	return serverConf;
 }
 
 
-std::vector<ServerConf*>	ConfigParser::parseConfigFile(char* configFilePath)
+std::vector<ServerConf>	ConfigParser::parseConfigFile(char* configFilePath)
 {
-	std::vector<ServerConf*>	configs;
+	std::vector<ServerConf>	configs;
 
 	if (!configFilePath) {
-		configs.push_back(new ServerConf());
+		configs.push_back(ServerConf());
 		return configs;
 	}
 
