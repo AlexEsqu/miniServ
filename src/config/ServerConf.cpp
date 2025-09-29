@@ -139,11 +139,7 @@ Route *ServerConf::getRootMatchForRequestedFile(std::string &requestedFile) cons
 	{
 		path = (*it)->getRootDirectory() + requestedFile;
 		if (doesFileExist(path) == true)
-		{
-			std::cout << GREEN << "FOUND ROOT " << (*it)->getRootDirectory() << STOP_COLOR << std::endl;
 			return (*it);
-		}
 	}
-	std::cout << RED << "ROOT NOT FOUND FOR " << requestedFile << STOP_COLOR << std::endl;
 	return (*this->_routes.begin());
 }

@@ -125,6 +125,8 @@ ServerConf*	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 	if (paramMap.find("root") != paramMap.end())
 		serverConf->setRoot(paramMap["root"]);
 
+	
+
 	return serverConf;
 }
 

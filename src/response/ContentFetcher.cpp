@@ -124,10 +124,14 @@ void	ContentFetcher::craftSendHTTPResponse(ClientSocket* client)
 		std::cout << response.getStatus() << std::endl;
 	#endif
 
-	if (write(client->getSocketFd(),
+	if (send(client->getSocketFd(),
 		response.getHTTPResponse().c_str(),
-		response.getHTTPResponse().size()) < 0)
+		response.getHTTPResponse().size(),
+		MSG_DONTWAIT) < 0) {
+		perror("write");
 		throw std::runtime_error("write fail");
+	}
+
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 
 	if (client->getRequest()->isKeepAlive()) {
