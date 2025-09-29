@@ -4,8 +4,8 @@
 #include <string>
 #include <algorithm>
 
-#include "server.hpp"
 #include "Sockette.hpp"
+#include "Request.hpp"
 
 #define BUFFSIZE 1000000
 

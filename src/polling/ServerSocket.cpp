@@ -101,7 +101,7 @@ void			ServerSocket::acceptNewConnection()
 	ClientSocket*	Connecting = new ClientSocket(*this);
 
 	Connecting->setSocketNonBlocking();
-	Connecting->setEvent(EPOLLIN | EPOLLOUT | EPOLLET);
+	Connecting->setEvent(EPOLLIN | EPOLLERR);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1) {
 		perror("Failed to accept new connection in call to epoll_ctl()");
@@ -131,34 +131,11 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			// reading the request or request chunk into a Request object
 			Connecting->readRequest();
 
+			// if request is complete, fetch content and wrap in HTTP header
 			if (Connecting->getRequest()->isComplete())
-			{
-				// creating a Response handling request according to configured routes
-				Response response(Connecting->getRequest());
-				_cf->fillContent(response);
-				#ifdef DEBUG
-					std::cout << response.getStatus() << std::endl;
-				#endif
-				if (write(Connecting->getSocketFd(),
-					response.getHTTPResponse().c_str(),
-					response.getHTTPResponse().size()) < 0)
-					throw std::runtime_error("write fail");
-				std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
+				_cf->craftSendHTTPResponse(Connecting);
 
-
-				if (Connecting->getRequest()->isKeepAlive())
-					Connecting->resetRequest();
-				else {
-					// Remove from epoll
-					epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-					// Close the socket
-					close(Connecting->getSocketFd());
-					// Delete the object
-					delete Connecting;
-					return;
-				}
-			}
-
+			return;
 		}
 
 		catch ( HTTPError &e )
@@ -176,15 +153,18 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			delete Connecting;
 			return;
 		}
+
+		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+		delete Connecting;
+	}
+
+	if (event.events & (EPOLLOUT)) {
+		std::cout << "Connection requesting write" << std::endl;
 	}
 
 	if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
 		std::cout << "Connection closed or error occurred" << std::endl;
-
-		// Remove from epoll
 		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-
-		// Clean up memory
 		delete Connecting;
 		return;
 	}

@@ -5,6 +5,7 @@
 
 #include "Response.hpp"
 #include "Executor.hpp"
+#include "ClientSocket.hpp"
 
 class ContentFetcher
 {
@@ -45,5 +46,6 @@ public:
 
 	void			addExecutor(Executor* executor);
 	void			fillContent(Response& response);
+	void			craftSendHTTPResponse(ClientSocket* client);
 
 };

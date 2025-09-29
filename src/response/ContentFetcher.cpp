@@ -33,7 +33,7 @@ std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
 {
 	size_t dotPos = filePath.find_last_of('.');
 	if (dotPos == std::string::npos)
-		return "application/octet-stream";
+		return "text/plain";
 
 	std::string extension = filePath.substr(dotPos + 1);
 
@@ -48,8 +48,10 @@ std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
 	if (extension == "ico") return "image/x-icon";
 	if (extension == "txt") return "text/plain";
 	if (extension == "pdf") return "application/pdf";
+	if (extension == "webp") return "image/wepb";
+	if (extension == "png") return "image/png";
 
-	return "application/octet-stream";
+	return "text/plain";
 }
 
 size_t	ContentFetcher::getSizeOfFile(const std::string& filename) {
@@ -69,10 +71,9 @@ bool	ContentFetcher::isDirectory(const char *path)
 
 void	ContentFetcher::serveStatic(Response& response)
 {
-	std::string	fileURL(response.getRoutedURL());
+	std::string			fileURL(response.getRoutedURL());
 
-	std::ifstream input(fileURL.c_str(), std::ios::binary); // opening the file as the content for the response
-	std::stringstream content;
+	std::ifstream		input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
@@ -113,6 +114,32 @@ void	ContentFetcher::fillContent(Response& response)
 
 
 	response.setHTTPResponse();
+}
+
+void	ContentFetcher::craftSendHTTPResponse(ClientSocket* client)
+{
+	Response response(client->getRequest());
+	fillContent(response);
+	#ifdef DEBUG
+		std::cout << response.getStatus() << std::endl;
+	#endif
+
+	if (write(client->getSocketFd(),
+		response.getHTTPResponse().c_str(),
+		response.getHTTPResponse().size()) < 0)
+		throw std::runtime_error("write fail");
+	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
+
+	if (client->getRequest()->isKeepAlive()) {
+		client->resetRequest();
+	}
+
+	else {
+		// epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+		// close(Connecting->getSocketFd());
+		delete client;
+		return ;
+	}
 }
 
 

@@ -25,7 +25,7 @@ private:
 	std::string			_method;			// enum for GET,POST,DELETE...
 	std::string			_contentType;
 	unsigned int		_contentLength;
-	std::vector<char>	_content;
+	std::string			_content;
 	std::string			_response;
 	std::string			_requestedFileName;
 	std::string			_HTTPResponse;

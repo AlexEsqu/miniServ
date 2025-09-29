@@ -30,6 +30,8 @@ ClientSocket::ClientSocket(ServerSocket &server)
 
 ClientSocket::~ClientSocket()
 {
+	delete _request;
+	_request = NULL;
 	epoll_ctl(_serv.getEpoll(), EPOLL_CTL_DEL, getSocketFd(), NULL);
 	close(getSocketFd());
 }

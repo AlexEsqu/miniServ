@@ -76,8 +76,8 @@ const ServerConf&	Request::getConf() const
 bool				Request::isKeepAlive()
 {
 	if (_additionalHeaderInfo.find("Connection") != _additionalHeaderInfo.end())
-		return (_additionalHeaderInfo["Connection"] != "keep-alive");
-	return true;
+		return (_additionalHeaderInfo["Connection"] == "keep-alive");
+	return false;
 }
 
 //----------------------- SETTERS -----------------------------------//
@@ -199,6 +199,10 @@ void	Request::addRequestChunk(std::string httpRequest, size_t byteRead)
 {
 	_fullRequest.append(httpRequest);
 	_byteRead += byteRead;
+
+	#ifdef DEBUG
+		std::cout << "Request added " << byteRead << " out of " << _contentLength << " to " << _byteRead;
+	#endif
 }
 
 // std::string Request::readRequestBody(std::istringstream &buffer)
@@ -215,7 +219,7 @@ void	Request::addRequestChunk(std::string httpRequest, size_t byteRead)
 bool				Request::isComplete()
 {
 	if (_contentLength)
-		return (_byteRead == _contentLength);
+		return (_byteRead >= _contentLength);
 	else
 		return (true);
 }

@@ -84,12 +84,12 @@ void Response::setContentLength(int length)
 
 void Response::setContent(std::string content)
 {
-	_content = std::vector<char>(content.begin(), content.end());
+	_content = content;
 }
 
 void Response::setContent(std::vector<char> content)
 {
-	_content = content;
+	_content = std::string(content.begin(), content.end());
 }
 
 void Response::setUrl(std::string url)
@@ -99,7 +99,7 @@ void Response::setUrl(std::string url)
 		this->_requestedFileName = root + _request->getConf().getRoutes(0)->getDefaultFiles()[0];
 	else
 		this->_requestedFileName = root + url;
-	// std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
+	// std::cout << GREEN << _requestedFileName << STOP_COLOR;
 }
 
 void Response::setResponse(std::string response)
@@ -111,7 +111,7 @@ void Response::setHTTPResponse()
 {
 	Status status(this->_statusNum);
 	if (status.getStatusCode() >= 400) // if its an error
-		this->_content = std::vector<char>(createErrorPageContent(status).begin(), createErrorPageContent(status).end());
+		this->_content = createErrorPageContent(status);
 	this->_contentLength = this->_content.size();
 
 	std::stringstream	header;
@@ -130,7 +130,7 @@ void Response::setHTTPResponse()
 				<< "\r\n";
 	}
 
-	this->_HTTPResponse = header.str() + _content.data();
+	this->_HTTPResponse = header.str() + _content;
 }
 
 ///////////////////////////////////////////////////////////////////
