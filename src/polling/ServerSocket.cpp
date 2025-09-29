@@ -25,6 +25,8 @@ ServerSocket::ServerSocket(ServerConf conf)
 	// set serv sock to listen for incomming connections with max incomming
 	setListenMode(10);
 
+	fcntl(getSocketFd(), F_SETFL, O_NONBLOCK);
+
 	createEpollInstance();
 }
 
@@ -67,7 +69,7 @@ void			ServerSocket::createEpollInstance()
 	if (_epollFd == -1)
 		throw failedEpollCreate();
 
-	_event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+	_event.events = EPOLLIN | EPOLLOUT;
 	_event.data.fd = getSocketFd();
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, getSocketFd(), &_event) == -1) {
@@ -77,7 +79,7 @@ void			ServerSocket::createEpollInstance()
 
 void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 {
-	newSocket.setEvent(EPOLLIN | EPOLLOUT | EPOLLET);
+	newSocket.setEvent(EPOLLIN | EPOLLOUT);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &newSocket.getEvent()) == -1)
 	{
@@ -123,11 +125,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 	if (event.events & EPOLLIN) {
 
 		try {
-
-			#ifdef DEBUG
-				std::cout << "\nClient Socket " << Connecting->getSocketFd() << " ";
-			#endif
-
 			// reading the request or request chunk into a Request object
 			Connecting->readRequest();
 
@@ -141,7 +138,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		catch ( HTTPError &e )
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-			std::cout << "response is [" << e.getErrorPage() << "\n";
 			write(Connecting->getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
 			std::cerr << e.what() << "\n";
 		}
@@ -184,6 +180,7 @@ void			ServerSocket::processEvents()
 
 void			ServerSocket::launchEpollListenLoop()
 {
+	std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
 	waitForEvents();
 	processEvents();
 }

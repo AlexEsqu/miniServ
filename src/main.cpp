@@ -4,10 +4,8 @@ void listeningLoop(std::vector<ServerSocket*>& servers)
 {
 	while (1)
 	{
-		std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
-
-		servers[0]->launchEpollListenLoop();
-
+		for (size_t i = 0; i < servers.size(); i++)
+			servers[i]->launchEpollListenLoop();
 	}
 }
 

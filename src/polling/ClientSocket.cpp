@@ -72,14 +72,14 @@ Request*	ClientSocket::getRequest()
 
 void	ClientSocket::readRequest()
 {
+	#ifdef DEBUG
+		std::cout << "\nClient Socket " << getSocketFd() << " rcv";
+	#endif
+
 	// read the Client's request into a buffer
 	int valread = read(getSocketFd(), _buffer, BUFFSIZE);
 	if (valread < 0)
 		throw failedSocketRead();
-
-	// #ifdef DEBUG
-	// 	std::cout << "Answer socket read " << valread << " bytes: [" << _buffer << "]\n" << std::endl;
-	// #endif
 
 	// add buffer content to a Request object
 	if (_request == NULL)
