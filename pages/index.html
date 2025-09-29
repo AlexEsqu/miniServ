@@ -6,11 +6,10 @@
     <title>Webserv</title>
     <link href="./styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/xp.css" />
-	 <script src="./app.js" defer></script> 
+    <script src="./app.js" defer></script>
   </head>
   <body>
     <div class="window">
-
       <div class="title-bar">
         <div class="title-bar-text">Webserv</div>
       </div>
@@ -19,7 +18,7 @@
         <p>Hello, world! Here is our little website!</p>
       </div>
     </div>
-    <div class="window" >
+    <div class="window">
       <div class="title-bar">
         <div class="title-bar-text">A little presentation of us!</div>
         <div class="title-bar-controls">
@@ -30,31 +29,69 @@
       </div>
       <div class="window-body">
         <menu role="tablist">
-        <button aria-selected="true" class="tablist-button" id="tablist-button-alex" aria-controls="alex-article">Alex</button>
-<button aria-selected="false" class="tablist-button" id="tablist-button-elvire" aria-controls="elvire-article">Elvire</button>
-<button aria-selected="false" class="tablist-button" id="tablist-button-add-yourself" aria-controls="add-yourself-article">Add Yourself</button>
+          <button
+            aria-selected="true"
+            class="tablist-button"
+            id="tablist-button-alex"
+            aria-controls="alex-article"
+          >
+            Alex
+          </button>
+          <button
+            aria-selected="false"
+            class="tablist-button"
+            id="tablist-button-elvire"
+            aria-controls="elvire-article"
+          >
+            Elvire
+          </button>
+          <button
+            aria-selected="false"
+            class="tablist-button"
+            id="tablist-button-add-yourself"
+            aria-controls="add-yourself-article"
+          >
+            Add Yourself
+          </button>
         </menu>
         <article role="tabpanel" class="presentation-article" id="alex-article">
-			 <img
-            style="width: 100%"
-            src="./img/Alex.webp"
-          />
-			<p>hello my name is alex</p>
+          <img style="width: 100%" src="./img/Alex.webp" />
+          <p>hello my name is alex</p>
         </article>
 
-        <article role="tabpanel" hidden="hidden" class="presentation-article" id="elvire-article">
-          		 <img
-            style="width: 100%"
-            src="./img/Elvire.webp"
-          />
-			<p>hello my name is Elvire</p>
+        <article
+          role="tabpanel"
+          hidden="hidden"
+          class="presentation-article"
+          id="elvire-article"
+        >
+          <img style="width: 100%" src="./img/Elvire.webp" />
+          <p>hello my name is Elvire</p>
         </article>
-		<article role="tabpanel" hidden="hidden" class="presentation-article" id="add-yourself-article">
-          	<p>Add yours !</p>
+        <article
+          role="tabpanel"
+          hidden="hidden"
+          class="presentation-article"
+          id="add-yourself-article"
+        >
+
+          <div class="field-row">
+            <form method="post" action="upload/" id="form">
+              <div class="field-row-stacked" >
+                <label for="user-picture">Submit your picture</label>
+                <input id="user-picture" type="file" accept="image/*" />
+              </div>
+              <div class="field-row-stacked" ">
+                <label for="user-description">Description</label>
+  				<textarea id="user-description"placeholder="Describe yourself"></textarea>              
+			</div>
+            </form>
+          </div>
+		  
         </article>
-        <section class="field-row" style="justify-content: flex-end">
-          <button>OK</button>
-          <button>Cancel</button>
+        <section id ="form-buttons" class="field-row">
+          <button type="submit" form="form" id="form-button-ok">OK</button>
+          <button type="reset" form="form" id="form-button-cancel">Cancel</button>
         </section>
       </div>
     </div>

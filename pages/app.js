@@ -27,6 +27,13 @@ function tablistHandler(e) {
   clickedButton = e.target;
   toggleTablistAriaSelection(clickedButton);
   updateArticleVisibility(clickedButton);
+
+  formButtons = document.getElementById("form-buttons");
+  if (e.target.getAttribute("aria-controls") === "add-yourself-article") {
+    formButtons.style.display = "inline";
+  } else {
+    formButtons.style.display = "none";
+  }
 }
 
 Array.from(buttons).forEach((button) => {

@@ -40,5 +40,18 @@ footer {
 }
 
 article img {
-	width: 100%;
+  width: 100%;
+}
+
+.field-row-stacked {
+  width: 200px;
+}
+
+textarea {
+  resize: none;
+}
+
+#form-buttons {
+  justify-content: flex-end;
+  display: none;
 }
