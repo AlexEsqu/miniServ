@@ -9,6 +9,7 @@ Request::Request(const ServerConf& conf, std::string httpRequest, size_t byteRea
 	: _fullRequest(httpRequest)
 	, _conf(conf)
 	, _byteRead(byteRead)
+	, _contentLength(0)
 {
 // #ifdef DEBUG
 // 	std::cerr << "Request Constructor called" << std::endl;

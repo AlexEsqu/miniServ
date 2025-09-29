@@ -4,7 +4,8 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 ClientSocket::ClientSocket(ServerSocket &server)
-	:_serv(server)
+	: _serv(server)
+	, _request(NULL)
 {
 // #ifdef DEBUG
 // 	std::cerr << "ClientSocket Constructor called" << std::endl;
@@ -77,7 +78,7 @@ void	ClientSocket::readRequest()
 	#endif
 
 	// read the Client's request into a buffer
-	int valread = read(getSocketFd(), _buffer, BUFFSIZE);
+	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK);
 	if (valread < 0)
 		throw failedSocketRead();
 

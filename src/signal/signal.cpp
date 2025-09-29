@@ -2,6 +2,8 @@
 
 void singalHandler(int sig)
 {
-	printf("Caught signal %d\n", sig);
-	exit(sig);
+	if (sig == SIGINT) {
+		std::cout << "\nReceived SIGINT, shutting down gracefully..." << std::endl;
+		g_running = 0;
+	}
 }

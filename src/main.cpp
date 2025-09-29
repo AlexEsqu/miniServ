@@ -1,12 +1,16 @@
 #include "server.hpp"
 
+volatile sig_atomic_t g_running = 1;
+
 void listeningLoop(std::vector<ServerSocket*>& servers)
 {
-	while (1)
+	while (g_running)
 	{
 		for (size_t i = 0; i < servers.size(); i++)
 			servers[i]->launchEpollListenLoop();
 	}
+
+	
 }
 
 int main(int , char** argv)
@@ -24,6 +28,13 @@ int main(int , char** argv)
 	signal(SIGINT, singalHandler);
 
 	listeningLoop(servers);
+
+	for (size_t i = 0; i < serversConfs.size(); i++)
+	{
+		delete servers[i];
+		delete serversConfs[i];
+	}
+	std::cout << "cleaned\n";
 
 	return 0;
 }

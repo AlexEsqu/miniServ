@@ -32,6 +32,8 @@
 # include "ConfigParser.hpp"
 
 
+extern volatile sig_atomic_t g_running;
+
 enum e_CGI
 {
 	NO_CGI,

@@ -21,6 +21,7 @@ private:
 	struct epoll_event			_eventQueue[MAX_EVENTS];
 	const ServerConf			_conf;
 	ContentFetcher*				_cf;
+	std::vector<ClientSocket>	_clients;
 
 public:
 

@@ -3,7 +3,8 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 ServerSocket::ServerSocket(ServerConf conf)
-	: _conf(conf)
+	: _epollFd(-1)
+	, _conf(conf)
 {
 	setPort(conf.getPort());
 
@@ -36,8 +37,6 @@ ServerSocket::~ServerSocket()
 {
 	for (int i = 0; _eventQueue[i].data.ptr != NULL; ++i) { // horrible loop, to be fixed
 		ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(_eventQueue[i].data.ptr);
-
-		// remove from epoll
 		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
 		delete Connecting;
 	}
@@ -92,8 +91,17 @@ void			ServerSocket::waitForEvents()
 {
 	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);
 	if (_eventsReadyForProcess == -1) {
-		perror("failed call to epoll_wait():");
-		throw failedEpollWait();
+		if (errno == EINTR)
+		{
+			std::cout << "epoll_wait interrupted by signal, closing down..." << std::endl;
+			_eventsReadyForProcess = 0;
+			return;
+		}
+		else
+		{
+			perror("failed call to epoll_wait():");
+			throw failedEpollWait();
+		}
 	}
 }
 
@@ -107,6 +115,7 @@ void			ServerSocket::acceptNewConnection()
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1) {
 		perror("Failed to accept new connection in call to epoll_ctl()");
+		delete Connecting;
 		throw failedEpollCtl();
 	}
 
@@ -149,9 +158,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			delete Connecting;
 			return;
 		}
-
-		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-		delete Connecting;
 	}
 
 	if (event.events & (EPOLLOUT)) {
@@ -164,6 +170,9 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		delete Connecting;
 		return;
 	}
+
+	epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
+	delete Connecting;
 
 }
 
