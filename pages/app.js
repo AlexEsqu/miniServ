@@ -1,30 +1,34 @@
 const buttons = document.getElementsByClassName("tablist-button");
-const presentationArticles = document.getElementsByClassName("presentation-article");
+const presentationArticles = document.getElementsByClassName(
+  "presentation-article"
+);
 
-function updateArticleVisibility() {
+function updateArticleVisibility(clickedButton) {
   Array.from(presentationArticles).forEach((article) => {
-    if (article.getAttribute("hidden") == null) {
-      article.setAttribute("hidden", "hidden");
-    } else {
+    if (
+      article.getAttribute("id") === clickedButton.getAttribute("aria-controls")
+    ) {
       article.removeAttribute("hidden");
+    } else {
+      article.setAttribute("hidden", "hidden");
     }
   });
 }
 
-function toggleTablistAriaSelection() {
-  state = undefined;
+function toggleTablistAriaSelection(clickedButton) {
   Array.from(buttons).forEach((button) => {
-    state = button.getAttribute("aria-selected") === "true" ? "false" : "true"
-    button.setAttribute("aria-selected", state);
+    if (button === clickedButton) {
+      button.setAttribute("aria-selected", "true");
+    } else button.setAttribute("aria-selected", "false");
   });
 }
 
-function tablistHandler() {
-  toggleTablistAriaSelection();
-  updateArticleVisibility();
+function tablistHandler(e) {
+  clickedButton = e.target;
+  toggleTablistAriaSelection(clickedButton);
+  updateArticleVisibility(clickedButton);
 }
 
-// console.log(buttons);
 Array.from(buttons).forEach((button) => {
-  button.addEventListener("click", () => tablistHandler());
+  button.addEventListener("click", (e) => tablistHandler(e));
 });
