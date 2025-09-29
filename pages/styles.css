@@ -8,7 +8,7 @@ body {
 
 .window {
   margin: 32px;
-  width: 500px;
+  width: 1000px;
 }
 
 footer {
@@ -50,7 +50,9 @@ article img {
 textarea {
   resize: none;
 }
-
+form div {
+	padding: 6px 0;
+}
 #form-buttons {
   justify-content: flex-end;
   display: none;
