@@ -1,32 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Webserv</title>
-    <link href="./styles.css" rel="stylesheet">
+    <link href="./styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+	 <script src="./app.js" defer></script> 
   </head>
   <body>
-    <header>
-      <h1>WEBSERV</h1>
-      <h3>
-        Bienvenu.e.s sur notre petit site vitrine hoste par notre magnifique
-        serveur web
-      </h3>
-    </header>
-    <div class="presentation">
-      <div class="presentation_wrapper">
-        <img src="./img/Vigo.webp" alt="Vigo: Pilote de ligne" />
-        <p>Vigo: Pilote de ligne</p>
+    <div class="window">
+
+      <div class="title-bar">
+        <div class="title-bar-text">Webserv</div>
       </div>
-      <div class="presentation_wrapper">
-        <img src="./img/Alex.webp" alt="Alex: ex- avocat" />
-        <p>Alex: ex-avocat</p>
-      </div>
-      <div class="presentation_wrapper">
-        <img src="./img/Elvire.webp" alt="Elvire: Au chomage" />
-        <p>Elvire: Au chomage</p>
+
+      <div class="window-body">
+        <p>Hello, world! Here is our little website!</p>
       </div>
     </div>
+    <div class="window" >
+      <div class="title-bar">
+        <div class="title-bar-text">A little presentation of us!</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <menu role="tablist">
+          <button aria-selected="true" aria-controls="Alex" class="tablist-button" id="tablist-button-alex">Alex</button>
+          <button aria-selected="false" aria-controls="Elvire" class="tablist-button" id="tablist-button-elvire">Elvire</button>
+        </menu>
+        <article role="tabpanel" class="presentation-article" id="alex-article">
+			 <img
+            style="width: 100%"
+            src="./img/Alex.webp"
+          />
+			<p>hello my name is alex</p>
+        </article>
+
+        <article role="tabpanel" hidden="hidden" class="presentation-article" id="elvire-article">
+          		 <img
+            style="width: 100%"
+            src="./img/Elvire.webp"
+          />
+			<p>hello my name is Elvire</p>
+        </article>
+        <section class="field-row" style="justify-content: flex-end">
+          <button>OK</button>
+          <button>Cancel</button>
+        </section>
+      </div>
+    </div>
+    <footer></footer>
   </body>
 </html>

@@ -1,39 +1,44 @@
-h1 {
-  color: red;
-  font-size: 70px;
-}
-
-h3 {
-  font-size: 40px;
-}
-
-header {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 body {
   background-image: url("img/big-yoshi-wallpaper.png");
   background-size: cover;
   font-family: "Comic Sans";
+  margin: 0;
+  height: 100%;
 }
 
-img {
+.window {
+  margin: 32px;
   width: 500px;
 }
 
-.presentation p {
-  font-size: 40px;
-  font-weight: 700;
-  color: black;
+footer {
+  font-family: Trebuchet MS;
+  background: linear-gradient(
+    180deg,
+    #0997ff,
+    #0053ee 8%,
+    #0050ee 40%,
+    #06f 88%,
+    #06f 93%,
+    #005bff 95%,
+    #003dd7 96%,
+    #003dd7
+  );
+  padding: 3px 5px 3px 3px;
+  border-top: 1px solid #0831d9;
+  border-left: 1px solid #0831d9;
+  border-right: 1px solid #001ea0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 7px;
+  font-size: 13px;
+  text-shadow: 1px 1px #0f1089;
+  height: 21px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
-.presentation {
-  display: flex;
-  flex: auto;
-  flex-direction: row;
-  text-align: center;
-  justify-content: space-around;
+article img {
+	width: 100%;
 }
