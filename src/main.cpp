@@ -24,6 +24,7 @@ int main(int , char** argv)
 
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
+	signal(SIGPIPE, SIG_IGN); 
 
 	listeningLoop(servers);
 

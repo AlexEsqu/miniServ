@@ -35,8 +35,8 @@ ServerSocket::ServerSocket(ServerConf conf)
 
 ServerSocket::~ServerSocket()
 {
-	for (int i = _clients.size(); i < 0; ++i) {
-		removeConnection(_clients[i]);
+	while (!_clients.empty()) {
+		removeConnection(_clients.begin()->second);
 	}
 
 	delete _cf;
@@ -134,8 +134,9 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 		std::cout  << clientSocket->getSocketFd() << " ++++ \n");
 	#endif
 
+	if (_clients.find(clientSocket->getSocketFd()) != _clients.end())
+		_clients.erase(clientSocket->getSocketFd());
 	epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientSocket->getSocketFd(), NULL);
-	_clients.erase(clientSocket->getSocketFd());
 	delete clientSocket;
 
 }
@@ -170,6 +171,7 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
 			std::cerr << e.what() << "\n";
 			removeConnection(Connecting);
+			return;
 		}
 	}
 
