@@ -41,6 +41,7 @@ public:
 	char*				getBuffer();
 	struct epoll_event&	getEvent();
 	Request*			getRequest();
+	ServerSocket&		getServer();
 
 	//----------------- MEMBER FUNCTION ------------------//
 

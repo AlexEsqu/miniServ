@@ -133,17 +133,6 @@ void	ContentFetcher::craftSendHTTPResponse(ClientSocket* client)
 	}
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
-
-	if (client->getRequest()->isKeepAlive()) {
-		client->resetRequest();
-	}
-
-	else {
-		// epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-		// close(Connecting->getSocketFd());
-		delete client;
-		return ;
-	}
 }
 
 

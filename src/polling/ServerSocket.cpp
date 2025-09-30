@@ -78,7 +78,7 @@ void			ServerSocket::createEpollInstance()
 
 void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 {
-	newSocket.setEvent(EPOLLIN | EPOLLOUT);
+	newSocket.setEvent(EPOLLIN | EPOLLOUT | EPOLLOUT);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &newSocket.getEvent()) == -1)
 	{
@@ -111,7 +111,7 @@ void			ServerSocket::acceptNewConnection()
 	ClientSocket*	Connecting = new ClientSocket(*this);
 
 	Connecting->setSocketNonBlocking();
-	Connecting->setEvent(EPOLLIN | EPOLLERR);
+	Connecting->setEvent(EPOLLIN | EPOLLOUT | EPOLLERR);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1) {
 		perror("Failed to accept new connection in call to epoll_ctl()");
@@ -151,11 +151,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		try {
 			// reading the request or request chunk into a Request object
 			Connecting->readRequest();
-
-			// if request is complete, fetch content and wrap in HTTP header
-			if (Connecting->getRequest()->isComplete())
-				_cf->craftSendHTTPResponse(Connecting);
-
 			return;
 		}
 
@@ -171,15 +166,24 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
 			std::cerr << e.what() << "\n";
 			removeConnection(Connecting);
-			return;
 		}
 	}
 
-	if (event.events & (EPOLLOUT)) {
+	else if (event.events & (EPOLLOUT)) {
 		std::cout << "Connection requesting write" << std::endl;
+		// if request is complete, fetch content and wrap in HTTP header
+		if (Connecting->getRequest() && Connecting->getRequest()->isComplete())
+		{
+			_cf->craftSendHTTPResponse(Connecting);
+
+			if (Connecting->getRequest()->isKeepAlive())
+				Connecting->resetRequest();
+			else
+				removeConnection(Connecting);
+		}
 	}
 
-	if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
+	else if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
 		std::cout << "Connection closed or error occurred" << std::endl;
 		removeConnection(Connecting);
 		return;

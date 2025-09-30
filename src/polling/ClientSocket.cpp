@@ -69,6 +69,11 @@ Request*	ClientSocket::getRequest()
 	return (_request);
 }
 
+ServerSocket&	ClientSocket::getServer()
+{
+	return (_serv);
+}
+
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
 void	ClientSocket::readRequest()
