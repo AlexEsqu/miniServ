@@ -21,12 +21,14 @@ private:
 	int					_socketAddrLen;
 	int					_port;
 
+	Sockette(const Sockette &copy);				// should never be used because constructor uses up ressources (ports)
+	Sockette &operator=(const Sockette &other);	// should never be used
+
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
 	Sockette();
-	Sockette(const Sockette &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
 
@@ -34,7 +36,6 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	Sockette &operator=(const Sockette &other);
 
 	//-------------------- GUETTER -----------------------//
 
