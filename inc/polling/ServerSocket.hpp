@@ -15,13 +15,13 @@ class ServerSocket: public Sockette
 
 private:
 
-	int							_epollFd;
-	int							_eventsReadyForProcess;
-	struct epoll_event			_event;
-	struct epoll_event			_eventQueue[MAX_EVENTS];
-	const ServerConf			_conf;
-	ContentFetcher*				_cf;
-	std::vector<ClientSocket>	_clients;
+	int								_epollFd;
+	int								_eventsReadyForProcess;
+	struct epoll_event				_event;
+	struct epoll_event				_eventQueue[MAX_EVENTS];
+	const ServerConf				_conf;
+	ContentFetcher*					_cf;
+	std::map<int, ClientSocket*>	_clients;
 
 public:
 
@@ -49,6 +49,7 @@ public:
 	void				waitForEvents();
 	void				processEvents();
 	void				acceptNewConnection();
+	void				removeConnection(ClientSocket* clientSocket);
 	void				handleExistingConnection(epoll_event &event);
 	void				launchEpollListenLoop();
 	void				listeningLoop();

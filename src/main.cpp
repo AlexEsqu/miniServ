@@ -9,8 +9,6 @@ void listeningLoop(std::vector<ServerSocket*>& servers)
 		for (size_t i = 0; i < servers.size(); i++)
 			servers[i]->launchEpollListenLoop();
 	}
-
-
 }
 
 int main(int , char** argv)

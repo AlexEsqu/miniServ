@@ -35,13 +35,13 @@ ServerSocket::ServerSocket(ServerConf conf)
 
 ServerSocket::~ServerSocket()
 {
-	for (int i = 0; _eventQueue[i].data.ptr != NULL; ++i) { // horrible loop, to be fixed
-		ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(_eventQueue[i].data.ptr);
-		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-		delete Connecting;
+	for (int i = _clients.size(); i < 0; ++i) {
+		removeConnection(_clients[i]);
 	}
 
 	delete _cf;
+
+	close(_epollFd);
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -118,11 +118,25 @@ void			ServerSocket::acceptNewConnection()
 		delete Connecting;
 		throw failedEpollCtl();
 	}
+	_clients[Connecting->getSocketFd()] = Connecting;
 
 	#ifdef DEBUG
 		std::cout << CONNEX_FORMAT("\n++++ Accepted Connection on Socket ";
 		std::cout  << Connecting->getSocketFd() << " ++++ \n");
 	#endif
+
+}
+
+void			ServerSocket::removeConnection(ClientSocket* clientSocket)
+{
+	#ifdef DEBUG
+		std::cout << ERROR_FORMAT("\n++++ Removing Client Socket ";
+		std::cout  << clientSocket->getSocketFd() << " ++++ \n");
+	#endif
+
+	epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientSocket->getSocketFd(), NULL);
+	_clients.erase(clientSocket->getSocketFd());
+	delete clientSocket;
 
 }
 
@@ -155,8 +169,7 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
 			std::cerr << e.what() << "\n";
-			delete Connecting;
-			return;
+			removeConnection(Connecting);
 		}
 	}
 
@@ -166,14 +179,9 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 
 	if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
 		std::cout << "Connection closed or error occurred" << std::endl;
-		epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-		delete Connecting;
+		removeConnection(Connecting);
 		return;
 	}
-
-	epoll_ctl(_epollFd, EPOLL_CTL_DEL, Connecting->getSocketFd(), NULL);
-	delete Connecting;
-
 }
 
 void			ServerSocket::processEvents()

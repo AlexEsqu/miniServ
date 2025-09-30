@@ -37,8 +37,13 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 }
 
 ServerConf::ServerConf(const ServerConf &copy)
+	: _port(copy._port)
+	, _maxSizeClientRequestBody(copy._maxSizeClientRequestBody)
+	, _root(copy._root)
+	, _paramMap(copy._paramMap)
 {
-	*this = copy;
+	for (size_t i = 0; i < copy._routes.size(); ++i)
+		_routes.push_back(new Route(*copy._routes[i]));
 
 #ifdef DEBUG
 	std::cout << "ServerConf copy Constructor called" << std::endl;
@@ -49,7 +54,9 @@ ServerConf::ServerConf(const ServerConf &copy)
 
 ServerConf::~ServerConf()
 {
-	_routes.erase(_routes.begin(), _routes.end());
+	for (std::vector<Route*>::iterator it = _routes.begin(); it != _routes.end(); ++it)
+		delete *it; // Free the Route objects
+	_routes.clear();
 #ifdef DEBUG
 	std::cout
 		<< "ServerConf Destructor called" << std::endl;
@@ -66,7 +73,10 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
 		_root = other._root;
 		_paramMap = other._paramMap;
-		_routes = other._routes;
+
+		// deep copy of the routes, so inefficient
+		for (size_t i = 0; i < other._routes.size(); ++i)
+			_routes.push_back(new Route(*other._routes[i]));
 	}
 	return (*this);
 }

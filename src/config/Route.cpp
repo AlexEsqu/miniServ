@@ -65,7 +65,6 @@ Route::Route(std::string root)
 
 Route::Route(const Route &copy)
 {
-
 	this->_rootDirectory = copy._rootDirectory;
 	this->_defaultFiles = copy._defaultFiles;
 	this->_directoryListing = copy._directoryListing;
@@ -90,8 +89,15 @@ Route::~Route()
 
 Route &Route::operator=(const Route &other)
 {
-	// code
-	(void)other;
+	if (this != &other)
+	{
+		this->_rootDirectory	= other._rootDirectory;
+		this->_defaultFiles		= other._defaultFiles;
+		this->_directoryListing	= other._directoryListing;
+		this->_allowedCGI		= other._allowedCGI;
+		this->_uploadDirectory	= other._uploadDirectory;
+		this->_allowedMethods	= other._allowedMethods;
+	}
 	return (*this);
 }
 
