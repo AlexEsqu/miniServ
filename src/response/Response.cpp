@@ -106,11 +106,6 @@ void Response::setUrl(std::string url)
 	// std::cout << GREEN << _requestedFileName << STOP_COLOR;
 }
 
-void Response::setResponse(std::string response)
-{
-	this->_response = response;
-}
-
 void Response::setHTTPResponse()
 {
 	Status status(this->_statusNum);

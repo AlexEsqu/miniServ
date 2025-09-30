@@ -26,7 +26,6 @@ private:
 	std::string			_contentType;
 	unsigned int		_contentLength;
 	std::string			_content;
-	std::string			_response;
 	std::string			_requestedFileName;
 	std::string			_HTTPResponse;
 	int					_CGI;
