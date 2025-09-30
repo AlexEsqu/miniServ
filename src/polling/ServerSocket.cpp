@@ -35,9 +35,8 @@ ServerSocket::ServerSocket(ServerConf conf)
 
 ServerSocket::~ServerSocket()
 {
-	while (!_clients.empty()) {
+	while (!_clients.empty())
 		removeConnection(_clients.begin()->second);
-	}
 
 	delete _cf;
 
@@ -49,12 +48,12 @@ ServerSocket::~ServerSocket()
 
 //---------------------------- GETTERS --------------------------------------//
 
-const ServerConf&		ServerSocket::getConf() const
+const ServerConf&	ServerSocket::getConf() const
 {
 	return _conf;
 }
 
-int						ServerSocket::getEpoll() const
+int					ServerSocket::getEpoll() const
 {
 	return _epollFd;
 }
@@ -62,7 +61,7 @@ int						ServerSocket::getEpoll() const
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 
-void			ServerSocket::createEpollInstance()
+void				ServerSocket::createEpollInstance()
 {
 	_epollFd = epoll_create(1);
 	if (_epollFd == -1)
@@ -71,12 +70,11 @@ void			ServerSocket::createEpollInstance()
 	_event.events = EPOLLIN | EPOLLOUT;
 	_event.data.fd = getSocketFd();
 
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, getSocketFd(), &_event) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, getSocketFd(), &_event) == -1)
 		throw failedEpollCtl();
-	}
 }
 
-void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
+void				ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 {
 	newSocket.setEvent(EPOLLIN | EPOLLOUT | EPOLLOUT);
 
@@ -87,7 +85,7 @@ void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 	}
 }
 
-void			ServerSocket::waitForEvents()
+void				ServerSocket::waitForEvents()
 {
 	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);
 	if (_eventsReadyForProcess == -1) {
@@ -105,7 +103,7 @@ void			ServerSocket::waitForEvents()
 	}
 }
 
-void			ServerSocket::acceptNewConnection()
+void				ServerSocket::acceptNewConnection()
 {
 	// allocating new acccepting socket to be used
 	ClientSocket*	Connecting = new ClientSocket(*this);
@@ -113,7 +111,8 @@ void			ServerSocket::acceptNewConnection()
 	Connecting->setSocketNonBlocking();
 	Connecting->setEvent(EPOLLIN | EPOLLOUT | EPOLLERR);
 
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1)
+	{
 		perror("Failed to accept new connection in call to epoll_ctl()");
 		delete Connecting;
 		throw failedEpollCtl();
@@ -127,7 +126,7 @@ void			ServerSocket::acceptNewConnection()
 
 }
 
-void			ServerSocket::removeConnection(ClientSocket* clientSocket)
+void				ServerSocket::removeConnection(ClientSocket* clientSocket)
 {
 	#ifdef DEBUG
 		std::cout << ERROR_FORMAT("\n++++ Removing Client Socket ";
@@ -141,41 +140,40 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 
 }
 
-void			ServerSocket::handleExistingConnection(epoll_event &event)
+void				ServerSocket::handleExistingConnection(epoll_event &event)
 {
 	ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(event.data.ptr);
 
-	// Socket ready to read
-	if (event.events & EPOLLIN) {
+	// Client socket is ready to send information to server socket
+	if (event.events & EPOLLIN)
+	{
+		// try reading the request or request chunk into a Request object
+		try { Connecting->readRequest(); }
 
-		try {
-			// reading the request or request chunk into a Request object
-			Connecting->readRequest();
-			return;
-		}
-
+		// catch and log if an error expected by the HTTP protocol occurs (ex: 404 no page at url)
 		catch ( HTTPError &e )
 		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-			write(Connecting->getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
-			std::cerr << e.what() << "\n";
+			std::cerr << ERROR_FORMAT("\nHTTP Error: ") << e.what() << "\n";
 		}
 
+		// catch and close socket if a system error occurs (ex: call to recv() fails)
 		catch ( std::exception &e )
 		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
-			std::cerr << e.what() << "\n";
+			std::cerr << ERROR_FORMAT("\nSystem Error: ") << e.what() << "\n";
 			removeConnection(Connecting);
 		}
 	}
 
-	else if (event.events & (EPOLLOUT)) {
-		std::cout << "Connection requesting write" << std::endl;
-		// if request is complete, fetch content and wrap in HTTP header
-		if (Connecting->getRequest() && Connecting->getRequest()->isComplete())
+	// Client socket is ready to receive information from server socket
+	else if (event.events & EPOLLOUT)
+	{
+		// if request is complete or an HTTP error occurred, fetch content and wrap in HTTP header
+		if (Connecting->getRequest() &&
+			(Connecting->getRequest()->isComplete() || Connecting->getRequest()->getStatus() >= 400))
 		{
 			_cf->craftSendHTTPResponse(Connecting);
 
+			// cleaning up : either resetting the request or removing client socket
 			if (Connecting->getRequest()->isKeepAlive())
 				Connecting->resetRequest();
 			else
@@ -183,25 +181,27 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		}
 	}
 
-	else if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
-		std::cout << "Connection closed or error occurred" << std::endl;
+	// Client socket is not doing so well
+	else if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+	{
+		std::cerr << ERROR_FORMAT("Connection closed or error occurred") << std::endl;
 		removeConnection(Connecting);
 		return;
 	}
 }
 
-void			ServerSocket::processEvents()
+void				ServerSocket::processEvents()
 {
-	for (int i = 0; i < _eventsReadyForProcess; ++i) {
-		if (_eventQueue[i].data.fd == getSocketFd()) {
+	for (int i = 0; i < _eventsReadyForProcess; ++i)
+	{
+		if (_eventQueue[i].data.fd == getSocketFd())
 			acceptNewConnection();
-		} else {
+		else
 			handleExistingConnection(_eventQueue[i]);
-		}
 	}
 }
 
-void			ServerSocket::launchEpollListenLoop()
+void				ServerSocket::launchEpollListenLoop()
 {
 	std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
 	waitForEvents();
@@ -210,17 +210,17 @@ void			ServerSocket::launchEpollListenLoop()
 
 //--------------------------- EXCEPTIONS ------------------------------------//
 
-const char*		ServerSocket::failedEpollCreate::what() const throw()
+const char*			ServerSocket::failedEpollCreate::what() const throw()
 {
 	return "ERROR: Failed to create epoll instance in call to epoll_create()";
 }
 
-const char*		ServerSocket::failedEpollCtl::what() const throw()
+const char*			ServerSocket::failedEpollCtl::what() const throw()
 {
 	return "ERROR: Failed to modify epoll instance in call to epoll_ctl()";
 }
 
-const char*		ServerSocket::failedEpollWait::what() const throw()
+const char*			ServerSocket::failedEpollWait::what() const throw()
 {
 	return "ERROR: Failed to wait with epoll instance in call to epoll_wait()";
 }

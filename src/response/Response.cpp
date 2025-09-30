@@ -25,10 +25,7 @@ Response::Response(Request *req, int status)
 	, _request(req)
 {
 	if (status >= 400)
-	{
 		setHTTPResponse();
-		return;
-	}
 }
 
 Response::Response(const Response &copy)

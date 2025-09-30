@@ -74,6 +74,11 @@ const ServerConf&	Request::getConf() const
 	return _conf;
 }
 
+int					Request::getStatus() const
+{
+	return (_HTTPstatus);
+}
+
 bool				Request::isKeepAlive()
 {
 	if (_additionalHeaderInfo.find("Connection") != _additionalHeaderInfo.end())
@@ -104,6 +109,11 @@ void	Request::setContentLength()
 		_contentLength = atoi(_additionalHeaderInfo["Content-Length"].c_str());
 	else
 		_contentLength = 0;
+}
+
+void	Request::setStatus(int number)
+{
+	_HTTPstatus = number;
 }
 
 // Valid request line (1st line of a HTTP request) must have the format:

@@ -84,8 +84,14 @@ void	ClientSocket::readRequest()
 
 	// read the Client's request into a buffer
 	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK);
-	if (valread < 0)
+	if (valread < 0 && errno != EAGAIN)
 		throw failedSocketRead();
+	if (valread == 0)
+	{
+		getServer().removeConnection(this);
+		return;
+	}
+
 
 	// add buffer content to a Request object
 	if (_request == NULL)

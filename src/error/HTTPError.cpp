@@ -2,14 +2,7 @@
 
 HTTPError::HTTPError(Request* req, int status)
 {
-	Response res(req, status);
-
-	_message = res.getHTTPResponse();
-}
-
-std::string	HTTPError::getErrorPage()
-{
-	return _message;
+	req->setStatus(status);
 }
 
 const char*		timeout::what() const throw()

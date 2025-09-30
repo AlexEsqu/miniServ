@@ -109,25 +109,27 @@ void	ContentFetcher::addExecutor(Executor* executor)
 
 void	ContentFetcher::fillContent(Response& response)
 {
+	if (response.getRequest()->getStatus() >= 400)
+		response.setHTTPResponse();
 	if (response.getRequest()->getMethod() == "GET")
 		executeIfCGI(response);
-
-
-	response.setHTTPResponse();
 }
 
 void	ContentFetcher::craftSendHTTPResponse(ClientSocket* client)
 {
 	Response response(client->getRequest());
+
 	fillContent(response);
+
 	#ifdef DEBUG
 		std::cout << response.getStatus() << std::endl;
 	#endif
 
 	if (send(client->getSocketFd(),
-		response.getHTTPResponse().c_str(),
-		response.getHTTPResponse().size(),
-		MSG_DONTWAIT) < 0) {
+			response.getHTTPResponse().c_str(),
+			response.getHTTPResponse().size(),
+			MSG_DONTWAIT) < 0)
+	{
 		perror("write");
 		throw std::runtime_error("write fail");
 	}
