@@ -74,6 +74,11 @@ const ServerConf&	Request::getConf() const
 	return _conf;
 }
 
+int					Request::getStatus() const
+{
+	return _status;
+}
+
 bool				Request::isKeepAlive()
 {
 	if (_additionalHeaderInfo.find("Connection") != _additionalHeaderInfo.end())

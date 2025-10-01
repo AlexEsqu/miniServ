@@ -26,6 +26,7 @@ private:
 	const ServerConf&	_conf;
 	size_t				_byteRead;
 	size_t				_contentLength;		// set at 0 if absent from Request
+	int					_status;
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -58,8 +59,10 @@ public:
 	std::string			getRequestedURL() const;
 	std::map<std::string, std::string>&	getAdditionalHeaderInfo();
 	const ServerConf&	getConf() const;
-	bool				isKeepAlive();
+	int					getStatus() const;
 
+	bool				isKeepAlive();
+	bool				isComplete();
 
 	//------------------- OPERATORS ----------------------//
 
@@ -69,7 +72,6 @@ public:
 
 	void				decodeRequestHeader(std::string &httpRequest);
 	void				addRequestChunk(std::string httpRequest, size_t byteRead);
-	bool				isComplete();
 
 };
 
