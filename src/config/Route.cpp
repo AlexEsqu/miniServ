@@ -4,72 +4,14 @@
 
 Route::Route()
 {
-	setRootDirectory("./pages/");
-
-	std::vector<std::string> defaultFiles;
-	defaultFiles.push_back("index.html");
-	defaultFiles.push_back("index.php");
-	setDefaultFiles(defaultFiles);
-
-
-	std::vector<std::string> allowedCGI;
-	allowedCGI.push_back(".php");
-	allowedCGI.push_back(".py");
-	setAllowedCGI(allowedCGI);
-
-	setUploadDirectory("/pages/upload/");
-	std::vector<std::string> allowedMethods;
-	allowedMethods.push_back("GET");
-	allowedMethods.push_back("POST");
-	allowedMethods.push_back("DELETE");
-
 	#ifdef DEBUG
-		std::cout << "Route Constructor called" << std::endl;
-	#endif
-}
-
-Route::Route(std::string root, std::vector<std::string> defaultFiles,
-		std::vector<std::string> allowedCGI, std::vector<std::string> allowedMethods,
-		std::string uploadDirectory)
-	: _rootDirectory(root)
-	, _defaultFiles(defaultFiles)
-	, _allowedCGI(allowedCGI)
-	, _uploadDirectory(uploadDirectory)
-	, _allowedMethods(allowedMethods)
-{
-	#ifdef DEBUG
-		std::cout << "Route Constructor called" << std::endl;
-	#endif
-}
-
-Route::Route(std::string root)
-{
-	setRootDirectory(root);
-	std::vector<std::string> defaultFiles;
-	defaultFiles.push_back("index.html");
-	defaultFiles.push_back("index.php");
-	setDefaultFiles(defaultFiles);
-
-
-	std::vector<std::string> allowedCGI;
-	allowedCGI.push_back(".php");
-	allowedCGI.push_back(".py");
-	setAllowedCGI(allowedCGI);
-
-	setUploadDirectory("/pages/upload/");
-
-	#ifdef DEBUG
-		std::cout << "Route Constructor called" << std::endl;
+		std::cout << "Route Generic Constructor called" << std::endl;
 	#endif
 }
 
 Route::Route(const Route &copy)
 {
-	this->_rootDirectory = copy._rootDirectory;
-	this->_defaultFiles = copy._defaultFiles;
-	this->_directoryListing = copy._directoryListing;
-	this->_allowedCGI = copy._allowedCGI;
-	this->_uploadDirectory = copy._uploadDirectory;
+	*this = copy;
 
 	#ifdef DEBUG
 		std::cout << "Route copy Constructor called" << std::endl;
@@ -91,9 +33,10 @@ Route &Route::operator=(const Route &other)
 {
 	if (this != &other)
 	{
-		this->_rootDirectory	= other._rootDirectory;
+		this->_routedPath		= other._routedPath;
+		this->_urlPath			= other._urlPath;
 		this->_defaultFiles		= other._defaultFiles;
-		this->_directoryListing	= other._directoryListing;
+		this->_autoindex		= other._autoindex;
 		this->_allowedCGI		= other._allowedCGI;
 		this->_uploadDirectory	= other._uploadDirectory;
 		this->_allowedMethods	= other._allowedMethods;
@@ -105,7 +48,7 @@ Route &Route::operator=(const Route &other)
 
 std::string Route::getRootDirectory() const
 {
-	return (this->_rootDirectory);
+	return (this->_routedPath);
 }
 
 std::vector<std::string> Route::getDefaultFiles() const
@@ -113,9 +56,9 @@ std::vector<std::string> Route::getDefaultFiles() const
 	return (this->_defaultFiles);
 }
 
-bool Route::getDirectoryListing() const
+bool Route::isAutoIndex() const
 {
-	return (this->_directoryListing);
+	return (this->_autoindex);
 }
 
 std::vector<std::string> Route::getAllowedCGI() const
@@ -131,29 +74,37 @@ std::string Route::getUploadDirectory() const
 
 //---------------------------- SETTERS --------------------------------------//
 
-void Route::setRootDirectory(std::string rootDirectory)
+
+void	Route::setURLPath(std::string path)
 {
-	this->_rootDirectory = rootDirectory;
+	_urlPath = path;
 }
 
-void Route::setDefaultFiles(std::vector<std::string> &defaultFiles)
+void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 {
-	this->_defaultFiles = defaultFiles;
+	if (paramMap.find("root") != paramMap.end())
+		_routedPath = paramMap.at("root");
+
+	if (paramMap.find("index") != paramMap.end())
+		_defaultFiles.push_back(paramMap.at("index"));
+	else
+		_defaultFiles.push_back("index.html");
+
+	if (paramMap.find("autoindex") != paramMap.end())
+		_autoindex = (paramMap.at("autoindex") == "on");
+	else
+		_autoindex = true;
+
+	if (paramMap.find("allow_methods") != paramMap.end())
+		_allowedMethods = split(paramMap.at("allow_methods"), ' ');
+
+	if (paramMap.find("cgi_extension") != paramMap.end())
+		_allowedMethods = split(paramMap.at("cgi_extension"), ' ');
 }
 
-void Route::setDirectoryListing(bool directoryListing)
+void	Route::addNestedRoute(Route& route)
 {
-	this->_directoryListing = directoryListing;
-}
-
-void Route::setAllowedCGI(std::vector<std::string> &allowedCGI)
-{
-	this->_allowedCGI = allowedCGI;
-}
-
-void Route::setUploadDirectory(std::string uploadDirectory)
-{
-	this->_uploadDirectory = uploadDirectory;
+	_nestedRoutes.push_back(route);
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//

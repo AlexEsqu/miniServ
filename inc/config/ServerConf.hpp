@@ -20,7 +20,7 @@ private:
 	std::string			_serverName;
 	unsigned int		_maxSizeClientRequestBody;
 	std::string			_root;
-	std::vector<Route*>	_routes;
+	std::vector<Route>	_routes;
 	std::map<std::string, std::string>	_paramMap;
 
 public:
@@ -28,7 +28,7 @@ public:
 	//----------------- CONSTRUCTORS ---------------------//
 
 	ServerConf();
-	ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route*> routes);
+	ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route> routes);
 	ServerConf(const ServerConf& copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -43,7 +43,7 @@ public:
 
 	unsigned int		getPort() const;
 	unsigned int		getMaxSizeClientRequestBody() const;
-	const Route*		getRoutes(int index) const;
+	const Route			getRoutes(int index) const;
 	const std::string&	getRoot() const;
 
 	//------------------- SETTERS ------------------------//
@@ -52,9 +52,10 @@ public:
 	void				setServerName(std::string serverName);
 	void				setRoot(std::string root);
 	void				setParamMap(std::map<std::string, std::string> &paramMap);
+	void				addRoute(Route route);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	Route*				getRootMatchForRequestedFile(std::string &requestedFile) const;
+	std::string			getRoutedURL(std::string &requestedFile);
 
 };

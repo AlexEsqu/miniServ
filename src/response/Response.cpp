@@ -94,11 +94,7 @@ void Response::setContent(std::vector<char> content)
 
 void Response::setUrl(std::string url)
 {
-	std::string root = _request->getConf().getRootMatchForRequestedFile(url)->getRootDirectory();
-	if (url == "/")
-		this->_requestedFileName = root + _request->getConf().getRoutes(0)->getDefaultFiles()[0];
-	else
-		this->_requestedFileName = root + url;
+	std::string routedURL = _request->getConf().getRoutedURL(url);
 
 	// GET /admin/truc => GET /www/var/etc/admin/
 	// GET /bidule/chose => GET /start/truc

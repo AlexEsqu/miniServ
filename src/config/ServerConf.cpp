@@ -5,16 +5,15 @@
 ServerConf::ServerConf()
 	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
+	, _root("/pages")
 {
-	_routes.push_back(new Route("./pages/"));
-	_routes.push_back(new Route("./pages/img/"));
 
 #ifdef DEBUG
 	std::cout << "ServerConf Generic Constructor called" << std::endl;
 #endif
 }
 
-ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route*> routes)
+ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route> routes)
 	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
 	, _routes(routes)
@@ -30,7 +29,6 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 		_port = atoi(_paramMap["listen"].c_str());
 	}
 
-
 #ifdef DEBUG
 	std::cout << "ServerConf Custom Constructor called" << std::endl;
 #endif
@@ -43,7 +41,7 @@ ServerConf::ServerConf(const ServerConf &copy)
 	, _paramMap(copy._paramMap)
 {
 	for (size_t i = 0; i < copy._routes.size(); ++i)
-		_routes.push_back(new Route(*copy._routes[i]));
+		_routes.push_back(Route(copy._routes[i]));
 
 #ifdef DEBUG
 	std::cout << "ServerConf copy Constructor called" << std::endl;
@@ -54,9 +52,6 @@ ServerConf::ServerConf(const ServerConf &copy)
 
 ServerConf::~ServerConf()
 {
-	for (std::vector<Route*>::iterator it = _routes.begin(); it != _routes.end(); ++it)
-		delete *it; // Free the Route objects
-	_routes.clear();
 #ifdef DEBUG
 	std::cout
 		<< "ServerConf Destructor called" << std::endl;
@@ -73,10 +68,8 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
 		_root = other._root;
 		_paramMap = other._paramMap;
-
-		// deep copy of the routes, so inefficient
 		for (size_t i = 0; i < other._routes.size(); ++i)
-			_routes.push_back(new Route(*other._routes[i]));
+			_routes.push_back(Route(other._routes[i]));
 	}
 	return (*this);
 }
@@ -93,7 +86,7 @@ unsigned int		ServerConf::getMaxSizeClientRequestBody() const
 	return (_maxSizeClientRequestBody);
 }
 
-const Route*		ServerConf::getRoutes(int index) const
+const Route			ServerConf::getRoutes(int index) const
 {
 	return (_routes[index]);
 }
@@ -125,9 +118,14 @@ void			ServerConf::setServerName(std::string serverName)
 	_serverName = serverName;
 }
 
+void			ServerConf::addRoute(Route route)
+{
+	_routes.push_back(route);
+}
+
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-bool doesFileExist(std::string &requestedFile)
+bool	doesFileExist(std::string &requestedFile)
 {
 	std::ifstream input(requestedFile.c_str()); // opening the file as the content for the response
 	std::stringstream content;
@@ -139,17 +137,19 @@ bool doesFileExist(std::string &requestedFile)
 	return (true);
 }
 
-Route *ServerConf::getRootMatchForRequestedFile(std::string &requestedFile) const
+std::string	ServerConf::getRoutedURL(std::string &requestedFile)
 {
-	std::vector<Route *>::const_iterator it;
+	std::vector<Route>::const_iterator it;
 	std::string path;
 	if (requestedFile[0] == '/') // if the request starts with / the return the first root
-		return (*this->_routes.begin());
-	for (it = this->_routes.begin(); it != this->_routes.end(); it++)
-	{
-		path = (*it)->getRootDirectory() + requestedFile;
-		if (doesFileExist(path) == true)
-			return (*it);
-	}
-	return (*this->_routes.begin());
+		return (_root.append(requestedFile));
+	// for (it = _routes.begin(); it != _routes.end(); it++)
+	// {
+	// 	if requestedFile == route->getPath()
+
+	// 	path = it->getRootDirectory() + requestedFile;
+	// 	if (doesFileExist(path) == true)
+	// 		return *it;
+	// }
+	return _root.append(requestedFile);
 }

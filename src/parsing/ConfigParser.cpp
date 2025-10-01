@@ -74,6 +74,74 @@ void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::stri
 	}
 }
 
+std::string ConfigParser::extractLocationPath(const std::string& locationLine)
+{
+	size_t start = locationLine.find("location") + 8;
+	size_t end = locationLine.find('{');
+
+	if (start >= end)
+		throw std::runtime_error("Invalid location directive");
+
+	std::string pathPart = locationLine.substr(start, end - start);
+	trim(pathPart);
+
+	return pathPart;
+}
+
+void ConfigParser::addLineAsLocationKeyValue(std::string& line, std::map<std::string, std::string>& paramMap)
+{
+	line = trim(line);
+	if (line.empty())
+		return;
+
+	size_t pos = line.find_first_of(" \t");
+	if (pos != std::string::npos) {
+		std::string key = line.substr(0, pos);
+		std::string value = line.substr(pos + 1);
+		trim(value);
+
+		if (!value.empty() && value[value.size() - 1] == ';') {
+			value.erase(value.size() - 1);
+			trim(value);
+		}
+		paramMap[key] = value;
+	}
+}
+
+Route	ConfigParser::parseLocationBlock(std::ifstream& configFileStream, const std::string& locationLine)
+{
+	Route route;
+	std::map<std::string, std::string> paramMap;
+
+	std::string path = extractLocationPath(locationLine);
+	route.setURLPath(path);
+
+	std::string line;
+	while (getline(configFileStream, line) && !ConfigParser::isClosedCurlyBrace(line))
+	{
+		trim(line);
+
+		if (line.empty() || ltrim(line)[0] == '#')
+			continue;
+
+		// recurse on nested location blocks
+		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{')
+		{
+			class Route nestedLocation = parseLocationBlock(configFileStream, line);
+			route.addNestedRoute(nestedLocation);
+			continue;
+		}
+
+		addLineAsLocationKeyValue(line, paramMap);
+	}
+
+	if (!isClosedCurlyBrace(line))
+		throw std::runtime_error("Invalid location block - missing closing brace");
+
+	route.setRouteParam(paramMap);
+
+	return route;
+}
 
 ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 {
@@ -90,21 +158,9 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 		if (line.empty() || ltrim(line)[0] == '#')
 			continue;
 
-		// Handle nested blocks (like location blocks)
+		// handle nested location blocks
 		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{')
-		{
-			// TO DO : parse location block
-			// for now skipping the block entirely
-			int braceCount = 1;
-			while (getline(configFileStream, line) && braceCount > 0) {
-				if (line.find('{') != std::string::npos) braceCount++;
-				if (line.find('}') != std::string::npos) braceCount--;
-				if (braceCount == 0)
-					break;
-			}
-
-			continue;
-		}
+			 parseLocationBlock(configFileStream, line);
 
 		// adds all lines to a map of key setting and value
 		addLineAsServerKeyValue(line, paramMap);
@@ -112,7 +168,7 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 
 	// check the server block is closed
 	if (!isClosedCurlyBrace(line))
-		throw std::runtime_error("Invalid config file");
+		throw std::runtime_error("Invalid config file: no closing curly brace");
 
 	ServerConf serverConf;
 

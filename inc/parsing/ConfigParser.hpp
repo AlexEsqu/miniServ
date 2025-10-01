@@ -33,6 +33,9 @@ public:
 
 	static std::vector<ServerConf>	parseConfigFile(char* configFilePath);
 	static ServerConf	parseServerBlock(std::ifstream& configFileStream);
+	static Route		parseLocationBlock(std::ifstream& configFileStream, const std::string& locationLine);
+	static std::string	extractLocationPath(const std::string& locationLine);
+	static void			addLineAsLocationKeyValue(std::string& line, std::map<std::string, std::string>& paramMap);
 	static void			addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string>& paramMap);
 	static bool			isClosedCurlyBrace(std::string& line);
 
