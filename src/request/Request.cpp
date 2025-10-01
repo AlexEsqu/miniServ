@@ -13,7 +13,11 @@ Request::Request(const ServerConf& conf, std::string httpRequest, size_t byteRea
 	, _isHeaderComplete(false)
 {
 	if (isHeaderComplete())
-		decodeRequestHeader(httpRequest);
+	{
+		extractHeader(httpRequest);
+		decodeRequestHeader();
+	}
+
 }
 
 Request::Request(const Request &copy)
@@ -37,7 +41,7 @@ Request &Request::operator=(const Request &other)
 		_method = other._method;
 		_protocol = other._protocol;
 		_requestedFileName = other._requestedFileName;
-		_additionalHeaderInfo = other._additionalHeaderInfo;
+		_requestHeaderMap = other._requestHeaderMap;
 		_isHeaderComplete = other._isHeaderComplete;
 	}
 
@@ -63,7 +67,7 @@ std::string		Request::getRequestedURL() const
 
 std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 {
-	return _additionalHeaderInfo;
+	return _requestHeaderMap;
 }
 
 const ServerConf&	Request::getConf() const
@@ -78,8 +82,8 @@ int					Request::getStatus() const
 
 bool				Request::isKeepAlive()
 {
-	if (_additionalHeaderInfo.find("Connection") != _additionalHeaderInfo.end())
-		return (_additionalHeaderInfo["Connection"] == "keep-alive");
+	if (_requestHeaderMap.find("Connection") != _requestHeaderMap.end())
+		return (_requestHeaderMap["Connection"] == "keep-alive");
 	return false;
 }
 
@@ -102,8 +106,8 @@ void	Request::setProtocol(std::string &protocol)
 
 void	Request::setContentLength()
 {
-	if (_additionalHeaderInfo.find("Content-Length") != _additionalHeaderInfo.end())
-		_contentLength = atoi(_additionalHeaderInfo["Content-Length"].c_str());
+	if (_requestHeaderMap.find("Content-Length") != _requestHeaderMap.end())
+		_contentLength = atoi(_requestHeaderMap["Content-Length"].c_str());
 	else
 		_contentLength = 0;
 }
@@ -120,7 +124,7 @@ void	Request::setRequestLine(std::string &requestLine)
 	setProtocol(trim(splitRequestLine[2]));
 }
 
-void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
+void	Request::addAsHeaderVar(std::string &keyValueString)
 {
 	size_t	equalPos = keyValueString.find(':');
 
@@ -129,7 +133,7 @@ void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 		std::string value = keyValueString.substr(equalPos + 1);
 		key = trim(key);
 		value = trim(value);
-		_additionalHeaderInfo[key] = value;
+		_requestHeaderMap[key] = value;
 	}
 }
 
@@ -153,34 +157,35 @@ void	Request::checkHTTPValidity()
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-// Goes through the Request Header line by line
-// to set method, uri, protocol and env
-void Request::decodeRequestHeader(std::string &httpRequest)
+void	Request::extractHeader(std::string &httpRequest)
 {
 	std::stringstream	httpRequestStream(httpRequest);
 	std::string			line;
-	bool				isFirstLine = true;
 
-	while (getline(httpRequestStream, line)) {
-
+	while (getline(httpRequestStream, line))
+	{
 		// Removes trailing '\r' if present
-		if (!line.empty() && line[line.size() - 1] == '\r') {
+		if (!line.empty() && line[line.size() - 1] == '\r')
 			line.erase(line.size() - 1);
-		}
 
 		// If there is an empty line, it is the end of the http headers
-		if (line.empty()) {
+		if (line.empty())
 			break;
-		}
 
-		// setting values in the request line for first line, then adding to env
-		if (isFirstLine) {
-			setRequestLine(line);
-			isFirstLine = false;
-		} else {
-			addAdditionalHeaderInfo(line);
-		}
+		// adding each line, without their \n, in a string vector
+		_httpHeader.push_back(line);
 	}
+}
+
+// Goes through the Request Header vector (line by line)
+// to set method, uri, protocol and possible env & request variables
+void	Request::decodeRequestHeader()
+{
+	// the first line of a HTTP request is the request line
+	setRequestLine(_httpHeader[0]);
+
+	for (size_t i = 0; i < _httpHeader.size(); i++)
+		addAsHeaderVar(_httpHeader[i]);
 
 	#ifdef DEBUG
 		std::cout << "Request " << _method << " for " << _requestedFileName;
@@ -197,21 +202,48 @@ void	Request::addRequestChunk(std::string httpRequest, size_t byteRead)
 	#endif
 }
 
-// std::string Request::readRequestBody(std::istringstream &buffer)
+// void	Request::extractBody(std::string &buffer)
 // {
-// 	std::string line;
-// 	while (std::getline(buffer, line))
-// 	{
-// 		_body += line + '\n';
+// 	if (!isHeaderComplete()) {
+// 		return;
 // 	}
-// 	std::cerr << GREEN << _body << STOP_COLOR << std::endl;
-// 	return (_body);
+
+// 	// find the end of headers (double CRLF)
+// 	size_t headerEndPos = _fullRequest.find(httpRequestHeaderEnding);
+
+// 	// if no CRLF but request headers are complete, chunked request
+// 	if (headerEndPos != std::string::npos)
+// 	{
+
+// 	}
+// 	else
+// 	{
+
+// 	}
+
+// 	// Calculate where body starts
+// 	size_t bodyStartPos = headerEndPos + httpRequestHeaderEnding.length();
+
+// 	// Extract body if it exists
+// 	if (bodyStartPos < _fullRequest.length()) {
+// 		_httpBody = _fullRequest.substr(bodyStartPos);
+
+// 		#ifdef DEBUG
+// 			std::cout << "Extracted body: " << _httpBody.length()
+// 						<< " bytes (expected: " << _contentLength << ")" << std::endl;
+// 		#endif
+// 	}
 // }
 
 bool				Request::isComplete()
 {
 	if (!isHeaderComplete())
 		return (false);
+
+	if (_method == "GET" || _method == "HEAD" || _method == "DELETE") {
+		return true;
+	}
+
 	if (_contentLength)
 		return (_byteRead >= _contentLength);
 	else
