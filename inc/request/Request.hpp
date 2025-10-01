@@ -8,6 +8,8 @@
 #include "readability.hpp"
 #include "ServerConf.hpp"
 
+static const std::string httpRequestHeaderEnding("\r\n\r\n");
+
 class Request;
 
 class Request
@@ -17,20 +19,26 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
+	std::string			_httpHeader;
+	std::string			_httpBody;
 	std::string			_fullRequest;		// full content of the request
 	std::string			_method;			// could be set as the enum already ?
 	std::string			_protocol;			// we only support HTTP/1.1
 	std::string			_requestedFileName;	// for example "/home.html"
-	std::map<std::string, std::string>	_additionalHeaderInfo;
+	std::map
+		<std::string,
+		std::string>	_additionalHeaderInfo;
 
 	const ServerConf&	_conf;
 	size_t				_byteRead;
 	size_t				_contentLength;		// set at 0 if absent from Request
 	int					_status;
 
+	bool				_isHeaderComplete;
+
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
-	void			checkHTTPValidity();
+	void				checkHTTPValidity();
 
 public:
 
@@ -63,6 +71,7 @@ public:
 
 	bool				isKeepAlive();
 	bool				isComplete();
+	bool				isHeaderComplete();
 
 	//------------------- OPERATORS ----------------------//
 

@@ -10,11 +10,10 @@ Request::Request(const ServerConf& conf, std::string httpRequest, size_t byteRea
 	, _conf(conf)
 	, _byteRead(byteRead)
 	, _contentLength(0)
+	, _isHeaderComplete(false)
 {
-// #ifdef DEBUG
-// 	std::cerr << "Request Constructor called" << std::endl;
-// #endif
-	decodeRequestHeader(httpRequest);
+	if (isHeaderComplete())
+		decodeRequestHeader(httpRequest);
 }
 
 Request::Request(const Request &copy)
@@ -27,9 +26,6 @@ Request::Request(const Request &copy)
 
 Request::~Request()
 {
-// #ifdef DEBUG
-// 	std::cerr << "Request Destructor called" << std::endl;
-// #endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -42,6 +38,7 @@ Request &Request::operator=(const Request &other)
 		_protocol = other._protocol;
 		_requestedFileName = other._requestedFileName;
 		_additionalHeaderInfo = other._additionalHeaderInfo;
+		_isHeaderComplete = other._isHeaderComplete;
 	}
 
 	return *this;
@@ -140,29 +137,18 @@ void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 
 void	Request::checkHTTPValidity()
 {
-	// CHECK METHOD
 	// empty method is not valid HTTP request
 	if (getMethod().empty())
 		throw badSyntax();
 	// TO DO : check if within allowed method for the route, requires config class
 
-	// CHECK PROTOCOL
 	// throwing error if protocol is any other protocol than HTTP/1.1
 	if (getProtocol() != "HTTP/1.1")
 		throw badProtocol();
 
-	// CHECK URL
 	// empty URL is not valid HTTP request
 	if (getRequestedURL().empty())
 		throw badSyntax();
-
-	// CHECK FORMAT
-	// // check for the end of request Carriage Return or '\r'
-	// if (httpRequest[httpRequest.size() - 2] != '\r')
-	// 	throw badSyntax();
-	// // check for the Line Feed or '\n'
-	// if (httpRequest[httpRequest.size() - 1] != '\n')
-	// 	throw badSyntax();
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
@@ -171,9 +157,9 @@ void	Request::checkHTTPValidity()
 // to set method, uri, protocol and env
 void Request::decodeRequestHeader(std::string &httpRequest)
 {
-	std::stringstream httpRequestStream(httpRequest);
-	std::string line;
-	bool isFirstLine = true;
+	std::stringstream	httpRequestStream(httpRequest);
+	std::string			line;
+	bool				isFirstLine = true;
 
 	while (getline(httpRequestStream, line)) {
 
@@ -224,10 +210,25 @@ void	Request::addRequestChunk(std::string httpRequest, size_t byteRead)
 
 bool				Request::isComplete()
 {
+	if (!isHeaderComplete())
+		return (false);
 	if (_contentLength)
 		return (_byteRead >= _contentLength);
 	else
 		return (true);
+}
+
+bool				Request::isHeaderComplete()
+{
+	if (_isHeaderComplete)
+		return (true);
+
+	if (_fullRequest.find(httpRequestHeaderEnding) != std::string::npos){
+		_isHeaderComplete = true;
+		return (true);
+	}
+
+	return (false);
 }
 
 
