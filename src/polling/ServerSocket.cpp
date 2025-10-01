@@ -145,19 +145,18 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 {
 	ClientSocket* Connecting = reinterpret_cast<ClientSocket*>(event.data.ptr);
 
-	// Socket ready to read
+	// Socket ready to read data
 	if (event.events & EPOLLIN) {
 
-		try {
-			// reading the request or request chunk into a Request object
+		// reading the request or request chunk into a Request object
+		try
+		{
 			Connecting->readRequest();
-			return;
 		}
 
 		catch ( HTTPError &e )
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-			write(Connecting->getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
 			std::cerr << e.what() << "\n";
 		}
 
@@ -169,10 +168,12 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		}
 	}
 
-	else if (event.events & (EPOLLOUT)) {
-		std::cout << "Connection requesting write" << std::endl;
+	// socket ready to receive data
+	else if (event.events & (EPOLLOUT))
+	{
 		// if request is complete, fetch content and wrap in HTTP header
-		if (Connecting->getRequest() && Connecting->getRequest()->isComplete())
+		if (Connecting->getRequest() &&
+			(Connecting->getRequest()->isComplete() || Connecting->getRequest()->getStatus() >= 400))
 		{
 			_cf->craftSendHTTPResponse(Connecting);
 
@@ -183,6 +184,7 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		}
 	}
 
+	// Socket not doing so well
 	else if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
 		std::cout << "Connection closed or error occurred" << std::endl;
 		removeConnection(Connecting);
