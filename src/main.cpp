@@ -15,7 +15,7 @@ int main(int , char** argv)
 {
 	// parsing config and setting up routes, or if no config setting up default
 	std::vector<ServerConf>	serversConfs;
-	serversConfs = ConfigParser::parseConfigFile(argv[1]);
+	serversConfs = ConfigParser::parseConfigFile(static_cast<const char*>(argv[1]));
 
 	// constructing servers matching the configs
 	std::vector<ServerSocket*>	servers;
@@ -29,7 +29,6 @@ int main(int , char** argv)
 
 	for (size_t i = 0; i < servers.size(); i++)
 		delete servers[i];
-	std::cout << "cleaned\n";
 
 	return 0;
 }

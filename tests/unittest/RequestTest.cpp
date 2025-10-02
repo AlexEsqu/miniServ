@@ -148,3 +148,30 @@ TEST_CASE("Parsing request with no body") {
 	CHECK(req.getProtocol() == "HTTP/1.1");
 	CHECK(req.getAdditionalHeaderInfo()["Host"] == "localhost");
 }
+
+TEST_CASE("Parsing HTTP request with delimiter in body") {
+	ServerConf config;
+	Request req(config, "");
+
+	req.addRequestChunk(
+		"POST /upload HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+		"Content-Length: 70\r\n"
+		"\r\n"
+	);
+	CHECK(req.getParsingState() == PARSING_BODY);
+
+	req.addRequestChunk(
+		"------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+		"Content-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\n"
+		"\r\n"
+		"Hello, world!\r\n"
+		"------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n"
+	);
+
+	CHECK(req.getParsingState() == PARSING_DONE);
+
+	// Optionally, check that the body contains the delimiter
+	// CHECK(req.getBody().find("------WebKitFormBoundary7MA4YWxkTrZu0gW") != std::string::npos);
+}

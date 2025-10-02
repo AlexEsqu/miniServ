@@ -52,6 +52,11 @@ void	ClientSocket::resetRequest()
 	_request = NULL;
 }
 
+void	ClientSocket::setResponse(Response response)
+{
+	_response = response;
+}
+
 //------------------------------ GETTER --------------------------------------//
 
 char*	ClientSocket::getBuffer()
@@ -72,6 +77,11 @@ Request*	ClientSocket::getRequest()
 ServerSocket&	ClientSocket::getServer()
 {
 	return (_serv);
+}
+
+Response&	ClientSocket::getResponse()
+{
+	return (_response);
 }
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
@@ -95,6 +105,24 @@ void	ClientSocket::readRequest()
 
 	// clear buffer for further use
 	memset(_buffer, '\0', sizeof _buffer);
+}
+
+void	ClientSocket::sendResponse()
+{
+	#ifdef DEBUG
+		std::cout << response.getStatus() << std::endl;
+	#endif
+
+	if (send(getSocketFd(),
+		getResponse().getHTTPResponse().c_str(),
+		getResponse().getHTTPResponse().size(),
+		MSG_DONTWAIT) < 0)
+	{
+		perror("write");
+		throw std::runtime_error("write fail");
+	}
+
+	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 }
 
 

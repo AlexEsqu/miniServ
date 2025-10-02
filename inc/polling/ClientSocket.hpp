@@ -6,6 +6,7 @@
 
 #include "Sockette.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 
 #define BUFFSIZE 1000000
 
@@ -20,6 +21,7 @@ private:
 	char				_buffer[BUFFSIZE];
 	struct epoll_event	_event;
 	Request*			_request;
+	Response			_response;
 
 public:
 
@@ -34,6 +36,7 @@ public:
 	//----------------------- SETTER ---------------------//
 
 	void				setEvent(uint32_t epollEventMask);
+	void				setResponse(Response reponse);
 	void				resetRequest();
 
 	//----------------------- GETTER ---------------------//
@@ -42,8 +45,10 @@ public:
 	struct epoll_event&	getEvent();
 	Request*			getRequest();
 	ServerSocket&		getServer();
+	Response&			getResponse();
 
 	//----------------- MEMBER FUNCTION ------------------//
 
 	void				readRequest();
+	void				sendResponse();
 };

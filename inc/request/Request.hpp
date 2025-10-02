@@ -7,6 +7,7 @@
 
 #include "readability.hpp"
 #include "ServerConf.hpp"
+#include "Status.hpp"
 
 enum RequestParseState {
 	PARSING_REQUEST_LINE,
@@ -49,7 +50,7 @@ private:
 
 	const ServerConf&			_conf;
 	size_t						_contentLength;
-	int							_status;
+	Status						_status;
 
 	RequestParseState			_parsingState;
 
@@ -87,7 +88,7 @@ public:
 		std::string>&	getAdditionalHeaderInfo();
 
 	const ServerConf&	getConf() const;
-	int					getStatus() const;
+	const Status&		getStatus() const;
 	int					getParsingState() const;
 
 	bool				isKeepAlive();

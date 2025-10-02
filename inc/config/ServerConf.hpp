@@ -37,22 +37,22 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	ServerConf&			operator=(const ServerConf &other);
+	ServerConf&					operator=(const ServerConf &other);
 
 	//------------------- GETTERS ------------------------//
 
-	unsigned int		getPort() const;
-	unsigned int		getMaxSizeClientRequestBody() const;
-	const Route			getRoutes(int index) const;
-	const std::string&	getRoot() const;
+	unsigned int				getPort() const;
+	unsigned int				getMaxSizeClientRequestBody() const;
+	const std::vector<Route>	getRoutes() const;
+	const std::string&			getRoot() const;
 
 	//------------------- SETTERS ------------------------//
 
-	void				setPort(int portNum);
-	void				setServerName(std::string serverName);
-	void				setRoot(std::string root);
-	void				setParamMap(std::map<std::string, std::string> &paramMap);
-	void				addRoute(Route route);
+	void						setPort(int portNum);
+	void						setServerName(std::string serverName);
+	void						setRoot(std::string root);
+	void						setParamMap(std::map<std::string, std::string> &paramMap);
+	void						addRoute(Route route);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 

@@ -23,10 +23,10 @@ private:
 	Request*			_request;
 
 public:
-	// Response();
 
 	//----------------- CONSTRUCTORS ---------------------//
 
+	Response();
 	Response(Request* req);
 	Response(Request* req, int status);
 	Response(const Response& copy);

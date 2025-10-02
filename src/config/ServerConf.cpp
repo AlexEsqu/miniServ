@@ -5,7 +5,7 @@
 ServerConf::ServerConf()
 	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
-	, _root("/pages")
+	, _root("pages/")
 {
 
 #ifdef DEBUG
@@ -76,22 +76,22 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
-unsigned int		ServerConf::getPort() const
+unsigned int				ServerConf::getPort() const
 {
 	return (_port);
 }
 
-unsigned int		ServerConf::getMaxSizeClientRequestBody() const
+unsigned int				ServerConf::getMaxSizeClientRequestBody() const
 {
 	return (_maxSizeClientRequestBody);
 }
 
-const Route			ServerConf::getRoutes(int index) const
+const std::vector<Route>	ServerConf::getRoutes() const
 {
-	return (_routes[index]);
+	return (_routes);
 }
 
-const std::string&	ServerConf::getRoot() const
+const std::string&			ServerConf::getRoot() const
 {
 	return (_root);
 }

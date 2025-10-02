@@ -8,6 +8,7 @@
 Request::Request(const ServerConf& conf, std::string requestChunk)
 	: _unparsedBuffer(requestChunk)
 	, _conf(conf)
+	, _status(200)
 	, _parsingState(PARSING_REQUEST_LINE)
 {
 	addRequestChunk(requestChunk);
@@ -67,7 +68,7 @@ const ServerConf&	Request::getConf() const
 	return _conf;
 }
 
-int					Request::getStatus() const
+const Status&		Request::getStatus() const
 {
 	return _status;
 }
@@ -200,20 +201,18 @@ e_parsProgress Request::parseChunkedBody()
 
 		offset = sizeEnd + 2;
 
-		// if chunk size is zero, we're done
+		// if chunk size is zero, end of chunked request
 		if (chunkSize == 0) {
 			if (_unparsedBuffer.size() < offset + 2)
 				return WAITING_FOR_MORE;
-			offset += 2; // Skip final CRLF
+			offset += 2; // skips final CRLF
 			_parsingState = PARSING_DONE;
 			return RECEIVED_ALL;
 		}
 
-		// Check if the full chunk is available
 		if (_unparsedBuffer.size() < offset + chunkSize + 2)
 			return WAITING_FOR_MORE;
 
-		// Extract chunk data
 		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
 		_httpBody += chunkData;
 
@@ -264,7 +263,7 @@ void	Request::addRequestChunk(std::string chunk)
 void				Request::setIfParsingBody()
 {
 	if (_method == "HEAD" || _method == "GET")
-		_parsingState == PARSING_DONE;
+		_parsingState = PARSING_DONE;
 	if (_requestHeaderMap.find("Transfer-Encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["Transfer-Encoding"] == "chunked")
 	{

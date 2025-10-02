@@ -43,6 +43,7 @@ public:
 
 	std::string					getRootDirectory() const;
 	std::vector<std::string>	getDefaultFiles() const;
+	const std::vector<Route>&	getRoutes() const;
 	bool						isAutoIndex() const;
 	std::vector<std::string>	getAllowedCGI() const;
 	std::string					getUploadDirectory() const;

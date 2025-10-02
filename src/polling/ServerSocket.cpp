@@ -152,6 +152,12 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		try
 		{
 			Connecting->readRequest();
+			if (Connecting->getRequest() && Connecting->getRequest()->getParsingState() == PARSING_DONE)
+			{
+				Response response(Connecting->getRequest());
+				_cf->fetchPage(response);
+				Connecting->setResponse(response);
+			}
 		}
 
 		catch ( HTTPError &e )
@@ -173,9 +179,10 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 	{
 		// if request is complete, fetch content and wrap in HTTP header
 		if (Connecting->getRequest() &&
-			(Connecting->getRequest()->getParsingState() == PARSING_DONE || Connecting->getRequest()->getStatus() >= 400))
+			(Connecting->getRequest()->getParsingState() == PARSING_DONE
+				|| Connecting->getRequest()->getStatus().getStatusCode() >= 400))
 		{
-			_cf->craftSendHTTPResponse(Connecting);
+			Connecting->sendResponse();
 
 			if (Connecting->getRequest()->isKeepAlive())
 				Connecting->resetRequest();

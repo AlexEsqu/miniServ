@@ -45,7 +45,6 @@ public:
 	//--------------- MEMBER FUNCTION --------------------//
 
 	void			addExecutor(Executor* executor);
-	void			fillContent(Response& response);
-	void			craftSendHTTPResponse(ClientSocket* client);
+	void			fetchPage(Response& response);
 
 };

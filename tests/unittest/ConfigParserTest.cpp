@@ -286,3 +286,29 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 		std::remove("test_various_formats.conf");
 	}
 }
+
+TEST_CASE("ConfigParser parses server block with nested location blocks") {
+	const std::string configContent =
+		"server {\n"
+		"    listen 8080;\n"
+		"    location /api {\n"
+		"        proxy_pass http://backend;\n"
+		"        location /api/v1 {\n"
+		"            index \"beep.html\";\n"
+		"        }\n"
+		"    }\n"
+		"    root /var/www;\n"
+		"}\n";
+
+	const std::string configPath = "test_nested_location_block.conf";
+	createTempConfigFile(configPath, configContent);
+
+	std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+
+	CHECK(configs.size() == 1);
+	CHECK(configs[0].getPort() == 8080);
+	CHECK(configs[0].getRoot() == "/var/www");
+	// CHECK(configs[0].getRoutes()[0].getRoutes()[0].getDefaultFiles() == "beep.html");
+
+	std::remove(configPath.c_str());
+}

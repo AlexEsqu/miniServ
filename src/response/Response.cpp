@@ -6,6 +6,10 @@
 ///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
+Response::Response()
+{
+}
+
 Response::Response(Request *req)
 	: _statusNum(200)
 	, _requestedFileName(req->getRequestedURL())
@@ -51,10 +55,19 @@ Response::~Response()
 ///                        OPERATORS                             //
 ///////////////////////////////////////////////////////////////////
 
-Response &Response::operator=(const Response &other)
+Response&	Response::operator=(const Response &other)
 {
-	// code
-	(void)other;
+	if (this == &other)
+		return (*this);
+
+	_statusNum			= other._statusNum;
+	_requestedFileName	= other._requestedFileName;
+	_request			= other._request;
+	_method				= other._method;
+	_contentType		= other._contentType;
+	_contentLength		= other._contentLength;
+	_content			= other._content;
+	_HTTPResponse		= other._HTTPResponse;
 	return (*this);
 }
 
