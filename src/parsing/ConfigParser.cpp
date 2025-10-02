@@ -185,7 +185,7 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 }
 
 
-std::vector<ServerConf>	ConfigParser::parseConfigFile(char* configFilePath)
+std::vector<ServerConf>	ConfigParser::parseConfigFile(const char* configFilePath)
 {
 	std::vector<ServerConf>	configs;
 

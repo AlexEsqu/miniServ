@@ -94,7 +94,7 @@ void Response::setContent(std::vector<char> content)
 
 void Response::setUrl(std::string url)
 {
-	std::string routedURL = _request->getConf().getRoutedURL(url);
+	std::string routedURL = _request->getConf().getRoot() + url;
 
 	// GET /admin/truc => GET /www/var/etc/admin/
 	// GET /bidule/chose => GET /start/truc
@@ -159,7 +159,7 @@ int			Response::getStatus() const
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = _request->getConf().getRoutes(0)->getRootDirectory() + "error.html";
+	std::string errorFile = _request->getConf().getRoot() + "error.html";
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;

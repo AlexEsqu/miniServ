@@ -89,9 +89,9 @@ void	ClientSocket::readRequest()
 
 	// add buffer content to a Request object
 	if (_request == NULL)
-		_request = new Request(_serv.getConf(), _buffer, valread);
+		_request = new Request(_serv.getConf(), _buffer);
 	else
-		_request->addRequestChunk(_buffer, valread);
+		_request->addRequestChunk(_buffer);
 
 	// clear buffer for further use
 	memset(_buffer, '\0', sizeof _buffer);

@@ -173,7 +173,7 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 	{
 		// if request is complete, fetch content and wrap in HTTP header
 		if (Connecting->getRequest() &&
-			(Connecting->getRequest()->isComplete() || Connecting->getRequest()->getStatus() >= 400))
+			(Connecting->getRequest()->getParsingState() == PARSING_DONE || Connecting->getRequest()->getStatus() >= 400))
 		{
 			_cf->craftSendHTTPResponse(Connecting);
 

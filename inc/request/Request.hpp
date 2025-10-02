@@ -8,7 +8,25 @@
 #include "readability.hpp"
 #include "ServerConf.hpp"
 
-static const std::string httpRequestHeaderEnding("\r\n\r\n");
+enum RequestParseState {
+	PARSING_REQUEST_LINE,
+	PARSING_HEADERS,
+	PARSING_BODY,
+	PARSING_DONE
+};
+
+enum e_methods
+{
+	GET,
+	POST,
+	DELETE,
+	UNSUPPOTRTED
+};
+
+enum e_parsProgress {
+	WAITING_FOR_MORE,
+	RECEIVED_ALL
+};
 
 class Request;
 
@@ -20,7 +38,6 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	std::string					_httpBody;
-	std::vector<std::string>	_httpHeader;
 	std::string					_fullRequest;		// full content of the request
 	std::string					_method;			// could be set as the enum already ?
 	std::string					_protocol;			// we only support HTTP/1.1
@@ -30,11 +47,10 @@ private:
 		std::string>			_requestHeaderMap;
 
 	const ServerConf&			_conf;
-	size_t						_byteRead;
-	size_t						_contentLength;		// set at 0 if absent from Request
+	size_t						_contentLength;
 	int							_status;
 
-	bool						_isHeaderComplete;
+	RequestParseState			_parsingState;
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -44,7 +60,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Request(const ServerConf& conf, std::string httpRequest, size_t byteRead);
+	Request(const ServerConf& conf, std::string requestChunk);
 	Request(const Request &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -53,10 +69,10 @@ public:
 
 	//-------------------- SETTER ------------------------//
 
-	void				setMethod(std::string& httpRequest);
-	void				setProtocol(std::string& httpRequest);
-	void				setURI(std::string& httpRequest);
-	void				setRequestLine(std::string& httpRequest);
+	void				setMethod(std::string& method);
+	void				setProtocol(std::string& protocol);
+	void				setURI(std::string& uri);
+	void				setRequestLine(std::string& requestLine);
 	void				addAsHeaderVar(std::string& keyValueString);
 	void				setContentLength();
 
@@ -65,13 +81,16 @@ public:
 	std::string			getMethod() const;
 	std::string			getProtocol() const;
 	std::string			getRequestedURL() const;
-	std::map<std::string, std::string>&	getAdditionalHeaderInfo();
+	std::map
+		<std::string,
+		std::string>&	getAdditionalHeaderInfo();
+
 	const ServerConf&	getConf() const;
 	int					getStatus() const;
+	int					getParsingState() const;
 
 	bool				isKeepAlive();
-	bool				isComplete();
-	bool				isHeaderComplete();
+	bool				shouldHaveBody();
 
 	//------------------- OPERATORS ----------------------//
 
@@ -79,10 +98,10 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void				extractHeader(std::string &httpRequest);
-	void				decodeRequestHeader();
-	// void				extractBody(std::string &httpRequest);
-	void				addRequestChunk(std::string httpRequest, size_t byteRead);
+	void				addRequestChunk(std::string requestChunk);
+	e_parsProgress		parseRequestLine();
+	e_parsProgress		parseHeaderLine();
+	e_parsProgress		parseRequestBody();
 
 };
 

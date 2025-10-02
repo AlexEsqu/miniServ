@@ -32,8 +32,6 @@
 # include "ConfigParser.hpp"
 
 
-extern volatile sig_atomic_t g_running;
-
 enum e_CGI
 {
 	NO_CGI,
@@ -112,7 +110,7 @@ enum e_status
   NETWORK_AUTHENTICATION_REQUIRED = 511
 };
 
-
+extern volatile sig_atomic_t g_running;
 void singalHandler(int sig);
 
 

@@ -6,15 +6,6 @@
 #include "Status.hpp"
 #include "ServerConf.hpp"
 
-
-enum e_methods
-{
-	GET,
-	POST,
-	DELETE,
-	UNSUPPOTRTED
-};
-
 class Response
 {
 private:
@@ -60,7 +51,6 @@ public:
 
 	std::string		getHTTPResponse() const ;
 	Request*		getRequest();
-	std::string		getRoutedURL() const;
 	int				getStatus() const;
 
 	//------------------- OPERATORS ----------------------//
@@ -70,5 +60,6 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	std::string		createErrorPageContent(const Status& num);
+	std::string		getRoutedURL() const;
 	void			testFilename();
 };

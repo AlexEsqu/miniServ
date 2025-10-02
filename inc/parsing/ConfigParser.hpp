@@ -31,7 +31,7 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	static std::vector<ServerConf>	parseConfigFile(char* configFilePath);
+	static std::vector<ServerConf>	parseConfigFile(const char* configFilePath);
 	static ServerConf	parseServerBlock(std::ifstream& configFileStream);
 	static Route		parseLocationBlock(std::ifstream& configFileStream, const std::string& locationLine);
 	static std::string	extractLocationPath(const std::string& locationLine);
