@@ -12,6 +12,7 @@ enum RequestParseState {
 	PARSING_REQUEST_LINE,
 	PARSING_HEADERS,
 	PARSING_BODY,
+	PARSING_BODY_CHUNKED,
 	PARSING_DONE
 };
 
@@ -38,7 +39,7 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	std::string					_httpBody;
-	std::string					_fullRequest;		// full content of the request
+	std::string					_unparsedBuffer;		// full content of the request
 	std::string					_method;			// could be set as the enum already ?
 	std::string					_protocol;			// we only support HTTP/1.1
 	std::string					_requestedFileName;	// for example "/home.html"
@@ -74,7 +75,7 @@ public:
 	void				setURI(std::string& uri);
 	void				setRequestLine(std::string& requestLine);
 	void				addAsHeaderVar(std::string& keyValueString);
-	void				setContentLength();
+	void				setIfParsingBody();
 
 	//-------------------- GETTERS -----------------------//
 
@@ -90,7 +91,6 @@ public:
 	int					getParsingState() const;
 
 	bool				isKeepAlive();
-	bool				shouldHaveBody();
 
 	//------------------- OPERATORS ----------------------//
 
@@ -98,10 +98,11 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void				addRequestChunk(std::string requestChunk);
+	void				addRequestChunk(std::string chunk);
 	e_parsProgress		parseRequestLine();
 	e_parsProgress		parseHeaderLine();
 	e_parsProgress		parseRequestBody();
+	e_parsProgress		parseChunkedBody();
 
 };
 

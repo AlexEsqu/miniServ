@@ -6,7 +6,7 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 Request::Request(const ServerConf& conf, std::string requestChunk)
-	: _fullRequest(requestChunk)
+	: _unparsedBuffer(requestChunk)
 	, _conf(conf)
 	, _parsingState(PARSING_REQUEST_LINE)
 {
@@ -30,7 +30,7 @@ Request::~Request()
 Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
-		_fullRequest = other._fullRequest;
+		_unparsedBuffer = other._unparsedBuffer;
 		_method = other._method;
 		_protocol = other._protocol;
 		_requestedFileName = other._requestedFileName;
@@ -102,14 +102,6 @@ void	Request::setProtocol(std::string &protocol)
 	_protocol = protocol;
 }
 
-void	Request::setContentLength()
-{
-	if (_requestHeaderMap.find("Content-Length") != _requestHeaderMap.end())
-		_contentLength = atoi(_requestHeaderMap["Content-Length"].c_str());
-	else
-		_contentLength = 0;
-}
-
 // Valid request line (1st line of a HTTP request) must have the format:
 //    Method SP Request-URI SP HTTP-Version CRLF
 void	Request::setRequestLine(std::string &requestLine)
@@ -157,50 +149,84 @@ void	Request::checkHTTPValidity()
 
 e_parsProgress	Request::parseRequestLine()
 {
-	size_t lineEnd = _fullRequest.find("\r\n");
+	size_t lineEnd = _unparsedBuffer.find("\r\n");
 	if (lineEnd == std::string::npos)
 		return WAITING_FOR_MORE;
-	std::string requestLine = _fullRequest.substr(0, lineEnd);
+	std::string requestLine = _unparsedBuffer.substr(0, lineEnd);
 	setRequestLine(requestLine);
-	_fullRequest.erase(0, lineEnd + 2);
+	_unparsedBuffer.erase(0, lineEnd + 2);
 	_parsingState = PARSING_HEADERS;
 	return RECEIVED_ALL;
 }
 
 e_parsProgress	Request::parseHeaderLine()
 {
-	size_t lineEnd = _fullRequest.find("\r\n");
+	size_t lineEnd = _unparsedBuffer.find("\r\n");
 	if (lineEnd == std::string::npos)
 		return WAITING_FOR_MORE;
-	std::string headerLine = _fullRequest.substr(0, lineEnd);
+	std::string headerLine = _unparsedBuffer.substr(0, lineEnd);
 	if (headerLine.empty())
-	{
-		setContentLength();
-		if (shouldHaveBody())
-			_parsingState = PARSING_BODY;
-		else
-			_parsingState = PARSING_DONE;
-	}
+		setIfParsingBody();
 	else
 		addAsHeaderVar(headerLine);
-	_fullRequest.erase(0, lineEnd + 2);
+	_unparsedBuffer.erase(0, lineEnd + 2);
 	return RECEIVED_ALL;
 }
 
 e_parsProgress	Request::parseRequestBody()
 {
-	if (_fullRequest.size() < _contentLength)
+	if (_contentLength && _unparsedBuffer.size() < _contentLength)
 		return WAITING_FOR_MORE;
-	_httpBody = _fullRequest.substr(0, _contentLength);
-	_fullRequest.erase(0, _contentLength);
+	else if (!_contentLength && _unparsedBuffer.find("\r\n\r\n") == std::string::npos)
+		return WAITING_FOR_MORE;
+	_httpBody = _unparsedBuffer.substr(0, _contentLength);
+	_unparsedBuffer.erase(0, _contentLength);
 	_parsingState = PARSING_DONE;
 	return RECEIVED_ALL;
 }
 
+e_parsProgress Request::parseChunkedBody()
+{
+	size_t offset = 0;
+	while (true) {
+		size_t sizeEnd = _unparsedBuffer.find("\r\n", offset);
+		if (sizeEnd == std::string::npos)
+			return WAITING_FOR_MORE;
+
+		std::string sizeLine = _unparsedBuffer.substr(offset, sizeEnd - offset);
+		size_t chunkSize = 0;
+		std::istringstream iss(sizeLine);
+		iss >> std::hex >> chunkSize;
+
+		offset = sizeEnd + 2;
+
+		// if chunk size is zero, we're done
+		if (chunkSize == 0) {
+			if (_unparsedBuffer.size() < offset + 2)
+				return WAITING_FOR_MORE;
+			offset += 2; // Skip final CRLF
+			_parsingState = PARSING_DONE;
+			return RECEIVED_ALL;
+		}
+
+		// Check if the full chunk is available
+		if (_unparsedBuffer.size() < offset + chunkSize + 2)
+			return WAITING_FOR_MORE;
+
+		// Extract chunk data
+		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
+		_httpBody += chunkData;
+
+		offset += chunkSize + 2; // Move past chunk data and trailing CRLF
+
+		if (offset >= _unparsedBuffer.size())
+			return WAITING_FOR_MORE;
+	}
+}
+
 void	Request::addRequestChunk(std::string chunk)
 {
-	_fullRequest.append(chunk);
-
+	_unparsedBuffer.append(chunk);
 	while (_parsingState != PARSING_DONE)
 	{
 		switch (_parsingState)
@@ -223,21 +249,35 @@ void	Request::addRequestChunk(std::string chunk)
 					return;
 				break;
 			}
+			case PARSING_BODY_CHUNKED:
+			{
+				if (parseChunkedBody() == WAITING_FOR_MORE)
+					return;
+				break;
+			}
 			case PARSING_DONE:
 				return;
 		}
 	}
 }
 
-bool				Request::shouldHaveBody()
+void				Request::setIfParsingBody()
 {
-	if (_method == "GET" || _method == "HEAD" || _method == "DELETE") {
-		return false;
+	if (_method == "HEAD" || _method == "GET")
+		_parsingState == PARSING_DONE;
+	if (_requestHeaderMap.find("Transfer-Encoding") != _requestHeaderMap.end()
+		&& _requestHeaderMap["Transfer-Encoding"] == "chunked")
+	{
+		_parsingState = PARSING_BODY_CHUNKED;
 	}
-	return true;
+	else if (_requestHeaderMap.find("Content-Length") != _requestHeaderMap.end())
+	{
+		_contentLength = atoi(_requestHeaderMap["Content-Length"].c_str());
+		_parsingState = PARSING_BODY;
+	}
+	else
+		_parsingState = PARSING_DONE;
 }
-
-
 
 
 
