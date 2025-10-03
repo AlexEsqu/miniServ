@@ -46,7 +46,7 @@ public:
 	void			fetchPage(Request& request, Response& response);
 	void			executeIfCGI(Response& response);
 	void			serveStatic(Response& response);
-	const Route&	findMatchingRoute(Request& request) const;
+	const Route*	findMatchingRoute(Request& request) const;
 
 	void			addExecutor(Executor* executor);
 	Response		createPage(Request* request);

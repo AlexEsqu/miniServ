@@ -98,14 +98,25 @@ void	Response::setContent(std::vector<char> content)
 	_content = std::string(content.begin(), content.end());
 }
 
-void	Response::setRoute(const Route& route)
+void	Response::setRoute(const Route* route)
 {
 	_route = route;
 }
 
+void	Response::setRequest(Request* request)
+{
+	_request = request;
+}
+
 void	Response::setRoutedUrl(std::string url)
 {
-	_routedPath = _route.getRootDirectory().append(url);
+	std::cout << "URL is " <<_route->getDefaultFiles()[0] << " " << url << "\n";
+
+	if (url[url.size() - 1] == '/')
+		_routedPath = _route->getRootDirectory().append("/").append(_route->getDefaultFiles()[0]);
+	else
+		_routedPath = _route->getRootDirectory().append("/").append(url);
+
 
 	std::cout << GREEN << _routedPath << STOP_COLOR;
 }
@@ -160,7 +171,7 @@ int			Response::getStatus() const
 	return (_statusNum);
 }
 
-const Route&	Response::getRoute() const
+const Route*	Response::getRoute() const
 {
 	return (_route);
 }
@@ -172,7 +183,7 @@ const Route&	Response::getRoute() const
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = _request->getConf().getRoot() + "error.html";
+	std::string errorFile = _request->getConf().getRoot() + "/" + "error.html";
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;

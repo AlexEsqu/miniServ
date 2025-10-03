@@ -38,5 +38,6 @@ public:
 	static void			addLineAsLocationKeyValue(std::string& line, std::map<std::string, std::string>& paramMap);
 	static void			addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string>& paramMap);
 	static bool			isClosedCurlyBrace(std::string& line);
+	static void			addDefaultRoute(ServerConf& serverConf);
 
 };

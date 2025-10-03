@@ -58,4 +58,6 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
+	Route&						getRoute(std::string path);
+
 };

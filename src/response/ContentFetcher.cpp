@@ -73,6 +73,8 @@ void	ContentFetcher::serveStatic(Response& response)
 {
 	std::string			fileURL(response.getRoutedURL());
 
+	std::cout << "routed path is " << fileURL << "\n";
+
 	std::ifstream		input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
@@ -113,7 +115,7 @@ void	ContentFetcher::fetchPage(Request& request, Response& response)
 		executeIfCGI(response);
 }
 
-const Route&	ContentFetcher::findMatchingRoute(Request& request) const
+const Route*	ContentFetcher::findMatchingRoute(Request& request) const
 {
 	// if (requestedFile[0] == '/') // if the request starts with / the return the first root
 	// 	return (_root.append(requestedFile));
@@ -141,13 +143,17 @@ Response	ContentFetcher::createPage(Request* request)
 
 	try
 	{
+		result.setStatusNum(request->getStatus().getStatusCode());
+		result.setRequest(request);
 		result.setRoute(findMatchingRoute(*request));
+		result.setRoutedUrl(request->getRequestedURL());
 
 		fetchPage(*request, result);
 	}
 
 	catch (const HTTPError& e)
 	{
+		std::cout << "error in fetcher\n";
 		std::cout << e.what() << "\n";
 	}
 

@@ -77,27 +77,29 @@ const std::vector<Route>&	Route::getRoutes() const {
 
 bool	Route::isPathMatch(const std::string& requestPath) const
 {
-	// exact match: "= /exact"
-	if (_urlPath[0] == '=' && _urlPath.length() > 1) {
-		std::string exactPath = _urlPath.substr(2); // Skip "= "
-		return (requestPath == exactPath);
-	}
+	std::cout << "is it close to " << _urlPath << "\n";
 
-	// regex match: "~ ^/api/.*$"
-	if (_urlPath[0] == '~' && _urlPath.length() > 1) {
-		std::string pattern = _urlPath.substr(2); // Skip "~ "
-		return matchesRegex(requestPath, pattern);
-	}
+	// // exact match: "= /exact"
+	// if (_urlPath[0] == '=' && _urlPath.length() > 1) {
+	// 	std::string exactPath = _urlPath.substr(2); // Skip "= "
+	// 	return (requestPath == exactPath);
+	// }
 
-	// case-insensitive regex: "~* pattern"
-	if (_urlPath.substr(0, 2) == "~*") {
-		std::string	lowerRequestPath = requestPath;
-		lowerRequestPath = strToLower(lowerRequestPath);
-		std::string pattern = _urlPath.substr(3); // Skip "~* "
-		return matchesRegex(strToLower(lowerRequestPath), strToLower(pattern));
-	}
+	// // regex match: "~ ^/api/.*$"
+	// if (_urlPath[0] == '~' && _urlPath.length() > 1) {
+	// 	std::string pattern = _urlPath.substr(2); // Skip "~ "
+	// 	return matchesRegex(requestPath, pattern);
+	// }
 
-	// prefix match (default): "/api"
+	// // case-insensitive regex: "~* pattern"
+	// if (_urlPath.substr(0, 2) == "~*") {
+	// 	std::string	lowerRequestPath = requestPath;
+	// 	lowerRequestPath = strToLower(lowerRequestPath);
+	// 	std::string pattern = _urlPath.substr(3); // Skip "~* "
+	// 	return matchesRegex(strToLower(lowerRequestPath), strToLower(pattern));
+	// }
+
+	// // prefix match (default): "/api"
 	return (requestPath.find(_urlPath) == 0);
 }
 
@@ -112,8 +114,10 @@ bool	Route::matchesRegex(const std::string& path, const std::string& pattern) co
 	return (path == pattern);
 }
 
-const Route&	Route::getMatchingRoute(std::string requestPath) const
+const Route*	Route::getMatchingRoute(std::string requestPath) const
 {
+	std::cout << "Matching " << requestPath <<  " with " << getRootDirectory() << "\n";
+
 	if (isPathMatch(requestPath))
 	{
 		for (size_t i = 0; i < _nestedRoutes.size(); i++) {
@@ -128,7 +132,7 @@ const Route&	Route::getMatchingRoute(std::string requestPath) const
 			}
 		}
 
-		return *this;
+		return this;
 	}
 
 	throw std::runtime_error("No matching route found");

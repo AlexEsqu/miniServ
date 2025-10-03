@@ -110,7 +110,7 @@ void	ClientSocket::readRequest()
 void	ClientSocket::sendResponse()
 {
 	#ifdef DEBUG
-		std::cout << response.getStatus() << std::endl;
+		std::cout << _response.getStatus() << std::endl;
 	#endif
 
 	if (send(getSocketFd(),

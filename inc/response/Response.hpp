@@ -17,7 +17,7 @@ private:
 	int					_statusNum;
 	Request*			_request;
 
-	Route			_route;
+	const Route*		_route;
 	std::string			_routedPath;
 
 	int					_CGI;
@@ -48,7 +48,8 @@ public:
 	void			setContent(std::vector<char> content);
 	void			setRoutedUrl(std::string url);
 	void			setResponse(std::string response);
-	void			setRoute(const Route& route);
+	void			setRequest(Request* request);
+	void			setRoute(const Route* route);
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
 
@@ -57,7 +58,7 @@ public:
 	std::string		getHTTPResponse() const ;
 	Request*		getRequest();
 	int				getStatus() const;
-	const Route&	getRoute() const;
+	const Route*	getRoute() const;
 
 	//------------------- OPERATORS ----------------------//
 
