@@ -124,7 +124,7 @@ TEST_CASE("ConfigParser parseServerBlock function") {
 	}
 }
 
-TEST_CASE("ConfigParser readConfigs function") {
+TEST_CASE("ConfigParser parseConfigFile function") {
 
 	SUBCASE("Single server configuration") {
 		createTempConfigFile("test_single_server.conf",
@@ -135,7 +135,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 			"}\n");
 
 		std::string configPath = "test_single_server.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);
@@ -158,8 +158,8 @@ TEST_CASE("ConfigParser readConfigs function") {
 			"    root /var/www/site2;\n"
 			"}\n");
 
-		std::string configPath = "test_multiple_servers.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		const std::string configPath = "test_multiple_servers.conf";
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
 
 		CHECK(configs.size() == 2);
 		CHECK(configs[0].getPort() == 8080);
@@ -188,7 +188,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 
 		ConfigParser parser;
 		std::string configPath = "test_global_directives.conf";
-		std::vector<ServerConf> configs = parser.readConfigs(configPath);
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath.c_str());
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);
@@ -201,7 +201,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 
 		ConfigParser parser;
 		std::string configPath = "test_empty.conf";
-		std::vector<ServerConf> configs = parser.readConfigs(configPath);
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath.c_str());
 
 		CHECK(configs.size() == 0);
 
@@ -216,7 +216,7 @@ TEST_CASE("ConfigParser readConfigs function") {
 
 		ConfigParser parser;
 		std::string configPath = "test_only_comments.conf";
-		std::vector<ServerConf> configs = parser.readConfigs(configPath);
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath.c_str());
 
 		CHECK(configs.size() == 0);
 
@@ -224,10 +224,9 @@ TEST_CASE("ConfigParser readConfigs function") {
 	}
 
 	SUBCASE("Non-existent configuration file") {
-		ConfigParser parser;
 		std::string configPath = "non_existent_file.conf";
 
-		CHECK_THROWS_AS(parser.readConfigs(configPath), std::runtime_error);
+		CHECK_THROWS_AS(ConfigParser::parseConfigFile(configPath.c_str()), std::runtime_error);
 	}
 }
 
@@ -241,7 +240,7 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 
 		std::string configPath = "test_no_closing_brace.conf";
 
-		CHECK_THROWS_AS(ConfigParser::readConfigs(configPath), std::runtime_error);
+		CHECK_THROWS_AS(ConfigParser::parseConfigFile(configPath.c_str()), std::runtime_error);
 
 		std::remove("test_no_closing_brace.conf");
 	}
@@ -260,7 +259,7 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 			"}\n");
 
 		std::string configPath = "test_nested_locations.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);
@@ -278,7 +277,7 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 			"}\n");
 
 		std::string configPath = "test_various_formats.conf";
-		std::vector<ServerConf> configs = ConfigParser::readConfigs(configPath);
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
 
 		CHECK(configs.size() == 1);
 		CHECK(configs[0].getPort() == 8080);
@@ -286,4 +285,30 @@ TEST_CASE("ConfigParser edge cases and error handling") {
 
 		std::remove("test_various_formats.conf");
 	}
+}
+
+TEST_CASE("ConfigParser parses server block with nested location blocks") {
+	const std::string configContent =
+		"server {\n"
+		"    listen 8080;\n"
+		"    location /api {\n"
+		"        proxy_pass http://backend;\n"
+		"        location /api/v1 {\n"
+		"            index \"beep.html\";\n"
+		"        }\n"
+		"    }\n"
+		"    root /var/www;\n"
+		"}\n";
+
+	const std::string configPath = "test_nested_location_block.conf";
+	createTempConfigFile(configPath, configContent);
+
+	std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+
+	CHECK(configs.size() == 1);
+	CHECK(configs[0].getPort() == 8080);
+	CHECK(configs[0].getRoot() == "/var/www");
+	// CHECK(configs[0].getRoutes()[0].getRoutes()[0].getDefaultFiles() == "beep.html");
+
+	std::remove(configPath.c_str());
 }

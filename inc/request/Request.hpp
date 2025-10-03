@@ -7,6 +7,28 @@
 
 #include "readability.hpp"
 #include "ServerConf.hpp"
+#include "Status.hpp"
+
+enum RequestParseState {
+	PARSING_REQUEST_LINE,
+	PARSING_HEADERS,
+	PARSING_BODY,
+	PARSING_BODY_CHUNKED,
+	PARSING_DONE
+};
+
+enum e_methods
+{
+	GET,
+	POST,
+	DELETE,
+	UNSUPPOTRTED
+};
+
+enum e_parsProgress {
+	WAITING_FOR_MORE,
+	RECEIVED_ALL
+};
 
 class Request;
 
@@ -17,23 +39,30 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	std::string			_fullRequest;		// full content of the request
-	std::string			_method;			// could be set as the enum already ?
-	std::string			_protocol;			// we only support HTTP/1.1
-	std::string			_requestedFileName;	// for example "/home.html"
-	std::map<std::string, std::string>	_additionalHeaderInfo;
-	const ServerConf&	_conf;
+	std::string					_httpBody;
+	std::string					_unparsedBuffer;		// full content of the request
+	std::string					_method;			// could be set as the enum already ?
+	std::string					_protocol;			// we only support HTTP/1.1
+	std::string					_requestedFileName;	// for example "/home.html"
+	std::map
+		<std::string,
+		std::string>			_requestHeaderMap;
+
+	const ServerConf&			_conf;
+	size_t						_contentLength;
+	Status						_status;
+
+	RequestParseState			_parsingState;
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
-	void			checkHTTPValidity();
+	void				checkHTTPValidity();
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	// Request(); // empty constructor for testing purposes
-	Request(const ServerConf& conf, std::string httpRequest);
+	Request(const ServerConf& conf, std::string requestChunk);
 	Request(const Request &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -42,30 +71,39 @@ public:
 
 	//-------------------- SETTER ------------------------//
 
-	void			setMethod(std::string& httpRequest);
-	void			setProtocol(std::string& httpRequest);
-	void			setURI(std::string& httpRequest);
-	void			setRequestLine(std::string& httpRequest);
-	void			addAdditionalHeaderInfo(std::string& keyValueString);
+	void				setMethod(std::string& method);
+	void				setProtocol(std::string& protocol);
+	void				setURI(std::string& uri);
+	void				setRequestLine(std::string& requestLine);
+	void				addAsHeaderVar(std::string& keyValueString);
+	void				setIfParsingBody();
 
 	//-------------------- GETTERS -----------------------//
 
-	std::string		getMethod() const;
-	std::string		getProtocol() const;
-	std::string		getRequestedURL() const;
-	std::map<std::string, std::string>&	getAdditionalHeaderInfo();
-	const ServerConf&	getConf() const;
+	std::string			getMethod() const;
+	std::string			getProtocol() const;
+	std::string			getRequestedURL() const;
+	std::map
+		<std::string,
+		std::string>&	getAdditionalHeaderInfo();
 
+	const ServerConf&	getConf() const;
+	const Status&		getStatus() const;
+	int					getParsingState() const;
+
+	bool				isKeepAlive();
 
 	//------------------- OPERATORS ----------------------//
 
-	Request&		operator=(const Request &other);
+	Request&			operator=(const Request &other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void			decodeHTTPRequest(std::string &httpRequest);
-
-	//------------------ EXCEPTIONS ----------------------//
+	void				addRequestChunk(std::string chunk);
+	e_parsProgress		parseRequestLine();
+	e_parsProgress		parseHeaderLine();
+	e_parsProgress		parseRequestBody();
+	e_parsProgress		parseChunkedBody();
 
 };
 

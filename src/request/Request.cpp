@@ -5,30 +5,18 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-// Request::Request()
-// 	: _fullRequest(""), _conf()
-// {
-// #ifdef DEBUG
-// 	std::cout << "Request Generic Constructor called" << std::endl;
-// #endif
-// }
-
-Request::Request(const ServerConf& conf,std::string httpRequest)
-	: _fullRequest(httpRequest)
+Request::Request(const ServerConf& conf, std::string requestChunk)
+	: _unparsedBuffer(requestChunk)
 	, _conf(conf)
+	, _status(200)
+	, _parsingState(PARSING_REQUEST_LINE)
 {
-#ifdef DEBUG
-	std::cout << "Request Constructor called" << std::endl;
-#endif
-	decodeHTTPRequest(httpRequest);
+	addRequestChunk(requestChunk);
 }
 
 Request::Request(const Request &copy)
 : _conf(copy._conf)
 {
-#ifdef DEBUG
-	std::cout << "Request copy Constructor called" << std::endl;
-#endif
 	*this = copy;
 }
 
@@ -36,9 +24,6 @@ Request::Request(const Request &copy)
 
 Request::~Request()
 {
-#ifdef DEBUG
-	std::cout << "Request Destructor called" << std::endl;
-#endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -46,11 +31,11 @@ Request::~Request()
 Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
-		_fullRequest = other._fullRequest;
+		_unparsedBuffer = other._unparsedBuffer;
 		_method = other._method;
 		_protocol = other._protocol;
 		_requestedFileName = other._requestedFileName;
-		_additionalHeaderInfo = other._additionalHeaderInfo;
+		_requestHeaderMap = other._requestHeaderMap;
 	}
 
 	return *this;
@@ -75,12 +60,30 @@ std::string		Request::getRequestedURL() const
 
 std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 {
-	return _additionalHeaderInfo;
+	return _requestHeaderMap;
 }
 
 const ServerConf&	Request::getConf() const
 {
 	return _conf;
+}
+
+const Status&		Request::getStatus() const
+{
+	return _status;
+}
+
+
+int					Request::getParsingState() const
+{
+	return _parsingState;
+}
+
+bool				Request::isKeepAlive()
+{
+	if (_requestHeaderMap.find("Connection") != _requestHeaderMap.end())
+		return (_requestHeaderMap["Connection"] == "keep-alive");
+	return false;
 }
 
 //----------------------- SETTERS -----------------------------------//
@@ -112,7 +115,7 @@ void	Request::setRequestLine(std::string &requestLine)
 	setProtocol(trim(splitRequestLine[2]));
 }
 
-void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
+void	Request::addAsHeaderVar(std::string &keyValueString)
 {
 	size_t	equalPos = keyValueString.find(':');
 
@@ -121,10 +124,7 @@ void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 		std::string value = keyValueString.substr(equalPos + 1);
 		key = trim(key);
 		value = trim(value);
-		_additionalHeaderInfo[key] = value;
-		#ifdef DEBUG
-			// std::cout << "adding env var as [" << key << " = " << value << "]\n";
-		#endif
+		_requestHeaderMap[key] = value;
 	}
 }
 
@@ -132,81 +132,151 @@ void	Request::addAdditionalHeaderInfo(std::string &keyValueString)
 
 void	Request::checkHTTPValidity()
 {
-	#ifdef DEBUG
-		std::cout << "Checking validity:" << std::endl;
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedFileName << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
-	#endif
-
-	// CHECK METHOD
 	// empty method is not valid HTTP request
 	if (getMethod().empty())
 		throw badSyntax();
 	// TO DO : check if within allowed method for the route, requires config class
 
-	// CHECK PROTOCOL
 	// throwing error if protocol is any other protocol than HTTP/1.1
 	if (getProtocol() != "HTTP/1.1")
 		throw badProtocol();
 
-	// CHECK URL
 	// empty URL is not valid HTTP request
 	if (getRequestedURL().empty())
 		throw badSyntax();
-
-	// CHECK FORMAT
-	// // check for the end of request Carriage Return or '\r'
-	// if (httpRequest[httpRequest.size() - 2] != '\r')
-	// 	throw badSyntax();
-	// // check for the Line Feed or '\n'
-	// if (httpRequest[httpRequest.size() - 1] != '\n')
-	// 	throw badSyntax();
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-// Goes through the Request Header line by line
-// to set method, uri, protocol and env
-void Request::decodeHTTPRequest(std::string &httpRequest)
+e_parsProgress	Request::parseRequestLine()
 {
-	std::stringstream httpRequestStream(httpRequest);
-	std::string line;
-	bool isFirstLine = true;
-
-	while (getline(httpRequestStream, line)) {
-
-		// Removes trailing '\r' if present
-		if (!line.empty() && line[line.size() - 1] == '\r') {
-			line.erase(line.size() - 1);
-		}
-
-		// If there is an empty line, it is the end of the http headers
-		if (line.empty()) {
-			break;
-		}
-
-		// setting values in the request line for first line, then adding to env
-		if (isFirstLine) {
-			setRequestLine(line);
-			isFirstLine = false;
-		} else {
-			addAdditionalHeaderInfo(line);
-		}
-	}
-
-	checkHTTPValidity();
-
-	#ifdef DEBUG
-		std::cout << "Request HTTP was [" << httpRequest << "]\n";
-		std::cout << "Method is [" << _method << "]\n";
-		std::cout << "URL is [" << _requestedFileName << "]\n";
-		std::cout << "Protocol is [" << _protocol << "]\n";
-	#endif
+	size_t lineEnd = _unparsedBuffer.find("\r\n");
+	if (lineEnd == std::string::npos)
+		return WAITING_FOR_MORE;
+	std::string requestLine = _unparsedBuffer.substr(0, lineEnd);
+	setRequestLine(requestLine);
+	_unparsedBuffer.erase(0, lineEnd + 2);
+	_parsingState = PARSING_HEADERS;
+	return RECEIVED_ALL;
 }
 
-//------------------------ EXCEPTIONS ---------------------------------//
+e_parsProgress	Request::parseHeaderLine()
+{
+	size_t lineEnd = _unparsedBuffer.find("\r\n");
+	if (lineEnd == std::string::npos)
+		return WAITING_FOR_MORE;
+	std::string headerLine = _unparsedBuffer.substr(0, lineEnd);
+	if (headerLine.empty())
+		setIfParsingBody();
+	else
+		addAsHeaderVar(headerLine);
+	_unparsedBuffer.erase(0, lineEnd + 2);
+	return RECEIVED_ALL;
+}
 
+e_parsProgress	Request::parseRequestBody()
+{
+	if (_contentLength && _unparsedBuffer.size() < _contentLength)
+		return WAITING_FOR_MORE;
+	else if (!_contentLength && _unparsedBuffer.find("\r\n\r\n") == std::string::npos)
+		return WAITING_FOR_MORE;
+	_httpBody = _unparsedBuffer.substr(0, _contentLength);
+	_unparsedBuffer.erase(0, _contentLength);
+	_parsingState = PARSING_DONE;
+	return RECEIVED_ALL;
+}
+
+e_parsProgress Request::parseChunkedBody()
+{
+	size_t offset = 0;
+	while (true) {
+		size_t sizeEnd = _unparsedBuffer.find("\r\n", offset);
+		if (sizeEnd == std::string::npos)
+			return WAITING_FOR_MORE;
+
+		std::string sizeLine = _unparsedBuffer.substr(offset, sizeEnd - offset);
+		size_t chunkSize = 0;
+		std::istringstream iss(sizeLine);
+		iss >> std::hex >> chunkSize;
+
+		offset = sizeEnd + 2;
+
+		// if chunk size is zero, end of chunked request
+		if (chunkSize == 0) {
+			if (_unparsedBuffer.size() < offset + 2)
+				return WAITING_FOR_MORE;
+			offset += 2; // skips final CRLF
+			_parsingState = PARSING_DONE;
+			return RECEIVED_ALL;
+		}
+
+		if (_unparsedBuffer.size() < offset + chunkSize + 2)
+			return WAITING_FOR_MORE;
+
+		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
+		_httpBody += chunkData;
+
+		offset += chunkSize + 2; // Move past chunk data and trailing CRLF
+
+		if (offset >= _unparsedBuffer.size())
+			return WAITING_FOR_MORE;
+	}
+}
+
+void	Request::addRequestChunk(std::string chunk)
+{
+	_unparsedBuffer.append(chunk);
+	while (_parsingState != PARSING_DONE)
+	{
+		switch (_parsingState)
+		{
+			case PARSING_REQUEST_LINE:
+			{
+				if (parseRequestLine() == WAITING_FOR_MORE)
+					return;
+				break;
+			}
+			case PARSING_HEADERS:
+			{
+				if (parseHeaderLine() == WAITING_FOR_MORE)
+					return;
+				break;
+			}
+			case PARSING_BODY:
+			{
+				if (parseRequestBody() == WAITING_FOR_MORE)
+					return;
+				break;
+			}
+			case PARSING_BODY_CHUNKED:
+			{
+				if (parseChunkedBody() == WAITING_FOR_MORE)
+					return;
+				break;
+			}
+			case PARSING_DONE:
+				return;
+		}
+	}
+}
+
+void				Request::setIfParsingBody()
+{
+	if (_method == "HEAD" || _method == "GET")
+		_parsingState = PARSING_DONE;
+	if (_requestHeaderMap.find("Transfer-Encoding") != _requestHeaderMap.end()
+		&& _requestHeaderMap["Transfer-Encoding"] == "chunked")
+	{
+		_parsingState = PARSING_BODY_CHUNKED;
+	}
+	else if (_requestHeaderMap.find("Content-Length") != _requestHeaderMap.end())
+	{
+		_contentLength = atoi(_requestHeaderMap["Content-Length"].c_str());
+		_parsingState = PARSING_BODY;
+	}
+	else
+		_parsingState = PARSING_DONE;
+}
 
 
 

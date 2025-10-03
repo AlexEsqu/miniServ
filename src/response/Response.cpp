@@ -6,18 +6,16 @@
 ///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
-// Response::Response()
-// {
-// 	// std::cout << "Response Constructor called" << std::endl;
-// }
+Response::Response()
+{
+}
 
-Response::Response(Request &req)
+Response::Response(Request *req)
 	: _statusNum(200)
-	, _content("")
-	, _requestedFileName(req.getRequestedURL())
+	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
-	setMethod(_request.getMethod());
+	setMethod(_request->getMethod());
 	if (this->_method == "POST")
 		setStatusNum(201);
 	if (this->_method == "GET")
@@ -25,10 +23,9 @@ Response::Response(Request &req)
 	setUrl(_requestedFileName);
 }
 
-Response::Response(Request &req, int status)
+Response::Response(Request *req, int status)
 	: _statusNum(status)
-	, _content("")
-	, _requestedFileName(req.getRequestedURL())
+	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
 	if (status >= 400)
@@ -58,10 +55,19 @@ Response::~Response()
 ///                        OPERATORS                             //
 ///////////////////////////////////////////////////////////////////
 
-Response &Response::operator=(const Response &other)
+Response&	Response::operator=(const Response &other)
 {
-	// code
-	(void)other;
+	if (this == &other)
+		return (*this);
+
+	_statusNum			= other._statusNum;
+	_requestedFileName	= other._requestedFileName;
+	_request			= other._request;
+	_method				= other._method;
+	_contentType		= other._contentType;
+	_contentLength		= other._contentLength;
+	_content			= other._content;
+	_HTTPResponse		= other._HTTPResponse;
 	return (*this);
 }
 
@@ -94,46 +100,45 @@ void Response::setContent(std::string content)
 	_content = content;
 }
 
-void Response::setUrl(std::string url)
+void Response::setContent(std::vector<char> content)
 {
-	std::string root = _request.getConf().getRootMatchForRequestedFile(url)->getRootDirectory();
-	if (url == "/")
-		this->_requestedFileName = root + _request.getConf().getRoutes(0)->getDefaultFiles()[0];
-	else
-		this->_requestedFileName = root + url;
-	// std::cout << GREEN << _requestedFileName << STOP_COLOR << std::endl;
+	_content = std::string(content.begin(), content.end());
 }
 
-void Response::setResponse(std::string response)
+void Response::setUrl(std::string url)
 {
-	this->_response = response;
+	std::string routedURL = _request->getConf().getRoot() + url;
+
+	// GET /admin/truc => GET /www/var/etc/admin/
+	// GET /bidule/chose => GET /start/truc
+	// GET / => GET <root>/index.html ou <root>/index.php
+	// std::cout << GREEN << _requestedFileName << STOP_COLOR;
 }
 
 void Response::setHTTPResponse()
 {
-	std::stringstream response;
 	Status status(this->_statusNum);
 	if (status.getStatusCode() >= 400) // if its an error
-	{
 		this->_content = createErrorPageContent(status);
-	}
-	this->_contentLength = this->_content.length();
-	response << _request.getProtocol() << " " << status;
+	this->_contentLength = this->_content.size();
+
+	std::stringstream	header;
+	header << _request->getProtocol() << " " << status;
 	if (this->_method == "GET")
 	{
-		response << "Content-Type: " << this->_contentType << "\r\n"
-				 << "Content-Length: " << this->_contentLength
-				 << "/\r\n\r\n"
-				 << this->_content;
+		header << "Content-Type: " << _contentType << "\r\n"
+				 << "Content-Length: " << _contentLength << "\r\n"
+				 << "\r\n";
 	}
 	if (this->_method == "POST")
 	{
-		response << "Content-Type: text/html\r\n"<<
-				 "Refresh: 0; url=/\r\n\r\n";
+		header << "Content-Type: text/html\r\n"
+				<< "Content-Length: 0\r\n"
+				<< "Refresh: 0; url=/\r\n"
+				<< "\r\n";
 	}
-	std::cout << response.rdbuf();
 
-	this->_HTTPResponse = response.str();
+	this->_HTTPResponse = header.str() + _content;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -145,7 +150,7 @@ std::string Response::getHTTPResponse() const
 	return (this->_HTTPResponse);
 }
 
-Request &Response::getRequest()
+Request *Response::getRequest()
 {
 	return (_request);
 }
@@ -155,6 +160,11 @@ std::string Response::getRoutedURL() const
 	return (_requestedFileName);
 }
 
+int			Response::getStatus() const
+{
+	return (_statusNum);
+}
+
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////
@@ -162,7 +172,7 @@ std::string Response::getRoutedURL() const
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = _request.getConf().getRoutes(0)->getRootDirectory() + "error.html";
+	std::string errorFile = _request->getConf().getRoot() + "error.html";
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;

@@ -110,12 +110,8 @@ enum e_status
   NETWORK_AUTHENTICATION_REQUIRED = 511
 };
 
-
+extern volatile sig_atomic_t g_running;
 void singalHandler(int sig);
-std::string	execPHPwithFork(class Request& request, std::string& fileToExecPath);
-
-
-
 
 
 #endif

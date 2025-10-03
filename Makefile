@@ -106,13 +106,19 @@ UNIT_TEST_FRAME		=	$(UNIT_TEST_DIR)/doctest/doctest/
 SRC_NO_MAIN			=	$(filter-out $(SRC_DIR)/main.cpp, $(SRC))
 UNIT_TEST_BIN		=	utest_$(NAME)
 
+#------ Valgrind --------------------------------------------------------------#
+
+V_FLAG				= valgrind --leak-check=full --show-leak-kinds=all \
+						--track-origins=yes --track-fds=yes \
+						--trace-children=yes
+
 # **************************************************************************** #
 #		Server																   #
 # **************************************************************************** #
 
 all:				$(NAME)
 
-start:				
+start:
 					make re
 					./$(NAME)
 
@@ -151,6 +157,10 @@ debug:
 verbose:
 					@echo "Compiling with additional logging info"
 					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC)
+
+valgrind:
+					make debug
+					$(V_FLAG) ./webserv
 
 # **************************************************************************** #
 #		Clean up															   #

@@ -42,9 +42,9 @@ void	Executor::readResultIntoContent(Response& response, int fd)
 		if (buff != 0)
 			s.push_back(buff);
 	}
-	#ifdef DEBUG
-		std::cout << "Pipe read was : [" << s << "]\n";
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Pipe read was : [" << s << "]\n";
+	// #endif
 
 	response.setContent(s);
 }
@@ -53,11 +53,11 @@ std::vector<std::string>	Executor::generateEnvStrVec(Response& response)
 {
 	std::vector<std::string>	envAsStrVec;
 
-	addCGIEnvironment(envAsStrVec, response.getRequest());
+	addCGIEnvironment(envAsStrVec, *(response.getRequest()));
 
 	std::map<std::string, std::string>::const_iterator item;
-	for (item = response.getRequest().getAdditionalHeaderInfo().begin();
-		item != response.getRequest().getAdditionalHeaderInfo().end(); item++)
+	for (item = response.getRequest()->getAdditionalHeaderInfo().begin();
+		item != response.getRequest()->getAdditionalHeaderInfo().end(); item++)
 	{
 		envAsStrVec.push_back(formatAsHTTPVariable(item->first, item->second));
 	}

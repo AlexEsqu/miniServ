@@ -1,9 +1,14 @@
 #pragma once
-# include "Sockette.hpp"
+
+#include <sys/epoll.h>
 #include <string>
-#define BUFFSIZE 1000000
-#include "server.hpp"
 #include <algorithm>
+
+#include "Sockette.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
+
+#define BUFFSIZE 1000000
 
 class ServerSocket;
 
@@ -12,11 +17,12 @@ class ClientSocket: public Sockette
 
 private:
 
-	char	_buffer[BUFFSIZE];
-	std::string	_header;
-	std::string _body;
-	bool	_isChunked;
-	size_t	_contentLength;
+	ServerSocket&		_serv;
+	char				_buffer[BUFFSIZE];
+	struct epoll_event	_event;
+	Request*			_request;
+	Response			_response;
+
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
@@ -25,14 +31,24 @@ public:
 
 	//----------------- DESTRUCTOR -----------------------//
 
+	~ClientSocket();
+
+	//----------------------- SETTER ---------------------//
+
+	void				setEvent(uint32_t epollEventMask);
+	void				setResponse(Response reponse);
+	void				resetRequest();
+
 	//----------------------- GETTER ---------------------//
 
-	char	*getRequest();
+	char*				getBuffer();
+	struct epoll_event&	getEvent();
+	Request*			getRequest();
+	ServerSocket&		getServer();
+	Response&			getResponse();
 
 	//----------------- MEMBER FUNCTION ------------------//
 
-	void	readRequest();
-	
-	void readRequestHeader();
-	std::string readRequestBody(std::istringstream &buffer);
+	void				readRequest();
+	void				sendResponse();
 };

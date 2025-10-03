@@ -6,39 +6,29 @@
 #include "Status.hpp"
 #include "ServerConf.hpp"
 
-
-enum e_methods
-{
-	GET,
-	POST,
-	DELETE,
-	UNSUPPOTRTED
-};
-
 class Response
 {
 private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	int				_statusNum;
+	int					_statusNum;
 	std::string			_method;			// enum for GET,POST,DELETE...
-	std::string		_contentType;
-	unsigned int	_contentLength;
-	std::string		_content;
-	std::string		_response;
-	std::string		_requestedFileName;
-	std::string		_HTTPResponse;
-	int				_CGI;
-	Request			_request;
+	std::string			_contentType;
+	unsigned int		_contentLength;
+	std::string			_content;
+	std::string			_requestedFileName;
+	std::string			_HTTPResponse;
+	int					_CGI;
+	Request*			_request;
 
 public:
-	// Response();
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Response(Request& req);
-	Response(Request& req, int status);
+	Response();
+	Response(Request* req);
+	Response(Request* req, int status);
 	Response(const Response& copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -53,14 +43,15 @@ public:
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
 	void			setContent(std::string content);
+	void			setContent(std::vector<char> content);
 	void			setUrl(std::string url);
 	void			setResponse(std::string response);
 
 	//-------------------- GETTERS -----------------------//
 
 	std::string		getHTTPResponse() const ;
-	Request&		getRequest();
-	std::string		getRoutedURL() const;
+	Request*		getRequest();
+	int				getStatus() const;
 
 	//------------------- OPERATORS ----------------------//
 
@@ -69,5 +60,6 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	std::string		createErrorPageContent(const Status& num);
+	std::string		getRoutedURL() const;
 	void			testFilename();
 };

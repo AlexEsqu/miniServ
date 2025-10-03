@@ -5,6 +5,7 @@
 
 #include "Response.hpp"
 #include "Executor.hpp"
+#include "ClientSocket.hpp"
 
 class ContentFetcher
 {
@@ -20,6 +21,8 @@ private:
 	bool			isDirectory(const char *path);
 	bool			isExisting(const char *path);
 	bool			isAllowed(const char *path);
+	size_t			getSizeOfFile(const std::string& filename);
+	std::string		getTypeBasedOnExtension(const std::string& filePath);
 
 	void			executeIfCGI(Response& response);
 	void			serveStatic(Response& response);
@@ -42,6 +45,6 @@ public:
 	//--------------- MEMBER FUNCTION --------------------//
 
 	void			addExecutor(Executor* executor);
-	void			fillContent(Response& response);
+	void			fetchPage(Response& response);
 
 };

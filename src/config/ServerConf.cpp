@@ -5,16 +5,15 @@
 ServerConf::ServerConf()
 	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
+	, _root("pages/")
 {
-	_routes.push_back(new Route("./pages/"));
-	_routes.push_back(new Route("./pages/img/"));
 
 #ifdef DEBUG
 	std::cout << "ServerConf Generic Constructor called" << std::endl;
 #endif
 }
 
-ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route*> routes)
+ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route> routes)
 	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
 	, _routes(routes)
@@ -30,15 +29,19 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 		_port = atoi(_paramMap["listen"].c_str());
 	}
 
-
 #ifdef DEBUG
 	std::cout << "ServerConf Custom Constructor called" << std::endl;
 #endif
 }
 
 ServerConf::ServerConf(const ServerConf &copy)
+	: _port(copy._port)
+	, _maxSizeClientRequestBody(copy._maxSizeClientRequestBody)
+	, _root(copy._root)
+	, _paramMap(copy._paramMap)
 {
-	*this = copy;
+	for (size_t i = 0; i < copy._routes.size(); ++i)
+		_routes.push_back(Route(copy._routes[i]));
 
 #ifdef DEBUG
 	std::cout << "ServerConf copy Constructor called" << std::endl;
@@ -49,7 +52,6 @@ ServerConf::ServerConf(const ServerConf &copy)
 
 ServerConf::~ServerConf()
 {
-	_routes.erase(_routes.begin(), _routes.end());
 #ifdef DEBUG
 	std::cout
 		<< "ServerConf Destructor called" << std::endl;
@@ -66,29 +68,30 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
 		_root = other._root;
 		_paramMap = other._paramMap;
-		_routes = other._routes;
+		for (size_t i = 0; i < other._routes.size(); ++i)
+			_routes.push_back(Route(other._routes[i]));
 	}
 	return (*this);
 }
 
 //---------------------------- GUETTERS -------------------------------------//
 
-unsigned int		ServerConf::getPort() const
+unsigned int				ServerConf::getPort() const
 {
 	return (_port);
 }
 
-unsigned int		ServerConf::getMaxSizeClientRequestBody() const
+unsigned int				ServerConf::getMaxSizeClientRequestBody() const
 {
 	return (_maxSizeClientRequestBody);
 }
 
-const Route*		ServerConf::getRoutes(int index) const
+const std::vector<Route>	ServerConf::getRoutes() const
 {
-	return (_routes[index]);
+	return (_routes);
 }
 
-const std::string&	ServerConf::getRoot() const
+const std::string&			ServerConf::getRoot() const
 {
 	return (_root);
 }
@@ -110,9 +113,19 @@ void			ServerConf::setParamMap(std::map<std::string, std::string>& paramMap)
 	_paramMap = paramMap;
 }
 
+void			ServerConf::setServerName(std::string serverName)
+{
+	_serverName = serverName;
+}
+
+void			ServerConf::addRoute(Route route)
+{
+	_routes.push_back(route);
+}
+
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-bool doesFileExist(std::string &requestedFile)
+bool	doesFileExist(std::string &requestedFile)
 {
 	std::ifstream input(requestedFile.c_str()); // opening the file as the content for the response
 	std::stringstream content;
@@ -124,21 +137,19 @@ bool doesFileExist(std::string &requestedFile)
 	return (true);
 }
 
-Route *ServerConf::getRootMatchForRequestedFile(std::string &requestedFile) const
+std::string	ServerConf::getRoutedURL(std::string &requestedFile)
 {
-	std::vector<Route *>::const_iterator it;
+	std::vector<Route>::const_iterator it;
 	std::string path;
 	if (requestedFile[0] == '/') // if the request starts with / the return the first root
-		return (*this->_routes.begin());
-	for (it = this->_routes.begin(); it != this->_routes.end(); it++)
-	{
-		path = (*it)->getRootDirectory() + requestedFile;
-		if (doesFileExist(path) == true)
-		{
-			std::cout << GREEN << "FOUND ROOT " << (*it)->getRootDirectory() << STOP_COLOR << std::endl;
-			return (*it);
-		}
-	}
-	std::cout << RED << "ROOT NOT FOUND FOR " << requestedFile << STOP_COLOR << std::endl;
-	return (*this->_routes.begin());
+		return (_root.append(requestedFile));
+	// for (it = _routes.begin(); it != _routes.end(); it++)
+	// {
+	// 	if requestedFile == route->getPath()
+
+	// 	path = it->getRootDirectory() + requestedFile;
+	// 	if (doesFileExist(path) == true)
+	// 		return *it;
+	// }
+	return _root.append(requestedFile);
 }
