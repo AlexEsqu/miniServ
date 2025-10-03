@@ -9,7 +9,7 @@
 #include "ServerConf.hpp"
 #include "Status.hpp"
 
-enum RequestParseState {
+enum e_parseState {
 	PARSING_REQUEST_LINE,
 	PARSING_HEADERS,
 	PARSING_BODY,
@@ -22,15 +22,18 @@ enum e_methods
 	GET,
 	POST,
 	DELETE,
-	UNSUPPOTRTED
+	UNSUPPORTED
 };
 
-enum e_parsProgress {
+enum e_dataProgress {
 	WAITING_FOR_MORE,
 	RECEIVED_ALL
 };
 
+
 class Request;
+
+class ServerConf;
 
 class Request
 {
@@ -48,14 +51,14 @@ private:
 		<std::string,
 		std::string>			_requestHeaderMap;
 
-	ServerConf					_conf;
+	const ServerConf&			_conf;
 	Route						_matchingRoute;
 
 	size_t						_contentLength;
 	Status						_status;
 
 
-	RequestParseState			_parsingState;
+	e_parseState			_parsingState;
 
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
@@ -91,7 +94,7 @@ public:
 		<std::string,
 		std::string>&	getAdditionalHeaderInfo();
 
-	ServerConf&			getConf();
+	const ServerConf&	getConf() const;
 	const Status&		getStatus() const;
 	int					getParsingState() const;
 
@@ -104,10 +107,10 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void				addRequestChunk(std::string chunk);
-	e_parsProgress		parseRequestLine();
-	e_parsProgress		parseHeaderLine();
-	e_parsProgress		parseRequestBody();
-	e_parsProgress		parseChunkedBody();
+	e_dataProgress		parseRequestLine();
+	e_dataProgress		parseHeaderLine();
+	e_dataProgress		parseRequestBody();
+	e_dataProgress		parseChunkedBody();
 
 };
 

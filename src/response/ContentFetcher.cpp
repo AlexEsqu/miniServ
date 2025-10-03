@@ -79,7 +79,7 @@ void	ContentFetcher::serveStatic(Response& response)
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
 		response.setStatusNum(404);
-		response.setHTTPResponse();
+		response.AddHTTPHeaders();
 		return;
 	}
 
@@ -99,7 +99,7 @@ void ContentFetcher::executeIfCGI(Response& response)
 	}
 
 	std::cout << CGI_FORMAT(" NO CGI ");
-	return (serveStatic(response));
+	serveStatic(response);
 }
 
 void	ContentFetcher::addExecutor(Executor* executor)
@@ -107,24 +107,21 @@ void	ContentFetcher::addExecutor(Executor* executor)
 	executors.push_back(executor);
 }
 
-void	ContentFetcher::fetchPage(Response& response)
+void	ContentFetcher::fetchPage(Request& request, Response& response)
 {
-	if (response.getRequest()->getMethod() == "GET")
+	if (request.getMethod() == "GET")
 		executeIfCGI(response);
-
-
-	response.setHTTPResponse();
 }
 
-void	ContentFetcher::getRoute(std::string path)
+const Route&	ContentFetcher::findMatchingRoute(Request& request) const
 {
 	// if (requestedFile[0] == '/') // if the request starts with / the return the first root
 	// 	return (_root.append(requestedFile));
-	for (size_t i = 0; i < _routes.size(); i++)
+	for (size_t i = 0; i < request.getConf().getRoutes().size(); i++)
 	{
 		try
 		{
-			return _routes[i].getMatchingRoute(path);
+			return (request.getConf().getRoutes()[i].getMatchingRoute(request.getRequestedURL()));
 		}
 
 		catch (const std::runtime_error&)
@@ -133,5 +130,28 @@ void	ContentFetcher::getRoute(std::string path)
 		}
 	}
 
-	throw HTTPError(request, 404);
+	throw HTTPError(&request, 404);
+
+}
+
+
+Response	ContentFetcher::createPage(Request* request)
+{
+	Response	result;
+
+	try
+	{
+		result.setRoute(findMatchingRoute(*request));
+
+		fetchPage(*request, result);
+	}
+
+	catch (const HTTPError& e)
+	{
+		std::cout << e.what() << "\n";
+	}
+
+	result.AddHTTPHeaders();
+
+	return (result);
 }

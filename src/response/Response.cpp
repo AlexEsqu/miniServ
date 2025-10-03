@@ -12,34 +12,32 @@ Response::Response()
 
 Response::Response(Request *req)
 	: _statusNum(200)
-	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
-	setMethod(_request->getMethod());
-	if (this->_method == "POST")
+	if (_request->getMethod() == "POST")
 		setStatusNum(201);
-	if (this->_method == "GET")
+	if (_request->getMethod() == "GET")
 		setStatusNum(200);
-	setUrl(_requestedFileName);
 }
 
 Response::Response(Request *req, int status)
 	: _statusNum(status)
-	, _requestedFileName(req->getRequestedURL())
 	, _request(req)
 {
 	if (status >= 400)
 	{
-		setHTTPResponse();
+		AddHTTPHeaders();
 		return;
 	}
 }
 
 Response::Response(const Response &copy)
-	: _request(copy._request)
+	: _statusNum(copy._statusNum)
+	, _request(copy._request)
+	, _routedPath(copy._routedPath)
+	, _contentType(copy._contentType)
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
-	*this = copy;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -61,13 +59,13 @@ Response&	Response::operator=(const Response &other)
 		return (*this);
 
 	_statusNum			= other._statusNum;
-	_requestedFileName	= other._requestedFileName;
+	_routedPath			= other._routedPath;
 	_request			= other._request;
-	_method				= other._method;
 	_contentType		= other._contentType;
 	_contentLength		= other._contentLength;
 	_content			= other._content;
 	_HTTPResponse		= other._HTTPResponse;
+	_route				= other._route;
 	return (*this);
 }
 
@@ -78,11 +76,6 @@ Response&	Response::operator=(const Response &other)
 void	Response::setStatusNum(int number)
 {
 	this->_statusNum = number;
-}
-
-void	Response::setMethod(std::string method)
-{
-	this->_method = method;
 }
 
 void	Response::setContentType(std::string type)
@@ -105,17 +98,19 @@ void	Response::setContent(std::vector<char> content)
 	_content = std::string(content.begin(), content.end());
 }
 
-void	Response::setUrl(std::string url)
+void	Response::setRoute(const Route& route)
 {
-	std::string routedURL = _request->getConf().getRoot() + url;
-
-	// GET /admin/truc => GET /www/var/etc/admin/
-	// GET /bidule/chose => GET /start/truc
-	// GET / => GET <root>/index.html ou <root>/index.php
-	// std::cout << GREEN << _requestedFileName << STOP_COLOR;
+	_route = route;
 }
 
-void Response::setHTTPResponse()
+void	Response::setRoutedUrl(std::string url)
+{
+	_routedPath = _route.getRootDirectory().append(url);
+
+	std::cout << GREEN << _routedPath << STOP_COLOR;
+}
+
+void Response::AddHTTPHeaders()
 {
 	Status status(this->_statusNum);
 	if (status.getStatusCode() >= 400) // if its an error
@@ -124,13 +119,13 @@ void Response::setHTTPResponse()
 
 	std::stringstream	header;
 	header << _request->getProtocol() << " " << status;
-	if (this->_method == "GET")
+	if (_request->getMethod() == "GET")
 	{
 		header << "Content-Type: " << _contentType << "\r\n"
 				 << "Content-Length: " << _contentLength << "\r\n"
 				 << "\r\n";
 	}
-	if (this->_method == "POST")
+	if (_request->getMethod() == "POST")
 	{
 		header << "Content-Type: text/html\r\n"
 				<< "Content-Length: 0\r\n"
@@ -157,12 +152,17 @@ Request *Response::getRequest()
 
 std::string Response::getRoutedURL() const
 {
-	return (_requestedFileName);
+	return (_routedPath);
 }
 
 int			Response::getStatus() const
 {
 	return (_statusNum);
+}
+
+const Route&	Response::getRoute() const
+{
+	return (_route);
 }
 
 ///////////////////////////////////////////////////////////////////

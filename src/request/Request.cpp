@@ -63,7 +63,7 @@ std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 	return _requestHeaderMap;
 }
 
-ServerConf&	Request::getConf()
+const ServerConf&	Request::getConf() const
 {
 	return _conf;
 }
@@ -148,7 +148,7 @@ void	Request::checkHTTPValidity()
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-e_parsProgress	Request::parseRequestLine()
+e_dataProgress	Request::parseRequestLine()
 {
 	size_t lineEnd = _unparsedBuffer.find("\r\n");
 	if (lineEnd == std::string::npos)
@@ -160,7 +160,7 @@ e_parsProgress	Request::parseRequestLine()
 	return RECEIVED_ALL;
 }
 
-e_parsProgress	Request::parseHeaderLine()
+e_dataProgress	Request::parseHeaderLine()
 {
 	size_t lineEnd = _unparsedBuffer.find("\r\n");
 	if (lineEnd == std::string::npos)
@@ -174,7 +174,7 @@ e_parsProgress	Request::parseHeaderLine()
 	return RECEIVED_ALL;
 }
 
-e_parsProgress	Request::parseRequestBody()
+e_dataProgress	Request::parseRequestBody()
 {
 	if (_contentLength && _unparsedBuffer.size() < _contentLength)
 		return WAITING_FOR_MORE;
@@ -186,7 +186,7 @@ e_parsProgress	Request::parseRequestBody()
 	return RECEIVED_ALL;
 }
 
-e_parsProgress Request::parseChunkedBody()
+e_dataProgress Request::parseChunkedBody()
 {
 	size_t offset = 0;
 	while (true) {

@@ -154,8 +154,7 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			Connecting->readRequest();
 			if (Connecting->getRequest() && Connecting->getRequest()->getParsingState() == PARSING_DONE)
 			{
-				Response response(Connecting->getRequest());
-				_cf->fetchPage(response);
+				Response response = _cf->createPage(Connecting->getRequest());
 				Connecting->setResponse(response);
 			}
 		}

@@ -34,15 +34,14 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	Route&	operator=(const Route &other);
-
+	Route&			operator=(const Route &other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void		setRouteParam(std::map<std::string, std::string> paramMap);
-	void		setURLPath(std::string path);
-	void		addNestedRoute(Route& route);
-	Route&		getMatchingRoute(std::string path);
+	void			setRouteParam(std::map<std::string, std::string> paramMap);
+	void			setURLPath(std::string path);
+	void			addNestedRoute(Route& route);
+	const Route&	getMatchingRoute(std::string path) const;
 
 
 	std::string					getRootDirectory() const;

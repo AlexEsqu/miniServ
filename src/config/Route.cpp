@@ -29,7 +29,7 @@ Route::~Route()
 
 //---------------------------- OPERATORS ------------------------------------//
 
-Route &Route::operator=(const Route &other)
+Route&	Route::operator=(const Route &other)
 {
 	if (this != &other)
 	{
@@ -112,7 +112,7 @@ bool	Route::matchesRegex(const std::string& path, const std::string& pattern) co
 	return (path == pattern);
 }
 
-Route&	Route::getMatchingRoute(std::string requestPath)
+const Route&	Route::getMatchingRoute(std::string requestPath) const
 {
 	if (isPathMatch(requestPath))
 	{
