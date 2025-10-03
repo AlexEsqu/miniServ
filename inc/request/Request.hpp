@@ -40,7 +40,7 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	std::string					_httpBody;
-	std::string					_unparsedBuffer;		// full content of the request
+	std::string					_unparsedBuffer;	// unparsed leftover from previous recv
 	std::string					_method;			// could be set as the enum already ?
 	std::string					_protocol;			// we only support HTTP/1.1
 	std::string					_requestedFileName;	// for example "/home.html"
@@ -48,11 +48,15 @@ private:
 		<std::string,
 		std::string>			_requestHeaderMap;
 
-	const ServerConf&			_conf;
+	ServerConf					_conf;
+	Route						_matchingRoute;
+
 	size_t						_contentLength;
 	Status						_status;
 
+
 	RequestParseState			_parsingState;
+
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -87,7 +91,7 @@ public:
 		<std::string,
 		std::string>&	getAdditionalHeaderInfo();
 
-	const ServerConf&	getConf() const;
+	ServerConf&			getConf();
 	const Status&		getStatus() const;
 	int					getParsingState() const;
 

@@ -5,6 +5,8 @@
 
 #include "Response.hpp"
 
+class Request;
+
 class HTTPError : public std::exception
 {
 private:
@@ -21,27 +23,32 @@ class timeout : public HTTPError {
 		const char* what() const throw();
 };
 
-class badSyntax : public std::exception {
+class badSyntax : public HTTPError {
 	public :
 		const char* what() const throw();
 };
 
-class missingLength : public std::exception {
+class missingLength : public HTTPError {
 	public :
 		const char* what() const throw();
 };
 
-class contentTooLarge : public std::exception {
+class contentTooLarge : public HTTPError {
 	public :
 		const char* what() const throw();
 };
 
-class forbiddenMethod : public std::exception {
+class forbiddenMethod : public HTTPError {
 	public :
 		const char* what() const throw();
 };
 
-class badProtocol : public std::exception {
+class badProtocol : public HTTPError {
+	public :
+		const char* what() const throw();
+};
+
+class notFound : public HTTPError {
 	public :
 		const char* what() const throw();
 };

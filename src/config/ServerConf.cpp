@@ -136,20 +136,3 @@ bool	doesFileExist(std::string &requestedFile)
 	}
 	return (true);
 }
-
-std::string	ServerConf::getRoutedURL(std::string &requestedFile)
-{
-	std::vector<Route>::const_iterator it;
-	std::string path;
-	if (requestedFile[0] == '/') // if the request starts with / the return the first root
-		return (_root.append(requestedFile));
-	// for (it = _routes.begin(); it != _routes.end(); it++)
-	// {
-	// 	if requestedFile == route->getPath()
-
-	// 	path = it->getRootDirectory() + requestedFile;
-	// 	if (doesFileExist(path) == true)
-	// 		return *it;
-	// }
-	return _root.append(requestedFile);
-}

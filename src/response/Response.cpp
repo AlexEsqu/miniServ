@@ -75,37 +75,37 @@ Response&	Response::operator=(const Response &other)
 ///                    SETTERS				                     //
 ///////////////////////////////////////////////////////////////////
 
-void Response::setStatusNum(int number)
+void	Response::setStatusNum(int number)
 {
 	this->_statusNum = number;
 }
 
-void Response::setMethod(std::string method)
+void	Response::setMethod(std::string method)
 {
 	this->_method = method;
 }
 
-void Response::setContentType(std::string type)
+void	Response::setContentType(std::string type)
 {
 	this->_contentType = type;
 }
 
-void Response::setContentLength(int length)
+void	Response::setContentLength(int length)
 {
 	this->_contentLength = length;
 }
 
-void Response::setContent(std::string content)
+void	Response::setContent(std::string content)
 {
 	_content = content;
 }
 
-void Response::setContent(std::vector<char> content)
+void	Response::setContent(std::vector<char> content)
 {
 	_content = std::string(content.begin(), content.end());
 }
 
-void Response::setUrl(std::string url)
+void	Response::setUrl(std::string url)
 {
 	std::string routedURL = _request->getConf().getRoot() + url;
 

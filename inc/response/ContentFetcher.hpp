@@ -26,6 +26,7 @@ private:
 
 	void			executeIfCGI(Response& response);
 	void			serveStatic(Response& response);
+	void			setRoutedUrl();
 
 public:
 

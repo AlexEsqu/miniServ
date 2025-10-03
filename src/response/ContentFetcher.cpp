@@ -116,4 +116,22 @@ void	ContentFetcher::fetchPage(Response& response)
 	response.setHTTPResponse();
 }
 
+void	ContentFetcher::getRoute(std::string path)
+{
+	// if (requestedFile[0] == '/') // if the request starts with / the return the first root
+	// 	return (_root.append(requestedFile));
+	for (size_t i = 0; i < _routes.size(); i++)
+	{
+		try
+		{
+			return _routes[i].getMatchingRoute(path);
+		}
 
+		catch (const std::runtime_error&)
+		{
+			continue;
+		}
+	}
+
+	throw HTTPError(request, 404);
+}

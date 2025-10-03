@@ -6,6 +6,8 @@
 #include "Status.hpp"
 #include "ServerConf.hpp"
 
+class Request;
+
 class Response
 {
 private:
@@ -18,6 +20,7 @@ private:
 	unsigned int		_contentLength;
 	std::string			_content;
 	std::string			_requestedFileName;
+	std::string			_routedPath;
 	std::string			_HTTPResponse;
 	int					_CGI;
 	Request*			_request;
@@ -46,6 +49,7 @@ public:
 	void			setContent(std::vector<char> content);
 	void			setUrl(std::string url);
 	void			setResponse(std::string response);
+	void			setAsRoute(Route& route);
 
 	//-------------------- GETTERS -----------------------//
 

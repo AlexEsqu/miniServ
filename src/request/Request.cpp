@@ -63,7 +63,7 @@ std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 	return _requestHeaderMap;
 }
 
-const ServerConf&	Request::getConf() const
+ServerConf&	Request::getConf()
 {
 	return _conf;
 }
@@ -109,7 +109,7 @@ void	Request::setRequestLine(std::string &requestLine)
 {
 	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
-		throw badSyntax();
+		throw HTTPError(this, 400);
 	setMethod(trim(splitRequestLine[0]));
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
@@ -132,18 +132,18 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 
 void	Request::checkHTTPValidity()
 {
-	// empty method is not valid HTTP request
-	if (getMethod().empty())
-		throw badSyntax();
-	// TO DO : check if within allowed method for the route, requires config class
+	// // empty method is not valid HTTP request
+	// if (getMethod().empty())
+	// 	throw badSyntax();
+	// // TO DO : check if within allowed method for the route, requires config class
 
-	// throwing error if protocol is any other protocol than HTTP/1.1
-	if (getProtocol() != "HTTP/1.1")
-		throw badProtocol();
+	// // throwing error if protocol is any other protocol than HTTP/1.1
+	// if (getProtocol() != "HTTP/1.1")
+	// 	throw badProtocol();
 
-	// empty URL is not valid HTTP request
-	if (getRequestedURL().empty())
-		throw badSyntax();
+	// // empty URL is not valid HTTP request
+	// if (getRequestedURL().empty())
+	// 	throw badSyntax();
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
