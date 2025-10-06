@@ -45,7 +45,7 @@ public:
 
 	unsigned int				getPort() const;
 	unsigned int				getMaxSizeClientRequestBody() const;
-	const std::vector<Route>	getRoutes() const;
+	const std::vector<Route>&	getRoutes() const;
 	const std::string&			getRoot() const;
 
 	//------------------- SETTERS ------------------------//

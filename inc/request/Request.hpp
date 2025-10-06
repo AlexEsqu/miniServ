@@ -52,8 +52,6 @@ private:
 		std::string>			_requestHeaderMap;
 
 	const ServerConf&			_conf;
-	Route						_matchingRoute;
-
 	size_t						_contentLength;
 	Status						_status;
 

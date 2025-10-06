@@ -77,7 +77,7 @@ unsigned int				ServerConf::getMaxSizeClientRequestBody() const
 	return (_maxSizeClientRequestBody);
 }
 
-const std::vector<Route>	ServerConf::getRoutes() const
+const std::vector<Route>&	ServerConf::getRoutes() const
 {
 	return (_routes);
 }
