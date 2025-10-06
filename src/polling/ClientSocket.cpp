@@ -96,6 +96,8 @@ void	ClientSocket::readRequest()
 	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK);
 	if (valread < 0)
 		throw failedSocketRead();
+	if (valread == 0)
+		throw endSocket();
 
 	// add buffer content to a Request object
 	if (_request == NULL)
@@ -113,10 +115,9 @@ void	ClientSocket::sendResponse()
 		std::cout << _response.getStatus() << std::endl;
 	#endif
 
-	if (send(getSocketFd(),
+	if (write(getSocketFd(),
 		getResponse().getHTTPResponse().c_str(),
-		getResponse().getHTTPResponse().size(),
-		MSG_DONTWAIT) < 0)
+		getResponse().getHTTPResponse().size()) < 0)
 	{
 		perror("write");
 		throw std::runtime_error("write fail");

@@ -113,9 +113,9 @@ void	Response::setRoutedUrl(std::string url)
 	std::cout << "URL is " <<_route->getDefaultFiles()[0] << " " << url << "\n";
 
 	if (url[url.size() - 1] == '/')
-		_routedPath = _route->getRootDirectory().append("/").append(_route->getDefaultFiles()[0]);
+		_routedPath = _route->getRootDirectory().append(_route->getDefaultFiles()[0]);
 	else
-		_routedPath = _route->getRootDirectory().append("/").append(url);
+		_routedPath = _route->getRootDirectory().append(url);
 
 
 	std::cout << GREEN << _routedPath << STOP_COLOR;
@@ -130,11 +130,15 @@ void Response::AddHTTPHeaders()
 
 	std::stringstream	header;
 	header << _request->getProtocol() << " " << status;
+
+
 	if (_request->getMethod() == "GET")
 	{
 		header << "Content-Type: " << _contentType << "\r\n"
-				 << "Content-Length: " << _contentLength << "\r\n"
-				 << "\r\n";
+				<< "Content-Length: " << _contentLength << "\r\n"
+				<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
+				<< "Server: miniServ/1.0\r\n"
+				<< "\r\n";
 	}
 	if (_request->getMethod() == "POST")
 	{
@@ -145,6 +149,7 @@ void Response::AddHTTPHeaders()
 	}
 
 	this->_HTTPResponse = header.str() + _content;
+	std::cout <<  GREEN << "HTTP response is [" << _HTTPResponse << "]" << STOP_COLOR << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -191,6 +196,7 @@ std::string Response::createErrorPageContent(const Status &num)
 	if (!inputErrorFile.is_open())
 	{
 		std::cerr << RED << "Could not open error file: " << errorFile << STOP_COLOR << std::endl;
+		return ("");
 	}
 	/* Could be a better implementation with finding the string
 	 in the line instead of matching exactly because if i add anything

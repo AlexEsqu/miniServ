@@ -68,7 +68,7 @@ void			ServerSocket::createEpollInstance()
 	if (_epollFd == -1)
 		throw failedEpollCreate();
 
-	_event.events = EPOLLIN | EPOLLOUT;
+	_event.events = EPOLLIN | EPOLLERR;
 	_event.data.fd = getSocketFd();
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, getSocketFd(), &_event) == -1) {
@@ -78,7 +78,7 @@ void			ServerSocket::createEpollInstance()
 
 void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 {
-	newSocket.setEvent(EPOLLIN | EPOLLOUT | EPOLLOUT);
+	newSocket.setEvent(EPOLLIN | EPOLLOUT | EPOLLERR);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &newSocket.getEvent()) == -1)
 	{
@@ -152,6 +152,14 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		try
 		{
 			Connecting->readRequest();
+
+			if (Connecting->getRequest()) {
+				std::cout << "Request state: " << Connecting->getRequest()->getParsingState() << std::endl;
+				std::cout << "Method: " << Connecting->getRequest()->getMethod() << std::endl;
+				std::cout << "URL: " << Connecting->getRequest()->getRequestedURL() << std::endl;
+			}
+
+
 			if (Connecting->getRequest() && Connecting->getRequest()->getParsingState() == PARSING_DONE)
 			{
 				Response response = _cf->createPage(Connecting->getRequest());
@@ -174,7 +182,7 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 	}
 
 	// socket ready to receive data
-	else if (event.events & (EPOLLOUT))
+	else if (event.events & EPOLLOUT)
 	{
 		// if request is complete, fetch content and wrap in HTTP header
 		if (Connecting->getRequest() &&
@@ -211,7 +219,7 @@ void			ServerSocket::processEvents()
 
 void			ServerSocket::launchEpollListenLoop()
 {
-	std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
+	// std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
 	waitForEvents();
 	processEvents();
 }

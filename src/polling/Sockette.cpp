@@ -164,3 +164,8 @@ const char*		Sockette::failedFcntl::what() const throw()
 {
 	return "ERROR: Failed to modify socket flags in call to fcntl()";
 }
+
+const char*		Sockette::endSocket::what() const throw()
+{
+	return "LOG: Socket read() returned 0, closing socket";
+}

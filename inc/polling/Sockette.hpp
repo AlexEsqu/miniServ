@@ -95,4 +95,9 @@ public:
 			const char* what() const throw();
 	};
 
+	class endSocket : public std::exception {
+		public :
+			const char* what() const throw();
+	};
+
 };

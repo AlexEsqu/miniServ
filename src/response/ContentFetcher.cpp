@@ -90,6 +90,8 @@ void	ContentFetcher::serveStatic(Response& response)
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
 	response.setContent(buffer);
+	std::string	result(buffer.data());
+	std::cout << "[" << result << "]\n";
 }
 
 void ContentFetcher::executeIfCGI(Response& response)
