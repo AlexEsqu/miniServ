@@ -56,7 +56,6 @@ private:
 	size_t						_contentLength;
 	Status						_status;
 
-
 	e_parseState				_parsingState;
 
 

@@ -183,6 +183,7 @@ e_dataProgress	Request::parseHeaderLine()
 	else
 		addAsHeaderVar(headerLine);
 	_unparsedBuffer.erase(0, lineEnd + 2);
+	setRoute(findMatchingRoute());
 	return RECEIVED_ALL;
 }
 
@@ -252,7 +253,7 @@ void	Request::addRequestChunk(std::string chunk)
 			{
 				if (parseHeaderLine() == WAITING_FOR_MORE)
 					return;
-				setRoute(findMatchingRoute());
+
 				break;
 			}
 			case PARSING_BODY:
@@ -294,20 +295,25 @@ void				Request::setIfParsingBody()
 // Matching route is required at the parsing stage to know if a request is using a valid method
 const Route*	Request::findMatchingRoute()
 {
+	Route*	result = NULL;
+	size_t	lenMatch = 0; // to make sure the longest matching url is picked
+
 	for (size_t i = 0; i < getConf().getRoutes().size(); i++)
 	{
-		try
-		{
-			return (getConf().getRoutes()[i].getMatchingRoute(getRequestedURL()));
-		}
+		std::string	possibleMatch = getConf().getRoutes()[i].getURLPath();
 
-		catch (const std::runtime_error&)
+		if (getRequestedURL().find(possibleMatch) != std::string::npos
+			&& possibleMatch.size() > lenMatch)
 		{
-			continue;
+			lenMatch = possibleMatch.size();
+			result = const_cast<Route*>(&(getConf().getRoutes()[i]));
 		}
 	}
 
-	throw HTTPError(this, 404);
+	if (result == NULL)
+		throw HTTPError(this, 404);
+
+	return result;
 }
 
 

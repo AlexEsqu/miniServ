@@ -71,6 +71,11 @@ std::string Route::getUploadDirectory() const
 	return (this->_uploadDirectory);
 }
 
+std::string Route::getURLPath() const
+{
+	return (this->_urlPath);
+}
+
 const std::vector<Route>&	Route::getRoutes() const {
 	return _nestedRoutes;
 }
