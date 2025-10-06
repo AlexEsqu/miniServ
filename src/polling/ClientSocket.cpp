@@ -73,8 +73,6 @@ std::string&	ClientSocket::getResponse()
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
-
-
 void	ClientSocket::readRequest()
 {
 	#ifdef DEBUG
@@ -110,7 +108,7 @@ void ClientSocket::sendResponse()
 	size_t totalSent = 0;
 
 	std::cout << "Response size: " << _response.size() << " bytes" << std::endl;
-	std::cout << "First 200 chars: [" << _response.substr(0, 200) << "]" << std::endl;
+	std::cout << "First 100 chars: [" << _response.substr(0, 100) << "]" << std::endl;
 
 	while (totalSent < totalToSend)
 	{

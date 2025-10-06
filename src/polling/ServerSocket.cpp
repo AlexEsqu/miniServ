@@ -38,6 +38,9 @@ ServerSocket::~ServerSocket()
 	while (!_clients.empty()) {
 		removeConnection(_clients.begin()->second);
 	}
+
+	_poller.removeSocket(this);
+
 	delete _cf;
 }
 
