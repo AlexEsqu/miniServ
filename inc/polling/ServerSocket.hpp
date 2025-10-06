@@ -8,18 +8,19 @@
 #include "HTTPError.hpp"
 #include "PHPExecutor.hpp"
 #include "PythonExecutor.hpp"
+#include "Poller.hpp"
 
 class ClientSocket;
+
+class Poller;
+
 class ServerSocket: public Sockette
 {
 
 private:
 
-	int								_epollFd;
-	int								_eventsReadyForProcess;
-	struct epoll_event				_event;
-	struct epoll_event				_eventQueue[MAX_EVENTS];
-	const ServerConf				_conf;
+	Poller&							_poller;
+	const ServerConf&				_conf;
 	ContentFetcher*					_cf;
 	std::map<int, ClientSocket*>	_clients;
 
@@ -27,8 +28,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	ServerSocket(int port);
-	ServerSocket(const ServerConf conf);
+	ServerSocket(Poller& poller, const ServerConf& conf);
 
 	//----------------- DESTRUCTOR -----------------------//
 
@@ -40,35 +40,12 @@ public:
 	//--------------------- GETTER -----------------------//
 
 	const ServerConf&	getConf() const;
-	int					getEpoll() const;
+	Poller&				getEpoll();
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void				createEpollInstance();
-	void				addSocketToEpoll(ClientSocket& socket);
-	void				waitForEvents();
-	void				processEvents();
 	void				acceptNewConnection();
 	void				removeConnection(ClientSocket* clientSocket);
-	void				handleExistingConnection(epoll_event &event);
-	void				launchEpollListenLoop();
-	void				listeningLoop();
-
-	//------------------ EXCEPTIONS ----------------------//
-
-	class failedEpollCreate : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-	class failedEpollCtl : public std::exception {
-		public :
-			const char* what() const throw();
-	};
-
-	class failedEpollWait : public std::exception {
-		public :
-			const char* what() const throw();
-	};
+	void				handleExistingConnection(ClientSocket* client, epoll_event &event);
 
 };

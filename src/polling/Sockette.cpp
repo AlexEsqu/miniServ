@@ -1,4 +1,5 @@
 #include "Sockette.hpp"
+#include <sys/epoll.h>
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
@@ -58,9 +59,14 @@ int					Sockette::getSocketAddrLen() const
 	return _socketAddrLen;
 }
 
-int				Sockette::getPort() const
+int					Sockette::getPort() const
 {
 	return _port;
+}
+
+struct epoll_event&	Sockette::getEpollEventsMask()
+{
+	return (_epollEvent);
 }
 
 //---------------------------- SETTERS --------------------------------------//
@@ -96,6 +102,13 @@ void			Sockette::setListenMode(int maxQueue)
 		perror("listen() failed");
 		throw failedSocketListen();
 	}
+}
+
+void			Sockette::setEpollEventsMask(uint32_t epollEventMask)
+{
+	_epollEvent.events = epollEventMask;
+	// adding new socket pointer as context in the event itself
+	_epollEvent.data.ptr = this;
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//

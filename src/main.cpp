@@ -2,12 +2,11 @@
 
 volatile sig_atomic_t g_running = 1;
 
-void listeningLoop(std::vector<ServerSocket*>& servers)
+void listeningLoop(Poller& poller)
 {
 	while (g_running)
 	{
-		for (size_t i = 0; i < servers.size(); i++)
-			servers[i]->launchEpollListenLoop();
+		poller.launchEpollListenLoop();
 	}
 }
 
@@ -18,14 +17,16 @@ int main(int , char** argv)
 	serversConfs = ConfigParser::parseConfigFile(static_cast<const char*>(argv[1]));
 
 	// constructing servers matching the configs
+	Poller	poller;
+
 	std::vector<ServerSocket*>	servers;
 	for (size_t i = 0; i < serversConfs.size(); i++)
-		servers.push_back(new ServerSocket(serversConfs[i]));
+		servers.push_back(new ServerSocket(poller, serversConfs[i]));
 
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
 
-	listeningLoop(servers);
+	listeningLoop(poller);
 
 	for (size_t i = 0; i < servers.size(); i++)
 		delete servers[i];

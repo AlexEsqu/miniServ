@@ -33,19 +33,10 @@ ClientSocket::~ClientSocket()
 {
 	delete _request;
 	_request = NULL;
-	epoll_ctl(_serv.getEpoll(), EPOLL_CTL_DEL, getSocketFd(), NULL);
 	close(getSocketFd());
 }
 
 //------------------------------ SETTER --------------------------------------//
-
-void	ClientSocket::setEvent(uint32_t epollEventMask)
-{
-	_event.events = epollEventMask;
-	// adding new socket pointer as context in the event itself
-	_event.data.ptr = this;
-
-}
 
 void	ClientSocket::resetRequest()
 {
@@ -65,11 +56,6 @@ char*	ClientSocket::getBuffer()
 	return (_buffer);
 }
 
-struct epoll_event&	ClientSocket::getEvent()
-{
-	return (_event);
-}
-
 Request*	ClientSocket::getRequest()
 {
 	return (_request);
@@ -86,6 +72,8 @@ std::string&	ClientSocket::getResponse()
 }
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
+
+
 
 void	ClientSocket::readRequest()
 {
