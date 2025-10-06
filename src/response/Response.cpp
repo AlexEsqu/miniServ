@@ -110,8 +110,6 @@ void	Response::setRequest(Request* request)
 
 void	Response::setRoutedUrl(std::string url)
 {
-	std::cout << "URL is " <<_route->getDefaultFiles()[0] << " " << url << "\n";
-
 	if (url[url.size() - 1] == '/')
 		_routedPath = _route->getRootDirectory().append(_route->getDefaultFiles()[0]);
 	else
