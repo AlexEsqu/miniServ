@@ -78,7 +78,7 @@ void			ServerSocket::createEpollInstance()
 
 void			ServerSocket::addSocketToEpoll(ClientSocket& newSocket)
 {
-	newSocket.setEvent(EPOLLIN | EPOLLOUT | EPOLLERR);
+	newSocket.setEvent(EPOLLIN | EPOLLERR);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, newSocket.getSocketFd(), &newSocket.getEvent()) == -1)
 	{
@@ -111,7 +111,7 @@ void			ServerSocket::acceptNewConnection()
 	ClientSocket*	Connecting = new ClientSocket(*this);
 
 	Connecting->setSocketNonBlocking();
-	Connecting->setEvent(EPOLLIN | EPOLLOUT | EPOLLERR);
+	Connecting->setEvent(EPOLLIN | EPOLLERR);
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, Connecting->getSocketFd(), &Connecting->getEvent()) == -1) {
 		perror("Failed to accept new connection in call to epoll_ctl()");
@@ -157,6 +157,8 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			{
 				Response response = _cf->createPage(Connecting->getRequest());
 				Connecting->setResponse(response.getHTTPResponse());
+				Connecting->setEvent(EPOLLOUT | EPOLLERR);
+				epoll_ctl(_epollFd, EPOLL_CTL_MOD, Connecting->getSocketFd(), &Connecting->getEvent());
 			}
 		}
 
@@ -164,6 +166,8 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
 			std::cerr << e.what() << "\n";
+			Connecting->setEvent(EPOLLOUT | EPOLLERR);
+			epoll_ctl(_epollFd, EPOLL_CTL_MOD, Connecting->getSocketFd(), &Connecting->getEvent());
 		}
 
 		catch ( std::exception &e )
@@ -185,7 +189,11 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			Connecting->sendResponse();
 
 			if (Connecting->getRequest()->isKeepAlive())
+			{
 				Connecting->resetRequest();
+				Connecting->setEvent(EPOLLIN | EPOLLERR);
+				epoll_ctl(_epollFd, EPOLL_CTL_MOD, Connecting->getSocketFd(), &Connecting->getEvent());
+			}
 			else
 				removeConnection(Connecting);
 		}

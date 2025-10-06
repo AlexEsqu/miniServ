@@ -135,6 +135,8 @@ void Response::AddHTTPHeaders()
 			<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
 			<< "Server: miniServ\r\n";
 
+	std::cout << "Content-Length is " << _contentLength << " + " << header.str().size() << "\n";
+
 	if (_request->getMethod() == "POST")
 	{
 		header << "Refresh: 0; url=/\r\n";

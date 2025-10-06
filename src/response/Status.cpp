@@ -43,7 +43,7 @@ Status &Status::operator=(const Status &other)
 
 std::ostream &operator<<(std::ostream &o, Status &status)
 {
-	o << status.getStatusCode() << " "  << status.getStatusMessage() << std::endl;
+	o << status.getStatusCode() << " "  << status.getStatusMessage();
 	return(o);
 }
 ///////////////////////////////////////////////////////////////////

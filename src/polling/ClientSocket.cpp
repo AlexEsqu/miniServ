@@ -44,6 +44,7 @@ void	ClientSocket::setEvent(uint32_t epollEventMask)
 	_event.events = epollEventMask;
 	// adding new socket pointer as context in the event itself
 	_event.data.ptr = this;
+
 }
 
 void	ClientSocket::resetRequest()
@@ -112,25 +113,38 @@ void	ClientSocket::readRequest()
 	memset(_buffer, '\0', sizeof(_buffer));
 }
 
-void	ClientSocket::sendResponse()
+void ClientSocket::sendResponse()
 {
-	if (!_response.empty()) {
-		std::string responseStr = _response;
+	if (_response.empty())
+		return;
 
-		std::cout << "About to send " << responseStr.length() << " bytes" << std::endl;
-		std::cout << "First 100 chars: [" << responseStr.substr(0, 100) << "]" << std::endl;
+	size_t totalToSend = _response.length();
+	size_t totalSent = 0;
 
-		ssize_t bytesSent = send(getSocketFd(), responseStr.c_str(), responseStr.length(), 0);
+	std::cout << "Response size: " << _response.size() << " bytes" << std::endl;
+	std::cout << "First 200 chars: [" << _response.substr(0, 200) << "]" << std::endl;
 
-		if (bytesSent < 0) {
+	while (totalSent < totalToSend)
+	{
+		ssize_t bytesSent = send(getSocketFd(),
+								_response.c_str() + totalSent,
+								totalToSend - totalSent, 0);
+
+		if (bytesSent < 0)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+			{
+				_response = _response.substr(totalSent);
+				return;
+			}
 			perror("send failed");
-		} else {
-			std::cout << "Successfully sent " << bytesSent << " bytes" << std::endl;
-			_response = "";
+			return;
 		}
-	} else {
-		std::cout << "ERROR: No response to send!" << std::endl;
+
+		totalSent += bytesSent;
 	}
+	_response.clear();
+	std::cout << "Successfully sent " << totalSent << " bytes" << std::endl;
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 }
