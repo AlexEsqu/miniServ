@@ -65,7 +65,6 @@ Response&	Response::operator=(const Response &other)
 	_contentLength		= other._contentLength;
 	_content			= other._content;
 	_HTTPResponse		= other._HTTPResponse;
-	_route				= other._route;
 	return (*this);
 }
 
@@ -98,11 +97,6 @@ void	Response::setContent(std::vector<char> content)
 	_content = std::string(content.begin(), content.end());
 }
 
-void	Response::setRoute(const Route* route)
-{
-	_route = route;
-}
-
 void	Response::setRequest(Request* request)
 {
 	_request = request;
@@ -111,9 +105,9 @@ void	Response::setRequest(Request* request)
 void	Response::setRoutedUrl(std::string url)
 {
 	if (url[url.size() - 1] == '/')
-		_routedPath = _route->getRootDirectory().append(_route->getDefaultFiles()[0]);
+		_routedPath = _request->getRoute()->getRootDirectory().append(_request->getRoute()->getDefaultFiles()[0]);
 	else
-		_routedPath = _route->getRootDirectory().append(url);
+		_routedPath = _request->getRoute()->getRootDirectory().append(url);
 
 
 	std::cout << GREEN << _routedPath << STOP_COLOR;
@@ -167,11 +161,6 @@ std::string Response::getRoutedURL() const
 int			Response::getStatus() const
 {
 	return (_statusNum);
-}
-
-const Route*	Response::getRoute() const
-{
-	return (_route);
 }
 
 ///////////////////////////////////////////////////////////////////

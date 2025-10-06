@@ -52,11 +52,12 @@ private:
 		std::string>			_requestHeaderMap;
 
 	const ServerConf&			_conf;
+	const Route*				_route;
 	size_t						_contentLength;
 	Status						_status;
 
 
-	e_parseState			_parsingState;
+	e_parseState				_parsingState;
 
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
@@ -82,12 +83,14 @@ public:
 	void				setRequestLine(std::string& requestLine);
 	void				addAsHeaderVar(std::string& keyValueString);
 	void				setIfParsingBody();
+	void				setRoute(const Route* route);
 
 	//-------------------- GETTERS -----------------------//
 
 	std::string			getMethod() const;
 	std::string			getProtocol() const;
 	std::string			getRequestedURL() const;
+	const Route*		getRoute() const;
 	std::map
 		<std::string,
 		std::string>&	getAdditionalHeaderInfo();
@@ -109,6 +112,8 @@ public:
 	e_dataProgress		parseHeaderLine();
 	e_dataProgress		parseRequestBody();
 	e_dataProgress		parseChunkedBody();
+
+	const Route*		findMatchingRoute();
 
 };
 

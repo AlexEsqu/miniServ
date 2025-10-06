@@ -116,27 +116,6 @@ void	ContentFetcher::fetchPage(Request& request, Response& response)
 		executeIfCGI(response);
 }
 
-const Route*	ContentFetcher::findMatchingRoute(Request& request) const
-{
-	// if (requestedFile[0] == '/') // if the request starts with / the return the first root
-	// 	return (_root.append(requestedFile));
-	for (size_t i = 0; i < request.getConf().getRoutes().size(); i++)
-	{
-		try
-		{
-			return (request.getConf().getRoutes()[i].getMatchingRoute(request.getRequestedURL()));
-		}
-
-		catch (const std::runtime_error&)
-		{
-			continue;
-		}
-	}
-
-	throw HTTPError(&request, 404);
-
-}
-
 
 Response	ContentFetcher::createPage(Request* request)
 {
@@ -146,7 +125,6 @@ Response	ContentFetcher::createPage(Request* request)
 	{
 		result.setStatusNum(request->getStatus().getStatusCode());
 		result.setRequest(request);
-		result.setRoute(findMatchingRoute(*request));
 		result.setRoutedUrl(request->getRequestedURL());
 
 		fetchPage(*request, result);

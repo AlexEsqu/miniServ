@@ -8,6 +8,7 @@
 Request::Request(const ServerConf& conf, std::string requestChunk)
 	: _unparsedBuffer(requestChunk)
 	, _conf(conf)
+	, _route(NULL)
 	, _status(200)
 	, _parsingState(PARSING_REQUEST_LINE)
 {
@@ -36,6 +37,7 @@ Request &Request::operator=(const Request &other)
 		_protocol = other._protocol;
 		_requestedFileName = other._requestedFileName;
 		_requestHeaderMap = other._requestHeaderMap;
+		_route = other._route;
 	}
 
 	return *this;
@@ -79,6 +81,11 @@ int					Request::getParsingState() const
 	return _parsingState;
 }
 
+const Route*		Request::getRoute() const
+{
+	return (_route);
+}
+
 bool				Request::isKeepAlive()
 {
 	if (_requestHeaderMap.find("Connection") != _requestHeaderMap.end())
@@ -101,6 +108,11 @@ void	Request::setURI(std::string &URI)
 void	Request::setProtocol(std::string &protocol)
 {
 	_protocol = protocol;
+}
+
+void	Request::setRoute(const Route* route)
+{
+	_route = route;
 }
 
 // Valid request line (1st line of a HTTP request) must have the format:
@@ -216,7 +228,7 @@ e_dataProgress Request::parseChunkedBody()
 		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
 		_httpBody += chunkData;
 
-		offset += chunkSize + 2; // Move past chunk data and trailing CRLF
+		offset += chunkSize + 2;
 
 		if (offset >= _unparsedBuffer.size())
 			return WAITING_FOR_MORE;
@@ -240,6 +252,7 @@ void	Request::addRequestChunk(std::string chunk)
 			{
 				if (parseHeaderLine() == WAITING_FOR_MORE)
 					return;
+				setRoute(findMatchingRoute());
 				break;
 			}
 			case PARSING_BODY:
@@ -276,6 +289,25 @@ void				Request::setIfParsingBody()
 	}
 	else
 		_parsingState = PARSING_DONE;
+}
+
+// Matching route is required at the parsing stage to know if a request is using a valid method
+const Route*	Request::findMatchingRoute()
+{
+	for (size_t i = 0; i < getConf().getRoutes().size(); i++)
+	{
+		try
+		{
+			return (getConf().getRoutes()[i].getMatchingRoute(getRequestedURL()));
+		}
+
+		catch (const std::runtime_error&)
+		{
+			continue;
+		}
+	}
+
+	throw HTTPError(this, 404);
 }
 
 
