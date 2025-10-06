@@ -8,6 +8,8 @@
 
 #include "Route.hpp"
 #include "readability.hpp"
+#include "HTTPError.hpp"
+#include "Request.hpp"
 
 class Route;
 
@@ -43,7 +45,7 @@ public:
 
 	unsigned int				getPort() const;
 	unsigned int				getMaxSizeClientRequestBody() const;
-	const std::vector<Route>	getRoutes() const;
+	const std::vector<Route>&	getRoutes() const;
 	const std::string&			getRoot() const;
 
 	//------------------- SETTERS ------------------------//
@@ -56,6 +58,6 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	std::string			getRoutedURL(std::string &requestedFile);
+	Route&						getRoute(std::string path);
 
 };

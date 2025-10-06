@@ -18,6 +18,9 @@ private:
 	std::vector<std::string>	_allowedMethods;
 	std::vector<Route>			_nestedRoutes;
 
+	bool		isPathMatch(const std::string& requestPath) const;
+	bool		matchesRegex(const std::string& path, const std::string& pattern) const;
+
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
@@ -31,16 +34,16 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	Route&	operator=(const Route &other);
-
+	Route&			operator=(const Route &other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	void		setRouteParam(std::map<std::string, std::string> paramMap);
-	void		setURLPath(std::string path);
-	void		addNestedRoute(Route& route);
+	void						setRouteParam(std::map<std::string, std::string> paramMap);
+	void						setURLPath(std::string path);
+	void						addNestedRoute(Route& route);
 
-
+	const Route*				getMatchingRoute(std::string path) const;
+	std::string					getURLPath() const;
 	std::string					getRootDirectory() const;
 	std::vector<std::string>	getDefaultFiles() const;
 	const std::vector<Route>&	getRoutes() const;

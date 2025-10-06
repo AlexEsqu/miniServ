@@ -41,3 +41,8 @@ const char*		badProtocol::what() const throw()
 {
 	return ERROR_FORMAT("ERROR: Request uses unsupported protocol");
 }
+
+const char*		notFound::what() const throw()
+{
+	return ERROR_FORMAT("ERROR: Request URL is not found in Routes");
+}

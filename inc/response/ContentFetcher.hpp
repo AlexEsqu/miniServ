@@ -24,8 +24,7 @@ private:
 	size_t			getSizeOfFile(const std::string& filename);
 	std::string		getTypeBasedOnExtension(const std::string& filePath);
 
-	void			executeIfCGI(Response& response);
-	void			serveStatic(Response& response);
+
 
 public:
 
@@ -44,7 +43,11 @@ public:
 
 	//--------------- MEMBER FUNCTION --------------------//
 
+	void			fetchPage(Request& request, Response& response);
+	void			executeIfCGI(Response& response);
+	void			serveStatic(Response& response);
+
 	void			addExecutor(Executor* executor);
-	void			fetchPage(Response& response);
+	Response		createPage(Request* request);
 
 };

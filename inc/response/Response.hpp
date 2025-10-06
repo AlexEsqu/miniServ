@@ -4,7 +4,9 @@
 
 #include "Request.hpp"
 #include "Status.hpp"
-#include "ServerConf.hpp"
+#include "Route.hpp"
+
+class Request;
 
 class Response
 {
@@ -13,14 +15,16 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	int					_statusNum;
-	std::string			_method;			// enum for GET,POST,DELETE...
-	std::string			_contentType;
-	unsigned int		_contentLength;
-	std::string			_content;
-	std::string			_requestedFileName;
-	std::string			_HTTPResponse;
-	int					_CGI;
 	Request*			_request;
+
+	std::string			_routedPath;
+
+	int					_CGI;
+
+	std::string			_contentType;
+	size_t				_contentLength;
+	std::string			_content;
+	std::string			_HTTPResponse;
 
 public:
 
@@ -37,15 +41,16 @@ public:
 
 	//-------------------- SETTER ------------------------//
 
-	void			setHTTPResponse();
+	void			AddHTTPHeaders();
 	void			setStatusNum(int number);
-	void			setMethod(std::string method);
-	void			setContentType(std::string type);
-	void			setContentLength(int length);
 	void			setContent(std::string content);
 	void			setContent(std::vector<char> content);
-	void			setUrl(std::string url);
+	void			setRoutedUrl(std::string url);
 	void			setResponse(std::string response);
+	void			setRequest(Request* request);
+
+	void			setContentType(std::string type);
+	void			setContentLength(int length);
 
 	//-------------------- GETTERS -----------------------//
 

@@ -29,7 +29,7 @@ Route::~Route()
 
 //---------------------------- OPERATORS ------------------------------------//
 
-Route &Route::operator=(const Route &other)
+Route&	Route::operator=(const Route &other)
 {
 	if (this != &other)
 	{
@@ -71,13 +71,79 @@ std::string Route::getUploadDirectory() const
 	return (this->_uploadDirectory);
 }
 
+std::string Route::getURLPath() const
+{
+	return (this->_urlPath);
+}
+
 const std::vector<Route>&	Route::getRoutes() const {
 	return _nestedRoutes;
 }
 
+bool	Route::isPathMatch(const std::string& requestPath) const
+{
+	std::cout << "is it close to " << _urlPath << "\n";
+
+	// // exact match: "= /exact"
+	// if (_urlPath[0] == '=' && _urlPath.length() > 1) {
+	// 	std::string exactPath = _urlPath.substr(2); // Skip "= "
+	// 	return (requestPath == exactPath);
+	// }
+
+	// // regex match: "~ ^/api/.*$"
+	// if (_urlPath[0] == '~' && _urlPath.length() > 1) {
+	// 	std::string pattern = _urlPath.substr(2); // Skip "~ "
+	// 	return matchesRegex(requestPath, pattern);
+	// }
+
+	// // case-insensitive regex: "~* pattern"
+	// if (_urlPath.substr(0, 2) == "~*") {
+	// 	std::string	lowerRequestPath = requestPath;
+	// 	lowerRequestPath = strToLower(lowerRequestPath);
+	// 	std::string pattern = _urlPath.substr(3); // Skip "~* "
+	// 	return matchesRegex(strToLower(lowerRequestPath), strToLower(pattern));
+	// }
+
+	// // prefix match (default): "/api"
+	return (requestPath.find(_urlPath) == 0);
+}
+
+bool	Route::matchesRegex(const std::string& path, const std::string& pattern) const
+{
+	if (pattern == ".*") return true;
+	if (pattern.find(".*") != std::string::npos)
+	{
+		std::string prefix = pattern.substr(0, pattern.find(".*"));
+		return (path.find(prefix) == 0);
+	}
+	return (path == pattern);
+}
+
+const Route*	Route::getMatchingRoute(std::string requestPath) const
+{
+	std::cout << "Matching " << requestPath <<  " with " << getRootDirectory() << "\n";
+
+	if (isPathMatch(requestPath))
+	{
+		for (size_t i = 0; i < _nestedRoutes.size(); i++) {
+			try
+			{
+				return _nestedRoutes[i].getMatchingRoute(requestPath);
+			}
+
+			catch (const std::runtime_error&)
+			{
+				continue;
+			}
+		}
+
+		return this;
+	}
+
+	throw std::runtime_error("No matching route found");
+}
 
 //---------------------------- SETTERS --------------------------------------//
-
 
 void	Route::setURLPath(std::string path)
 {

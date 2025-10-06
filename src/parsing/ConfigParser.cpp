@@ -143,6 +143,28 @@ Route	ConfigParser::parseLocationBlock(std::ifstream& configFileStream, const st
 	return route;
 }
 
+
+void ConfigParser::addDefaultRoute(ServerConf& serverConf)
+{
+	Route defaultRoute;
+
+	defaultRoute.setURLPath("/");
+
+	std::map<std::string, std::string> defaultParams;
+
+	defaultParams["root"] = serverConf.getRoot().empty() ? "/var/www/html" : serverConf.getRoot();
+	defaultParams["index"] = "index.html";
+	defaultParams["allow_methods"] = "GET POST DELETE";
+	defaultParams["autoindex"] = "off";
+
+	// Apply the default parameters to the route
+	defaultRoute.setRouteParam(defaultParams);
+
+	// Add the default route to the server configuration
+	serverConf.addRoute(defaultRoute);
+
+}
+
 ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 {
 	std::map<std::string, std::string>	paramMap;
@@ -179,7 +201,10 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 		serverConf.setServerName(paramMap["server_name"]);
 
 	if (paramMap.find("root") != paramMap.end())
+	{
 		serverConf.setRoot(paramMap["root"]);
+		addDefaultRoute(serverConf);
+	}
 
 	return serverConf;
 }

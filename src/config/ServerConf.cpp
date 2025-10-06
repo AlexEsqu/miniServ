@@ -5,7 +5,6 @@
 ServerConf::ServerConf()
 	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
-	, _root("pages/")
 {
 
 #ifdef DEBUG
@@ -19,12 +18,6 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 	, _routes(routes)
 	, _paramMap(paramMap)
 {
-	// Initialize _root from paramMap
-	if (_paramMap.find("root") != _paramMap.end()) {
-		_root = _paramMap["root"];
-	}
-
-	// Initialize _port from paramMap
 	if (_paramMap.find("listen") != _paramMap.end()) {
 		_port = atoi(_paramMap["listen"].c_str());
 	}
@@ -37,7 +30,6 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<
 ServerConf::ServerConf(const ServerConf &copy)
 	: _port(copy._port)
 	, _maxSizeClientRequestBody(copy._maxSizeClientRequestBody)
-	, _root(copy._root)
 	, _paramMap(copy._paramMap)
 {
 	for (size_t i = 0; i < copy._routes.size(); ++i)
@@ -66,7 +58,6 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 	{
 		_port = other._port;
 		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
-		_root = other._root;
 		_paramMap = other._paramMap;
 		for (size_t i = 0; i < other._routes.size(); ++i)
 			_routes.push_back(Route(other._routes[i]));
@@ -86,7 +77,7 @@ unsigned int				ServerConf::getMaxSizeClientRequestBody() const
 	return (_maxSizeClientRequestBody);
 }
 
-const std::vector<Route>	ServerConf::getRoutes() const
+const std::vector<Route>&	ServerConf::getRoutes() const
 {
 	return (_routes);
 }
@@ -135,21 +126,4 @@ bool	doesFileExist(std::string &requestedFile)
 		return (false);
 	}
 	return (true);
-}
-
-std::string	ServerConf::getRoutedURL(std::string &requestedFile)
-{
-	std::vector<Route>::const_iterator it;
-	std::string path;
-	if (requestedFile[0] == '/') // if the request starts with / the return the first root
-		return (_root.append(requestedFile));
-	// for (it = _routes.begin(); it != _routes.end(); it++)
-	// {
-	// 	if requestedFile == route->getPath()
-
-	// 	path = it->getRootDirectory() + requestedFile;
-	// 	if (doesFileExist(path) == true)
-	// 		return *it;
-	// }
-	return _root.append(requestedFile);
 }

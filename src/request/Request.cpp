@@ -8,6 +8,7 @@
 Request::Request(const ServerConf& conf, std::string requestChunk)
 	: _unparsedBuffer(requestChunk)
 	, _conf(conf)
+	, _route(NULL)
 	, _status(200)
 	, _parsingState(PARSING_REQUEST_LINE)
 {
@@ -36,6 +37,7 @@ Request &Request::operator=(const Request &other)
 		_protocol = other._protocol;
 		_requestedFileName = other._requestedFileName;
 		_requestHeaderMap = other._requestHeaderMap;
+		_route = other._route;
 	}
 
 	return *this;
@@ -79,6 +81,11 @@ int					Request::getParsingState() const
 	return _parsingState;
 }
 
+const Route*		Request::getRoute() const
+{
+	return (_route);
+}
+
 bool				Request::isKeepAlive()
 {
 	if (_requestHeaderMap.find("Connection") != _requestHeaderMap.end())
@@ -103,13 +110,18 @@ void	Request::setProtocol(std::string &protocol)
 	_protocol = protocol;
 }
 
+void	Request::setRoute(const Route* route)
+{
+	_route = route;
+}
+
 // Valid request line (1st line of a HTTP request) must have the format:
 //    Method SP Request-URI SP HTTP-Version CRLF
 void	Request::setRequestLine(std::string &requestLine)
 {
 	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
-		throw badSyntax();
+		throw HTTPError(this, 400);
 	setMethod(trim(splitRequestLine[0]));
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
@@ -132,23 +144,23 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 
 void	Request::checkHTTPValidity()
 {
-	// empty method is not valid HTTP request
-	if (getMethod().empty())
-		throw badSyntax();
-	// TO DO : check if within allowed method for the route, requires config class
+	// // empty method is not valid HTTP request
+	// if (getMethod().empty())
+	// 	throw badSyntax();
+	// // TO DO : check if within allowed method for the route, requires config class
 
-	// throwing error if protocol is any other protocol than HTTP/1.1
-	if (getProtocol() != "HTTP/1.1")
-		throw badProtocol();
+	// // throwing error if protocol is any other protocol than HTTP/1.1
+	// if (getProtocol() != "HTTP/1.1")
+	// 	throw badProtocol();
 
-	// empty URL is not valid HTTP request
-	if (getRequestedURL().empty())
-		throw badSyntax();
+	// // empty URL is not valid HTTP request
+	// if (getRequestedURL().empty())
+	// 	throw badSyntax();
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-e_parsProgress	Request::parseRequestLine()
+e_dataProgress	Request::parseRequestLine()
 {
 	size_t lineEnd = _unparsedBuffer.find("\r\n");
 	if (lineEnd == std::string::npos)
@@ -160,7 +172,7 @@ e_parsProgress	Request::parseRequestLine()
 	return RECEIVED_ALL;
 }
 
-e_parsProgress	Request::parseHeaderLine()
+e_dataProgress	Request::parseHeaderLine()
 {
 	size_t lineEnd = _unparsedBuffer.find("\r\n");
 	if (lineEnd == std::string::npos)
@@ -171,10 +183,11 @@ e_parsProgress	Request::parseHeaderLine()
 	else
 		addAsHeaderVar(headerLine);
 	_unparsedBuffer.erase(0, lineEnd + 2);
+	setRoute(findMatchingRoute());
 	return RECEIVED_ALL;
 }
 
-e_parsProgress	Request::parseRequestBody()
+e_dataProgress	Request::parseRequestBody()
 {
 	if (_contentLength && _unparsedBuffer.size() < _contentLength)
 		return WAITING_FOR_MORE;
@@ -186,7 +199,7 @@ e_parsProgress	Request::parseRequestBody()
 	return RECEIVED_ALL;
 }
 
-e_parsProgress Request::parseChunkedBody()
+e_dataProgress Request::parseChunkedBody()
 {
 	size_t offset = 0;
 	while (true) {
@@ -216,7 +229,7 @@ e_parsProgress Request::parseChunkedBody()
 		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
 		_httpBody += chunkData;
 
-		offset += chunkSize + 2; // Move past chunk data and trailing CRLF
+		offset += chunkSize + 2;
 
 		if (offset >= _unparsedBuffer.size())
 			return WAITING_FOR_MORE;
@@ -240,6 +253,7 @@ void	Request::addRequestChunk(std::string chunk)
 			{
 				if (parseHeaderLine() == WAITING_FOR_MORE)
 					return;
+
 				break;
 			}
 			case PARSING_BODY:
@@ -276,6 +290,30 @@ void				Request::setIfParsingBody()
 	}
 	else
 		_parsingState = PARSING_DONE;
+}
+
+// Matching route is required at the parsing stage to know if a request is using a valid method
+const Route*	Request::findMatchingRoute()
+{
+	Route*	result = NULL;
+	size_t	lenMatch = 0; // to make sure the longest matching url is picked
+
+	for (size_t i = 0; i < getConf().getRoutes().size(); i++)
+	{
+		std::string	possibleMatch = getConf().getRoutes()[i].getURLPath();
+
+		if (getRequestedURL().find(possibleMatch) != std::string::npos
+			&& possibleMatch.size() > lenMatch)
+		{
+			lenMatch = possibleMatch.size();
+			result = const_cast<Route*>(&(getConf().getRoutes()[i]));
+		}
+	}
+
+	if (result == NULL)
+		throw HTTPError(this, 404);
+
+	return result;
 }
 
 

@@ -9,7 +9,7 @@
 #include "ServerConf.hpp"
 #include "Status.hpp"
 
-enum RequestParseState {
+enum e_parseState {
 	PARSING_REQUEST_LINE,
 	PARSING_HEADERS,
 	PARSING_BODY,
@@ -22,15 +22,18 @@ enum e_methods
 	GET,
 	POST,
 	DELETE,
-	UNSUPPOTRTED
+	UNSUPPORTED
 };
 
-enum e_parsProgress {
+enum e_dataProgress {
 	WAITING_FOR_MORE,
 	RECEIVED_ALL
 };
 
+
 class Request;
+
+class ServerConf;
 
 class Request
 {
@@ -40,7 +43,7 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	std::string					_httpBody;
-	std::string					_unparsedBuffer;		// full content of the request
+	std::string					_unparsedBuffer;	// unparsed leftover from previous recv
 	std::string					_method;			// could be set as the enum already ?
 	std::string					_protocol;			// we only support HTTP/1.1
 	std::string					_requestedFileName;	// for example "/home.html"
@@ -49,10 +52,12 @@ private:
 		std::string>			_requestHeaderMap;
 
 	const ServerConf&			_conf;
+	const Route*				_route;
 	size_t						_contentLength;
 	Status						_status;
 
-	RequestParseState			_parsingState;
+	e_parseState				_parsingState;
+
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -77,12 +82,14 @@ public:
 	void				setRequestLine(std::string& requestLine);
 	void				addAsHeaderVar(std::string& keyValueString);
 	void				setIfParsingBody();
+	void				setRoute(const Route* route);
 
 	//-------------------- GETTERS -----------------------//
 
 	std::string			getMethod() const;
 	std::string			getProtocol() const;
 	std::string			getRequestedURL() const;
+	const Route*		getRoute() const;
 	std::map
 		<std::string,
 		std::string>&	getAdditionalHeaderInfo();
@@ -100,10 +107,12 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void				addRequestChunk(std::string chunk);
-	e_parsProgress		parseRequestLine();
-	e_parsProgress		parseHeaderLine();
-	e_parsProgress		parseRequestBody();
-	e_parsProgress		parseChunkedBody();
+	e_dataProgress		parseRequestLine();
+	e_dataProgress		parseHeaderLine();
+	e_dataProgress		parseRequestBody();
+	e_dataProgress		parseChunkedBody();
+
+	const Route*		findMatchingRoute();
 
 };
 

@@ -33,18 +33,10 @@ ClientSocket::~ClientSocket()
 {
 	delete _request;
 	_request = NULL;
-	epoll_ctl(_serv.getEpoll(), EPOLL_CTL_DEL, getSocketFd(), NULL);
 	close(getSocketFd());
 }
 
 //------------------------------ SETTER --------------------------------------//
-
-void	ClientSocket::setEvent(uint32_t epollEventMask)
-{
-	_event.events = epollEventMask;
-	// adding new socket pointer as context in the event itself
-	_event.data.ptr = this;
-}
 
 void	ClientSocket::resetRequest()
 {
@@ -52,7 +44,7 @@ void	ClientSocket::resetRequest()
 	_request = NULL;
 }
 
-void	ClientSocket::setResponse(Response response)
+void	ClientSocket::setResponse(std::string response)
 {
 	_response = response;
 }
@@ -62,11 +54,6 @@ void	ClientSocket::setResponse(Response response)
 char*	ClientSocket::getBuffer()
 {
 	return (_buffer);
-}
-
-struct epoll_event&	ClientSocket::getEvent()
-{
-	return (_event);
 }
 
 Request*	ClientSocket::getRequest()
@@ -79,7 +66,7 @@ ServerSocket&	ClientSocket::getServer()
 	return (_serv);
 }
 
-Response&	ClientSocket::getResponse()
+std::string&	ClientSocket::getResponse()
 {
 	return (_response);
 }
@@ -94,33 +81,56 @@ void	ClientSocket::readRequest()
 
 	// read the Client's request into a buffer
 	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK);
-	if (valread < 0)
+	if (valread < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
 		throw failedSocketRead();
+	if (valread == 0)
+		throw endSocket();
 
-	// add buffer content to a Request object
+	// since some data can be interspeced with \0, creating a string of valread size
+	std::string	requestChunk(_buffer, valread);
+
+	// add request chunk content to a Request object
 	if (_request == NULL)
-		_request = new Request(_serv.getConf(), _buffer);
+		_request = new Request(_serv.getConf(), requestChunk);
 	else
-		_request->addRequestChunk(_buffer);
+		_request->addRequestChunk(requestChunk);
 
 	// clear buffer for further use
-	memset(_buffer, '\0', sizeof _buffer);
+	memset(_buffer, '\0', sizeof(_buffer));
 }
 
-void	ClientSocket::sendResponse()
+void ClientSocket::sendResponse()
 {
-	#ifdef DEBUG
-		std::cout << response.getStatus() << std::endl;
-	#endif
+	if (_response.empty())
+		return;
 
-	if (send(getSocketFd(),
-		getResponse().getHTTPResponse().c_str(),
-		getResponse().getHTTPResponse().size(),
-		MSG_DONTWAIT) < 0)
+	size_t totalToSend = _response.length();
+	size_t totalSent = 0;
+
+	std::cout << "Response size: " << _response.size() << " bytes" << std::endl;
+	std::cout << "First 100 chars: [" << _response.substr(0, 100) << "]" << std::endl;
+
+	while (totalSent < totalToSend)
 	{
-		perror("write");
-		throw std::runtime_error("write fail");
+		ssize_t bytesSent = send(getSocketFd(),
+								_response.c_str() + totalSent,
+								totalToSend - totalSent, 0);
+
+		if (bytesSent < 0)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+			{
+				_response = _response.substr(totalSent);
+				return;
+			}
+			perror("send failed");
+			return;
+		}
+
+		totalSent += bytesSent;
 	}
+	_response.clear();
+	std::cout << "Successfully sent " << totalSent << " bytes" << std::endl;
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 }
