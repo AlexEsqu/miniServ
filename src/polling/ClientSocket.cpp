@@ -52,9 +52,10 @@ void	ClientSocket::resetRequest()
 	_request = NULL;
 }
 
-void	ClientSocket::setResponse(Response response)
+void	ClientSocket::setResponse(std::string response)
 {
 	_response = response;
+	std::cout << _response << std::endl;
 }
 
 //------------------------------ GETTER --------------------------------------//
@@ -79,7 +80,7 @@ ServerSocket&	ClientSocket::getServer()
 	return (_serv);
 }
 
-Response&	ClientSocket::getResponse()
+std::string&	ClientSocket::getResponse()
 {
 	return (_response);
 }
@@ -111,16 +112,21 @@ void	ClientSocket::readRequest()
 
 void	ClientSocket::sendResponse()
 {
-	#ifdef DEBUG
-		std::cout << _response.getStatus() << std::endl;
-	#endif
+	if (!_response.empty()) {
+		std::string responseStr = _response;
 
-	if (write(getSocketFd(),
-		getResponse().getHTTPResponse().c_str(),
-		getResponse().getHTTPResponse().size()) < 0)
-	{
-		perror("write");
-		throw std::runtime_error("write fail");
+		std::cout << "About to send " << responseStr.length() << " bytes" << std::endl;
+		std::cout << "First 100 chars: [" << responseStr.substr(0, 100) << "]" << std::endl;
+
+		ssize_t bytesSent = send(getSocketFd(), responseStr.c_str(), responseStr.length(), 0);
+
+		if (bytesSent < 0) {
+			perror("send failed");
+		} else {
+			std::cout << "Successfully sent " << bytesSent << " bytes" << std::endl;
+		}
+	} else {
+		std::cout << "ERROR: No response to send!" << std::endl;
 	}
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");

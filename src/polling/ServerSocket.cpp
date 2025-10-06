@@ -163,7 +163,7 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 			if (Connecting->getRequest() && Connecting->getRequest()->getParsingState() == PARSING_DONE)
 			{
 				Response response = _cf->createPage(Connecting->getRequest());
-				Connecting->setResponse(response);
+				Connecting->setResponse(response.getHTTPResponse());
 			}
 		}
 

@@ -129,24 +129,18 @@ void Response::AddHTTPHeaders()
 	this->_contentLength = this->_content.size();
 
 	std::stringstream	header;
-	header << _request->getProtocol() << " " << status;
+	header << _request->getProtocol() << " " << status << "\r\n"
+			<< "Content-Type: " << _contentType << "\r\n"
+			<< "Content-Length: " << _contentLength << "\r\n"
+			<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
+			<< "Server: miniServ\r\n";
 
-
-	if (_request->getMethod() == "GET")
-	{
-		header << "Content-Type: " << _contentType << "\r\n"
-				<< "Content-Length: " << _contentLength << "\r\n"
-				<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
-				<< "Server: miniServ/1.0\r\n"
-				<< "\r\n";
-	}
 	if (_request->getMethod() == "POST")
 	{
-		header << "Content-Type: text/html\r\n"
-				<< "Content-Length: 0\r\n"
-				<< "Refresh: 0; url=/\r\n"
-				<< "\r\n";
+		header << "Refresh: 0; url=/\r\n";
 	}
+
+	header << "\r\n";
 
 	this->_HTTPResponse = header.str() + _content;
 	std::cout <<  GREEN << "HTTP response is [" << _HTTPResponse << "]" << STOP_COLOR << std::endl;

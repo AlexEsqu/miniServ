@@ -21,7 +21,7 @@ private:
 	char				_buffer[BUFFSIZE];
 	struct epoll_event	_event;
 	Request*			_request;
-	Response			_response;
+	std::string			_response;
 
 public:
 
@@ -36,7 +36,7 @@ public:
 	//----------------------- SETTER ---------------------//
 
 	void				setEvent(uint32_t epollEventMask);
-	void				setResponse(Response reponse);
+	void				setResponse(std::string response);
 	void				resetRequest();
 
 	//----------------------- GETTER ---------------------//
@@ -45,7 +45,7 @@ public:
 	struct epoll_event&	getEvent();
 	Request*			getRequest();
 	ServerSocket&		getServer();
-	Response&			getResponse();
+	std::string&		getResponse();
 
 	//----------------- MEMBER FUNCTION ------------------//
 
