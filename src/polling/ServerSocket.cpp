@@ -153,13 +153,6 @@ void			ServerSocket::handleExistingConnection(epoll_event &event)
 		{
 			Connecting->readRequest();
 
-			if (Connecting->getRequest()) {
-				std::cout << "Request state: " << Connecting->getRequest()->getParsingState() << std::endl;
-				std::cout << "Method: " << Connecting->getRequest()->getMethod() << std::endl;
-				std::cout << "URL: " << Connecting->getRequest()->getRequestedURL() << std::endl;
-			}
-
-
 			if (Connecting->getRequest() && Connecting->getRequest()->getParsingState() == PARSING_DONE)
 			{
 				Response response = _cf->createPage(Connecting->getRequest());

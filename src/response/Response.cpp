@@ -143,7 +143,6 @@ void Response::AddHTTPHeaders()
 	header << "\r\n";
 
 	this->_HTTPResponse = header.str() + _content;
-	std::cout <<  GREEN << "HTTP response is [" << _HTTPResponse << "]" << STOP_COLOR << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////

@@ -55,7 +55,6 @@ void	ClientSocket::resetRequest()
 void	ClientSocket::setResponse(std::string response)
 {
 	_response = response;
-	std::cout << _response << std::endl;
 }
 
 //------------------------------ GETTER --------------------------------------//
@@ -95,19 +94,22 @@ void	ClientSocket::readRequest()
 
 	// read the Client's request into a buffer
 	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK);
-	if (valread < 0)
+	if (valread < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
 		throw failedSocketRead();
 	if (valread == 0)
 		throw endSocket();
 
-	// add buffer content to a Request object
+	// since some data can be interspeced with \0, creating a string of valread size
+	std::string	requestChunk(_buffer, valread);
+
+	// add request chunk content to a Request object
 	if (_request == NULL)
-		_request = new Request(_serv.getConf(), _buffer);
+		_request = new Request(_serv.getConf(), requestChunk);
 	else
-		_request->addRequestChunk(_buffer);
+		_request->addRequestChunk(requestChunk);
 
 	// clear buffer for further use
-	memset(_buffer, '\0', sizeof _buffer);
+	memset(_buffer, '\0', sizeof(_buffer));
 }
 
 void	ClientSocket::sendResponse()
@@ -124,6 +126,7 @@ void	ClientSocket::sendResponse()
 			perror("send failed");
 		} else {
 			std::cout << "Successfully sent " << bytesSent << " bytes" << std::endl;
+			_response = "";
 		}
 	} else {
 		std::cout << "ERROR: No response to send!" << std::endl;
