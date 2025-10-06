@@ -26,7 +26,7 @@ ServerSocket::ServerSocket(Poller& poller, const ServerConf& conf)
 	// set serv sock to listen for incomming connections with max incomming
 	setListenMode(10);
 
-	fcntl(getSocketFd(), F_SETFL, O_NONBLOCK);
+	// fcntl(getSocketFd(), F_SETFL, O_NONBLOCK);
 
 	_poller.addServerSocket(*this);
 }
