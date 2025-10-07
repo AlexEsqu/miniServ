@@ -4,7 +4,6 @@
 
 ContentFetcher::ContentFetcher()
 {
-
 }
 
 ContentFetcher::ContentFetcher(const ContentFetcher &original)
@@ -12,7 +11,7 @@ ContentFetcher::ContentFetcher(const ContentFetcher &original)
 	*this = original;
 }
 
-ContentFetcher& ContentFetcher::operator=(const ContentFetcher &original)
+ContentFetcher &ContentFetcher::operator=(const ContentFetcher &original)
 {
 	if (this != &original)
 		executors = original.executors;
@@ -23,13 +22,13 @@ ContentFetcher& ContentFetcher::operator=(const ContentFetcher &original)
 
 ContentFetcher::~ContentFetcher()
 {
-	for (std::vector<Executor*>::iterator item = executors.begin(); item != executors.end(); item++)
+	for (std::vector<Executor *>::iterator item = executors.begin(); item != executors.end(); item++)
 		delete *item;
 }
 
 //------------------- MEMBER FUNCTIONS ------------------------//
 
-std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
+std::string ContentFetcher::getTypeBasedOnExtension(const std::string &filePath)
 {
 	size_t dotPos = filePath.find_last_of('.');
 	if (dotPos == std::string::npos)
@@ -38,88 +37,104 @@ std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
 	std::string extension = filePath.substr(dotPos + 1);
 
 	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-	if (extension == "html" || extension == "htm") return "text/html";
-	if (extension == "css") return "text/css";
-	if (extension == "js") return "application/javascript";
-	if (extension == "jpg" || extension == "jpeg") return "image/jpeg";
-	if (extension == "png") return "image/png";
-	if (extension == "gif") return "image/gif";
-	if (extension == "svg") return "image/svg+xml";
-	if (extension == "ico") return "image/x-icon";
-	if (extension == "txt") return "text/plain";
-	if (extension == "pdf") return "application/pdf";
-	if (extension == "webp") return "image/wepb";
-	if (extension == "png") return "image/png";
+	if (extension == "html" || extension == "htm")
+		return "text/html";
+	if (extension == "css")
+		return "text/css";
+	if (extension == "js")
+		return "application/javascript";
+	if (extension == "jpg" || extension == "jpeg")
+		return "image/jpeg";
+	if (extension == "png")
+		return "image/png";
+	if (extension == "gif")
+		return "image/gif";
+	if (extension == "svg")
+		return "image/svg+xml";
+	if (extension == "ico")
+		return "image/x-icon";
+	if (extension == "txt")
+		return "text/plain";
+	if (extension == "pdf")
+		return "application/pdf";
+	if (extension == "webp")
+		return "image/wepb";
+	if (extension == "png")
+		return "image/png";
 
 	return "text/plain";
 }
 
-size_t	ContentFetcher::getSizeOfFile(const std::string& filename) {
+size_t ContentFetcher::getSizeOfFile(const std::string &filename)
+{
 	struct stat st;
-	if(stat(filename.c_str(), &st) != 0) {
+	if (stat(filename.c_str(), &st) != 0)
+	{
 		return 0;
 	}
 	return st.st_size;
 }
 
-bool	ContentFetcher::isDirectory(const char *path)
+bool ContentFetcher::isDirectory(const char *path)
 {
 	struct stat path_stat;
 	stat(path, &path_stat);
 	return S_ISDIR(path_stat.st_mode);
 }
 
-void	ContentFetcher::serveStatic(Response& response)
+void ContentFetcher::serveStatic(Response &response)
 {
-	std::string			fileURL(response.getRoutedURL());
+	std::string fileURL(response.getRoutedURL());
 
 	std::cout << "routed path is " << fileURL << "\n";
 
-	std::ifstream		input(fileURL.c_str(), std::ios::binary);
+	std::ifstream input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
-		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
+		std::cerr << ERROR_FORMAT("ContentFetcher::serveStatic: Could not open file") << std::endl;
 		response.setStatusNum(404);
 		response.AddHTTPHeaders();
 		return;
 	}
 
 	response.setContentType(getTypeBasedOnExtension(fileURL));
-	size_t	size = getSizeOfFile(fileURL);
+	size_t size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
 	response.setContent(buffer);
-	std::string	result(buffer.data());
+	std::string result(buffer.data());
 }
 
-void ContentFetcher::executeIfCGI(Response& response)
+void ContentFetcher::executeIfCGI(Response &response)
 {
-	for (size_t i = 0; i < executors.size(); i++)
+	if (!response.getRoutedURL().empty())
 	{
-		if(executors[i]->canExecuteFile(response))
-			return executors[i]->executeFile(response);
+		for (size_t i = 0; i < executors.size(); i++)
+		{
+			if (executors[i]->canExecuteFile(response))
+				return executors[i]->executeFile(response);
+		}
 	}
 
-	std::cout << CGI_FORMAT(" NO CGI ");
+	std::cout << CGI_FORMAT(" NO CGI ") << std::endl;
 	serveStatic(response);
 }
 
-void	ContentFetcher::addExecutor(Executor* executor)
+void ContentFetcher::addExecutor(Executor *executor)
 {
 	executors.push_back(executor);
 }
 
-void	ContentFetcher::fetchPage(Request& request, Response& response)
+void ContentFetcher::fetchPage(Request &request, Response &response)
 {
 	if (request.getMethod() == "GET")
 		executeIfCGI(response);
 }
 
-
-Response	ContentFetcher::createPage(Request* request)
+Response ContentFetcher::createPage(Request *request)
 {
-	Response	result;
+	Response result;
 
 	try
 	{
@@ -130,7 +145,7 @@ Response	ContentFetcher::createPage(Request* request)
 		fetchPage(*request, result);
 	}
 
-	catch (const HTTPError& e)
+	catch (const HTTPError &e)
 	{
 		std::cout << "error in fetcher\n";
 		std::cout << e.what() << "\n";
