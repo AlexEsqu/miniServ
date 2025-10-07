@@ -110,22 +110,20 @@ void Response::setRoutedUrl(std::string url)
 	int len = _request->getRoute()->getDefaultFiles().size();
 	while (i < len)
 	{
-		std::ifstream path(_routedPath.c_str(), std::ios::binary);
+		std::ifstream path(("/" + _routedPath).c_str());
 
 		if (url[url.size() - 1] == '/')
 			_routedPath = _request->getRoute()->getRootDirectory() + "/" + _request->getRoute()->getDefaultFiles()[i];
 		else
 			_routedPath = _request->getRoute()->getRootDirectory() + url;
-
 		if (path.is_open() && !isDirectory(_routedPath.c_str()))
 		{
-			break;
+			return;
 		}
 		i++;
 	}
 	if (i == len)
 		_routedPath = "";
-	std::cout << GREEN << _routedPath << STOP_COLOR;
 }
 
 void Response::AddHTTPHeaders()
