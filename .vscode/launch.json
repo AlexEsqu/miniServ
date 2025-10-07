@@ -28,7 +28,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/webserv",
-      "args": [],
+      "args": ["${workspaceFolder}/confs/basic.conf"],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
       "environment": [],

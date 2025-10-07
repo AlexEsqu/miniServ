@@ -156,9 +156,12 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 		_routedPath = paramMap.at("root");
 
 	if (paramMap.find("index") != paramMap.end())
-		_defaultFiles.push_back(paramMap.at("index"));
-	else
-		_defaultFiles.push_back("index.html");
+	{
+		_defaultFiles = split(paramMap.at("index"), ' ');
+		std::cout << "default file = " << _defaultFiles[0] << " \n";
+	}
+	// else
+	// 	_defaultFiles.push_back("index.html");
 
 	if (paramMap.find("autoindex") != paramMap.end())
 		_autoindex = (paramMap.at("autoindex") == "on");

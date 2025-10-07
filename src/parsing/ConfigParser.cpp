@@ -143,9 +143,10 @@ Route	ConfigParser::parseLocationBlock(std::ifstream& configFileStream, const st
 	return route;
 }
 
-
+// MAke sure the base server has the basic necessary rules such as a root, an index, and methods
 void ConfigParser::addDefaultRoute(ServerConf& serverConf)
 {
+	
 	Route defaultRoute;
 
 	defaultRoute.setURLPath("/");
@@ -153,8 +154,16 @@ void ConfigParser::addDefaultRoute(ServerConf& serverConf)
 	std::map<std::string, std::string> defaultParams;
 
 	defaultParams["root"] = serverConf.getRoot().empty() ? "/var/www/html" : serverConf.getRoot();
-	defaultParams["index"] = "index.html";
-	defaultParams["allow_methods"] = "GET POST DELETE";
+
+	defaultParams["index"] = serverConf.getParamMap().find("index") == serverConf.getParamMap().end() ? "index.html" : serverConf.getParamMap().at("index"); 
+	
+
+	if (serverConf.getParamMap().find("allow_methods") == serverConf.getParamMap().end()) // if map entry == map.end(), it doesn't exist in the map; HOWEVER map[entry] can return a value and create an entry if none existed
+		defaultParams["allow_methods"] = "GET POST DELETE";
+	else
+		defaultParams["allow_methods"] = serverConf.getParamMap().at("allow_methods");
+
+	
 	defaultParams["autoindex"] = "off";
 
 	// Apply the default parameters to the route
@@ -192,7 +201,7 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 	if (!isClosedCurlyBrace(line))
 		throw std::runtime_error("Invalid config file: no closing curly brace");
 
-	ServerConf serverConf;
+	ServerConf serverConf(paramMap);
 
 	if (paramMap.find("listen") != paramMap.end())
 		serverConf.setPort(atoi(paramMap["listen"].c_str()));
@@ -203,15 +212,15 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 	if (paramMap.find("root") != paramMap.end())
 	{
 		serverConf.setRoot(paramMap["root"]);
-		addDefaultRoute(serverConf);
 	}
-
 
 	std::cout << "Config block parsed :\n";
 	for (std::map<std::string, std::string>::iterator it = paramMap.begin(); it != paramMap.end(); it++)
 	{
 		std::cout << "[" << it->first << "] = [" << it->second << "]\n";
 	}
+
+	addDefaultRoute(serverConf);
 
 	return serverConf;
 }

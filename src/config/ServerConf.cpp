@@ -12,10 +12,9 @@ ServerConf::ServerConf()
 #endif
 }
 
-ServerConf::ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route> routes)
+ServerConf::ServerConf(std::map<std::string, std::string> paramMap)
 	: _port(8080)
 	, _maxSizeClientRequestBody(__INT_MAX__)
-	, _routes(routes)
 	, _paramMap(paramMap)
 {
 	if (_paramMap.find("listen") != _paramMap.end()) {
@@ -85,6 +84,11 @@ const std::vector<Route>&	ServerConf::getRoutes() const
 const std::string&			ServerConf::getRoot() const
 {
 	return (_root);
+}
+
+std::map<std::string, std::string>&	ServerConf::getParamMap()
+{
+	return (_paramMap);
 }
 
 //---------------------------- SETTERS --------------------------------------//
