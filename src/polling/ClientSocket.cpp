@@ -76,7 +76,7 @@ std::string&	ClientSocket::getResponse()
 void	ClientSocket::readRequest()
 {
 	#ifdef DEBUG
-		std::cout << "\nClient Socket " << getSocketFd() << " rcv";
+		std::cout << "\nClient Socket " << getSocketFd();
 	#endif
 
 	// read the Client's request into a buffer
@@ -86,8 +86,10 @@ void	ClientSocket::readRequest()
 	if (valread == 0)
 		throw endSocket();
 
-	// since some data can be interspeced with \0, creating a string of valread size
+		// since some data can be interspeced with \0, creating a string of valread size
 	std::string	requestChunk(_buffer, valread);
+
+
 
 	// add request chunk content to a Request object
 	if (_request == NULL)

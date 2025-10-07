@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
+#include <set>
 
 #include "readability.hpp"
 #include "ServerConf.hpp"
@@ -22,6 +23,7 @@ enum e_parseState {
 enum e_methods
 {
 	GET,
+	HEAD,
 	POST,
 	DELETE,
 	UNSUPPORTED
@@ -47,6 +49,7 @@ private:
 	std::string					_httpBody;
 	std::string					_unparsedBuffer;	// unparsed leftover from previous recv
 	std::string					_method;			// could be set as the enum already ?
+	// e_methods					_methodCode;
 	std::string					_protocol;			// we only support HTTP/1.1
 	std::string					_requestedFileName;	// for example "/home.html"
 	std::map
@@ -65,7 +68,7 @@ private:
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
-	void				checkHTTPValidity();
+
 
 public:
 

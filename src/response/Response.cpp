@@ -109,34 +109,12 @@ void	Response::setRoutedUrl(std::string url)
 	else
 		_routedPath = _request->getRoute()->getRootDirectory() + url;
 
-
 	std::cout << GREEN << _routedPath << STOP_COLOR;
 }
 
-void Response::AddHTTPHeaders()
+void	Response::setBufferFilePath(std::string filePath)
 {
-	Status status(this->_statusNum);
-	if (status.getStatusCode() >= 400) // if its an error
-		this->_content = createErrorPageContent(status);
-	this->_contentLength = this->_content.size();
-
-	std::stringstream	header;
-	header << _request->getProtocol() << " " << status << "\r\n"
-			<< "Content-Type: " << _contentType << "\r\n"
-			<< "Content-Length: " << _contentLength << "\r\n"
-			<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
-			<< "Server: miniServ\r\n";
-
-	std::cout << "Content-Length is " << _contentLength << " + " << header.str().size() << "\n";
-
-	if (_request->getMethod() == "POST")
-	{
-		header << "Refresh: 0; url=/\r\n";
-	}
-
-	header << "\r\n";
-
-	this->_HTTPResponse = header.str() + _content;
+	_responseFilePath = filePath;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -163,9 +141,40 @@ int			Response::getStatus() const
 	return (_statusNum);
 }
 
+std::string Response::getBufferFilePath() const
+{
+	return (_responseFilePath);
+}
+
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////
+
+void Response::AddHTTPHeaders()
+{
+	Status status(this->_statusNum);
+	if (status.getStatusCode() >= 400) // if its an error
+		this->_content = createErrorPageContent(status);
+	this->_contentLength = this->_content.size();
+
+	std::stringstream	header;
+	header << _request->getProtocol() << " " << status << "\r\n"
+			<< "Content-Type: " << _contentType << "\r\n"
+			<< "Content-Length: " << _contentLength << "\r\n"
+			<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
+			<< "Server: miniServ\r\n";
+
+	std::cout << "Content-Length is " << _contentLength << " + " << header.str().size() << "\n";
+
+	if (_request->getMethod() == "POST")
+	{
+		header << "Refresh: 0; url=/\r\n";
+	}
+
+	header << "\r\n";
+
+	this->_HTTPResponse = header.str() + _content;
+}
 
 std::string Response::createErrorPageContent(const Status &num)
 {

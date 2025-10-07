@@ -8,7 +8,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 
-#define BUFFSIZE 1000000
+#define BUFFSIZE 64000
 
 class ServerSocket;
 
@@ -21,6 +21,8 @@ private:
 	char				_buffer[BUFFSIZE];
 	Request*			_request;
 	std::string			_response;
+	std::string			_bufferRequestFilePath;
+	std::string			_bufferResponseFilePath;
 
 public:
 

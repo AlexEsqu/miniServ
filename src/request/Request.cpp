@@ -3,7 +3,6 @@
 #include "server.hpp"
 #include "parsing.hpp"
 
-
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 Request::Request(const ServerConf& conf, std::string requestChunk)
@@ -156,21 +155,8 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
 
-void	Request::checkHTTPValidity()
-{
-	// // empty method is not valid HTTP request
-	// if (getMethod().empty())
-	// 	throw badSyntax();
-	// // TO DO : check if within allowed method for the route, requires config class
 
-	// // throwing error if protocol is any other protocol than HTTP/1.1
-	// if (getProtocol() != "HTTP/1.1")
-	// 	throw badProtocol();
 
-	// // empty URL is not valid HTTP request
-	// if (getRequestedURL().empty())
-	// 	throw badSyntax();
-}
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 

@@ -26,6 +26,8 @@ private:
 	std::string			_content;
 	std::string			_HTTPResponse;
 
+	std::string			_responseFilePath;
+
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
@@ -46,17 +48,18 @@ public:
 	void			setContent(std::string content);
 	void			setContent(std::vector<char> content);
 	void			setRoutedUrl(std::string url);
-	void			setResponse(std::string response);
+	// void			setResponse(std::string response);
 	void			setRequest(Request* request);
-
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
+	void			setBufferFilePath(std::string filePath);
 
 	//-------------------- GETTERS -----------------------//
 
 	std::string		getHTTPResponse() const ;
 	Request*		getRequest();
 	int				getStatus() const;
+	std::string		getBufferFilePath() const;
 
 	//------------------- OPERATORS ----------------------//
 
@@ -66,5 +69,6 @@ public:
 
 	std::string		createErrorPageContent(const Status& num);
 	std::string		getRoutedURL() const;
+
 	void			testFilename();
 };
