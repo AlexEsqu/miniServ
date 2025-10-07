@@ -73,6 +73,10 @@ CC					=	c++
 
 FLAGS				=	-Wall -Wextra -Werror -std=c++98
 
+#----- RUNTIME VARIABLES ------------------------------------------------------#
+
+TMP_DIR				=	tmp/
+
 # **************************************************************************** #
 #		Testing variables													   #
 # **************************************************************************** #
@@ -122,7 +126,7 @@ start:
 					make re
 					./$(NAME)
 
-$(NAME):			$(OBJ_DIRS) $(OBJ)
+$(NAME):			$(OBJ_DIRS) $(OBJ) $(TMP_DIR)
 					$(CC) $(FLAGS) $(INC) -o $(NAME) $(OBJ)
 
 $(OBJ_DIR)/%.o:		$(SRC_DIR)/%.cpp $(HEADER)
@@ -130,6 +134,9 @@ $(OBJ_DIR)/%.o:		$(SRC_DIR)/%.cpp $(HEADER)
 
 $(OBJ_DIRS):
 					mkdir -p $(OBJ_DIRS)
+
+$(TMP_DIR):
+					mkdir -p $(TMP_DIR)
 
 # **************************************************************************** #
 #		Testing																   #
@@ -150,11 +157,11 @@ test:
 #		Debug																   #
 # **************************************************************************** #
 
-debug:
+debug:				$(TMP_DIR)
 					@echo "Compiling with debug flag"
 					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(SRC)
 
-verbose:
+verbose:			$(TMP_DIR)
 					@echo "Compiling with additional logging info"
 					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC)
 
