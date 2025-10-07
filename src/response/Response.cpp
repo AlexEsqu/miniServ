@@ -104,10 +104,10 @@ void	Response::setRequest(Request* request)
 
 void	Response::setRoutedUrl(std::string url)
 {
-	if (url[url.size() - 1] == '/')
-		_routedPath = _request->getRoute()->getRootDirectory().append(_request->getRoute()->getDefaultFiles()[0]);
+	if (url[url.size() - 1] == '/') // url == "/" ??
+		_routedPath = _request->getRoute()->getRootDirectory() + "/" + _request->getRoute()->getDefaultFiles()[0];
 	else
-		_routedPath = _request->getRoute()->getRootDirectory().append(url);
+		_routedPath = _request->getRoute()->getRootDirectory() + url;
 
 
 	std::cout << GREEN << _routedPath << STOP_COLOR;
