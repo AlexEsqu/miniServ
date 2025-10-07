@@ -206,6 +206,13 @@ ServerConf	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 		addDefaultRoute(serverConf);
 	}
 
+
+	std::cout << "Config block parsed :\n";
+	for (std::map<std::string, std::string>::iterator it = paramMap.begin(); it != paramMap.end(); it++)
+	{
+		std::cout << "[" << it->first << "] = [" << it->second << "]\n";
+	}
+
 	return serverConf;
 }
 
