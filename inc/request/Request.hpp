@@ -34,6 +34,8 @@ enum e_dataProgress {
 
 class Request;
 
+class Response;
+
 class ServerConf;
 
 class Request

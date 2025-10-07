@@ -3,6 +3,7 @@
 #include "server.hpp"
 #include "parsing.hpp"
 
+
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 Request::Request(const ServerConf& conf, std::string requestChunk)
@@ -25,6 +26,9 @@ Request::Request(const Request &copy)
 
 Request::~Request()
 {
+	if (_response != NULL)
+		delete _response;
+	_response = NULL;
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -278,7 +282,7 @@ void	Request::addRequestChunk(std::string chunk)
 					return;
 				break;
 			}
-			case PARSING_DONE:
+			default:
 				return;
 		}
 	}

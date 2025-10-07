@@ -119,15 +119,15 @@ void	ContentFetcher::fetchPage(Request& request, Response& response)
 
 Response	ContentFetcher::createPage(Request* request)
 {
-	Response	result;
+	request->setResponse(new Response);
 
 	try
 	{
-		result.setStatusNum(request->getStatus().getStatusCode());
-		result.setRequest(request);
-		result.setRoutedUrl(request->getRequestedURL());
+		request->getResponse()->setStatusNum(request->getStatus().getStatusCode());
+		request->getResponse()->setRequest(request);
+		request->getResponse()->setRoutedUrl(request->getRequestedURL());
 
-		fetchPage(*request, result);
+		fetchPage(*request, *request->getResponse());
 	}
 
 	catch (const HTTPError& e)
@@ -136,7 +136,7 @@ Response	ContentFetcher::createPage(Request* request)
 		std::cout << e.what() << "\n";
 	}
 
-	result.AddHTTPHeaders();
+	request->getResponse()->AddHTTPHeaders();
 
-	return (result);
+	return (*request->getResponse());
 }
