@@ -160,7 +160,7 @@ verbose:
 
 valgrind:
 					make debug
-					$(V_FLAG) ./webserv
+					$(V_FLAG) ./webserv confs/basic.conf
 
 # **************************************************************************** #
 #		Clean up															   #

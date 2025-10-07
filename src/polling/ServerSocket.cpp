@@ -113,6 +113,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 			if (connecting->getRequest() && connecting->getRequest()->getParsingState() == PARSING_DONE)
 			{
 				Response response = _cf->createPage(connecting->getRequest());
+				// TO DO : First execute CGI / get page, only once fully gotten can create response
 				connecting->setResponse(response.getHTTPResponse());
 				connecting->setEpollEventsMask(EPOLLOUT | EPOLLERR);
 				_poller.updateSocketEvent(connecting);

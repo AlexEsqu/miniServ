@@ -78,11 +78,20 @@ std::string	Executor::formatAsHTTPVariable(const std::string& key, const std::st
 	}
 	strToUpper(formattedKey);
 
+	std::string	formattedValue = value;
+	for (size_t i = 0; i < value.length(); ++i) {
+		if (value[i] == '-' || value[i] == ' ') {
+			formattedValue[i] = '_';
+		}
+		// TO DO : add encoding for non variable compliant characters such as ", ', % ....
+	}
+	strToUpper(formattedValue);
+
 	// Convert HTTP headers to CGI format: HTTP_HEADER_NAME
 	if (formattedKey == "CONTENT_TYPE" || formattedKey == "CONTENT_LENGTH")
-		formattedEnvKeyValue = formattedKey + "=" + value;
+		formattedEnvKeyValue = formattedKey + "=" + formattedValue;
 	else
-		formattedEnvKeyValue = "HTTP_" + formattedKey + "=" + value;
+		formattedEnvKeyValue = "HTTP_" + formattedKey + "=" + formattedValue;
 
 	return (formattedEnvKeyValue);
 }
@@ -99,6 +108,7 @@ void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Req
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethod()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_URI", request.getRequestedURL()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PROTOCOL", request.getProtocol()));
+	// TO DO : add query string (but CGI is unchunking on his own)
 
 	// Server information
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", "localhost"));		// or from config

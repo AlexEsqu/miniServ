@@ -14,7 +14,9 @@ enum e_parseState {
 	PARSING_HEADERS,
 	PARSING_BODY,
 	PARSING_BODY_CHUNKED,
-	PARSING_DONE
+	PARSING_DONE,
+	FETCHING_ONGOING,
+	FETCHING_DONE
 };
 
 enum e_methods
@@ -30,14 +32,12 @@ enum e_dataProgress {
 	RECEIVED_ALL
 };
 
-
 class Request;
 
 class ServerConf;
 
 class Request
 {
-
 private:
 
 	//------------------ ATTRIBUTES ----------------------//
