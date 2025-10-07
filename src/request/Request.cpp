@@ -86,6 +86,11 @@ const Route*		Request::getRoute() const
 	return (_route);
 }
 
+Response*			Request::getResponse()
+{
+	return (_response);
+}
+
 bool				Request::isKeepAlive()
 {
 	if (_requestHeaderMap.find("Connection") != _requestHeaderMap.end())
@@ -113,6 +118,11 @@ void	Request::setProtocol(std::string &protocol)
 void	Request::setRoute(const Route* route)
 {
 	_route = route;
+}
+
+void			Request::setResponse(Response* response)
+{
+	_response = response;
 }
 
 // Valid request line (1st line of a HTTP request) must have the format:

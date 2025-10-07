@@ -58,6 +58,8 @@ private:
 
 	e_parseState				_parsingState;
 
+	Response*					_response;
+
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -83,6 +85,7 @@ public:
 	void				addAsHeaderVar(std::string& keyValueString);
 	void				setIfParsingBody();
 	void				setRoute(const Route* route);
+	void				setResponse(Response* response);
 
 	//-------------------- GETTERS -----------------------//
 
@@ -97,6 +100,7 @@ public:
 	const ServerConf&	getConf() const;
 	const Status&		getStatus() const;
 	int					getParsingState() const;
+	Response*			getResponse();
 
 	bool				isKeepAlive();
 
