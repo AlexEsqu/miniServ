@@ -86,7 +86,7 @@ const std::string&			ServerConf::getRoot() const
 	return (_root);
 }
 
-std::map<std::string, std::string>&	ServerConf::getParamMap()
+const std::map<std::string, std::string>	&ServerConf::getParamMap() const
 {
 	return (_paramMap);
 }

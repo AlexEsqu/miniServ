@@ -47,7 +47,7 @@ public:
 	unsigned int				getMaxSizeClientRequestBody() const;
 	const std::vector<Route>&	getRoutes() const;
 	const std::string&			getRoot() const;
-	std::map<std::string, std::string>&	getParamMap();
+	const std::map<std::string, std::string>	&getParamMap() const;
 
 	//------------------- SETTERS ------------------------//
 
