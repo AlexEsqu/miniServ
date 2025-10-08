@@ -9,6 +9,8 @@
 #include "Response.hpp"
 
 #define BUFFSIZE 64000
+#define MAX_HEADER_SIZE 4000
+#define END_OF_HEADER_STR "\r\n\r\n"
 
 class ServerSocket;
 
@@ -18,11 +20,13 @@ class ClientSocket: public Sockette
 private:
 
 	ServerSocket&		_serv;
-	char				_buffer[BUFFSIZE];
+	char				_buffer[MAX_HEADER_SIZE];
+	std::string			_fullHeader;
 	Request*			_request;
 	std::string			_response;
 	std::string			_bufferRequestFilePath;
 	std::string			_bufferResponseFilePath;
+	size_t				_headerSize;
 
 public:
 
@@ -48,6 +52,10 @@ public:
 
 	//----------------- MEMBER FUNCTION ------------------//
 
+	void				checkForReadError(int valread);
+	bool				tryToReadHeaderBlock();
+	bool				tryToReadBodyBlock();
+	bool 				tryToReadChunkBodyBlock();
 	void				readRequest();
 	void				sendResponse();
 };

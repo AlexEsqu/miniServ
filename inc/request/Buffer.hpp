@@ -54,6 +54,5 @@ public:
 
 	void			writeToBuffer(const std::string& data);
 	size_t			readFromBuffer(char* buffer, size_t size);
-	size_t			findInBuffer(const std::string& signature) const;
 	void			clearBuffer();
 };

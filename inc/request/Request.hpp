@@ -47,8 +47,6 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	std::string					_httpBody;
-	std::string					_unparsedBuffer;	// unparsed leftover from previous recv
 	std::string					_method;			// could be set as the enum already ?
 	// e_methods					_methodCode;
 	std::string					_protocol;			// we only support HTTP/1.1
@@ -63,10 +61,10 @@ private:
 	Status						_status;
 
 	e_parseState				_parsingState;
+	std::string					_unparsedHeaderBuffer;
 	Buffer 						_requestBodyBuffer;
 
 	Response*					_response;
-
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 

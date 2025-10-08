@@ -6,7 +6,7 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 Request::Request(const ServerConf& conf, std::string requestChunk)
-	: _unparsedBuffer(requestChunk)
+	: _unparsedHeaderBuffer(requestChunk)
 	, _conf(conf)
 	, _route(NULL)
 	, _status(200)
@@ -35,12 +35,13 @@ Request::~Request()
 Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
-		_unparsedBuffer = other._unparsedBuffer;
+		_unparsedHeaderBuffer = other._unparsedHeaderBuffer;
 		_method = other._method;
 		_protocol = other._protocol;
 		_requestedFileName = other._requestedFileName;
 		_requestHeaderMap = other._requestHeaderMap;
 		_route = other._route;
+		_requestBodyBuffer = other._requestBodyBuffer;
 	}
 
 	return *this;
@@ -77,7 +78,6 @@ const Status&		Request::getStatus() const
 {
 	return _status;
 }
-
 
 int					Request::getParsingState() const
 {
@@ -167,13 +167,13 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	size_t lineEnd = chunk.find("\r\n");
 	if (lineEnd == std::string::npos)
 	{
-		_unparsedBuffer.append(chunk);
+		_unparsedHeaderBuffer.append(chunk);
 		return WAITING_FOR_MORE;
 	}
 
 	// create request line out of chunk and possible unparsed leftover
-	std::string requestLine = _unparsedBuffer + chunk.substr(0, lineEnd);
-	_unparsedBuffer.clear();
+	std::string requestLine = _unparsedHeaderBuffer + chunk.substr(0, lineEnd);
+	_unparsedHeaderBuffer.clear();
 	setRequestLine(requestLine);
 
 	// erase data used from the chunk
@@ -193,13 +193,13 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 	size_t lineEnd = chunk.find("\r\n");
 	if (lineEnd == std::string::npos)
 	{
-		_unparsedBuffer.append(chunk);
+		_unparsedHeaderBuffer.append(chunk);
 		return WAITING_FOR_MORE;
 	}
 
 	// create request line out of chunk and possible unparsed leftover
-	std::string headerLine =_unparsedBuffer + chunk.substr(0, lineEnd);
-	_unparsedBuffer.clear();
+	std::string headerLine =_unparsedHeaderBuffer + chunk.substr(0, lineEnd);
+	_unparsedHeaderBuffer.clear();
 
 	// either add the header line as variable to the header map of variable
 	if (!headerLine.empty())
@@ -220,8 +220,10 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 
 e_dataProgress	Request::parseRequestBody(std::string& chunk)
 {
-	_requestBodyBuffer.writeToBuffer(_unparsedBuffer + chunk);
-	_unparsedBuffer.clear();
+	// copy all leftover from the parsing into the buffer
+	_requestBodyBuffer.writeToBuffer(_unparsedHeaderBuffer + chunk);
+	_unparsedHeaderBuffer.clear();
+	chunk.clear();
 
 	if (_contentLength && _requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
@@ -237,15 +239,17 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 
 e_dataProgress Request::parseChunkedBody(std::string& chunk)
 {
-	_unparsedBuffer.append(chunk);
+	_requestBodyBuffer.writeToBuffer(_unparsedHeaderBuffer + chunk);
+	_unparsedHeaderBuffer.clear();
 	chunk.clear();
+
 	size_t offset = 0;
 	while (true) {
-		size_t sizeEnd = _unparsedBuffer.find("\r\n", offset);
+		size_t sizeEnd = _unparsedHeaderBuffer.find("\r\n", offset);
 		if (sizeEnd == std::string::npos)
 			return WAITING_FOR_MORE;
 
-		std::string sizeLine = _unparsedBuffer.substr(offset, sizeEnd - offset);
+		std::string sizeLine = _unparsedHeaderBuffer.substr(offset, sizeEnd - offset);
 		size_t chunkSize = 0;
 		std::istringstream iss(sizeLine);
 		iss >> std::hex >> chunkSize;
@@ -254,22 +258,22 @@ e_dataProgress Request::parseChunkedBody(std::string& chunk)
 
 		// if chunk size is zero, end of chunked request
 		if (chunkSize == 0) {
-			if (_unparsedBuffer.size() < offset + 2)
+			if (_unparsedHeaderBuffer.size() < offset + 2)
 				return WAITING_FOR_MORE;
 			offset += 2; // skips final CRLF
 			_parsingState = PARSING_DONE;
 			return RECEIVED_ALL;
 		}
 
-		if (_unparsedBuffer.size() < offset + chunkSize + 2)
+		if (_unparsedHeaderBuffer.size() < offset + chunkSize + 2)
 			return WAITING_FOR_MORE;
 
-		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
+		std::string chunkData = _unparsedHeaderBuffer.substr(offset, chunkSize);
 		_requestBodyBuffer.writeToBuffer(chunkData);
 
 		offset += chunkSize + 2;
 
-		if (offset >= _unparsedBuffer.size())
+		if (offset >= _unparsedHeaderBuffer.size())
 			return WAITING_FOR_MORE;
 	}
 }
