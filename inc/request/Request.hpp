@@ -118,10 +118,11 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void				addRequestChunk(std::string chunk);
-	e_dataProgress		parseRequestLine();
-	e_dataProgress		parseHeaderLine();
-	e_dataProgress		parseRequestBody();
-	e_dataProgress		parseChunkedBody();
+	e_dataProgress		parseRequestLine(std::string& chunk);
+	e_dataProgress		parseHeaderLine(std::string& chunk);
+	e_dataProgress		parseRequestBody(std::string& chunk);
+	e_dataProgress		parseChunkedBody(std::string& chunk);
+	e_dataProgress		parseChunkedBody(std::istream& in);
 
 	const Route*		findMatchingRoute();
 
