@@ -208,3 +208,7 @@ std::string Response::createErrorPageContent(const Status &num)
 	inputErrorFile.close();
 	return (outputString.str());
 }
+
+// std::string Response::fetchErrorPageContent(const Status &num)
+// {
+// }
