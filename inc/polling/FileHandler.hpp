@@ -3,7 +3,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <ctime>
+#include <cstdlib>
+#include <sstream>
+#include <fcntl.h>
 #include <unistd.h>
+
+#define TMP_PREFIX "tmp/"
 
 //class to create buffering files for receiving and sending operation
 // and also upload when method is POST
@@ -49,15 +55,16 @@ public:
 	//----------------- MEMBER FUNCTION ------------------//
 
 	void				createFile();
+	std::string			generateTempFileName(const std::string& prefix);
+	void				createFile(std::string& filePath);
 	void				clearFile();
 
 	void				writeToFile(const std::string& data);
 	void				writeToFile(const char* data, size_t size);
+
 	size_t				readFromFile(char* buffer, size_t size);
 
 	void				finishWriting();
-	void				reset();
-	void				clear();
 	void				flush();
 
 	//----------------- EXCEPTION ------------------//

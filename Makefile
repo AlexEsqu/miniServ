@@ -28,7 +28,7 @@ FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp ConfigParser.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
 FUNC_CONF			=	ServerConf.cpp Route.cpp
-FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp Poller.cpp
+FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp Poller.cpp FileHandler.cpp
 FUNC_SIG			=	signal.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
@@ -149,7 +149,7 @@ nginx:
 $(CCLIENT_NAME):
 					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
 
-test:
+test:				$(TMP_DIR)
 					$(CC) -g -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
 					./utest_webserv -ni -nv
 
