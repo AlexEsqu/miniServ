@@ -9,6 +9,7 @@
 #include "readability.hpp"
 #include "ServerConf.hpp"
 #include "Status.hpp"
+#include "Buffer.hpp"
 
 enum e_parseState {
 	PARSING_REQUEST_LINE,
@@ -62,6 +63,7 @@ private:
 	Status						_status;
 
 	e_parseState				_parsingState;
+	Buffer 						_requestBodyBuffer;
 
 	Response*					_response;
 

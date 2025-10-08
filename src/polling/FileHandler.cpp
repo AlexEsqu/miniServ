@@ -52,7 +52,7 @@ size_t				FileHandler::size() const
 	return _totalSize;
 }
 
-const std::string&	FileHandler::getFilePath()
+const std::string&	FileHandler::getFilePath() const
 {
 	return _filePath;
 }
@@ -102,7 +102,7 @@ void	FileHandler::createFile(std::string& filePath)
 
 	_filePath = filePath;
 
-	_writeStream.open(_filePath, std::ios::binary | std::ios::trunc);
+	_writeStream.open(_filePath.c_str(), std::ios::binary | std::ios::trunc);
 	if (!_writeStream.is_open())
 		throw std::runtime_error("Failed to open file for writing");
 	_isInitialized = true;
@@ -155,7 +155,7 @@ size_t	FileHandler::readFromFile(char* buffer, size_t size)
 	if (!_isInitialized)
 		throw std::runtime_error("File not initialized");
 	if (!_isReading) {
-		_readStream.open(_filePath, std::ios::binary);
+		_readStream.open(_filePath.c_str(), std::ios::binary);
 		if (!_readStream.is_open())
 			throw std::runtime_error("Failed to open file for reading");
 		_isReading = true;

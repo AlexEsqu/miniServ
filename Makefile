@@ -24,7 +24,7 @@ DIR_SIG				=	signal
 
 FUNC_ERR			=	HTTPError.cpp
 FUNC_ENCOD			=	Response.cpp Status.cpp ContentFetcher.cpp
-FUNC_DECOD			=	Request.cpp
+FUNC_DECOD			=	Request.cpp Buffer.cpp
 FUNC_PARS			=	parsing.cpp ConfigParser.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
 FUNC_CONF			=	ServerConf.cpp Route.cpp

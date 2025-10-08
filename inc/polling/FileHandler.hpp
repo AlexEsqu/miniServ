@@ -46,7 +46,7 @@ public:
 	//----------------------- GETTER ---------------------//
 
 	size_t				size() const;
-	const std::string&	getFilePath();
+	const std::string&	getFilePath() const;
 	bool				isInitialized() const;
 	bool				isEmpty() const;
 	bool				isReading() const;

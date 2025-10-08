@@ -236,6 +236,8 @@ e_dataProgress Request::parseChunkedBody()
 	}
 }
 
+// For every chunk of data added to the request, parsing continues from last state
+// and returns if the current parsed item (header, body...) is not finished
 void	Request::addRequestChunk(std::string chunk)
 {
 	_unparsedBuffer.append(chunk);
@@ -274,6 +276,9 @@ void	Request::addRequestChunk(std::string chunk)
 	}
 }
 
+// It is not necessary to parse a body if the request is a GET or HEAD
+// even when a body should be parsed, it is only up to content length
+// unless the request is specifically marked as chunked by transfer encoding
 void				Request::setIfParsingBody()
 {
 	if (_method == "HEAD" || _method == "GET")
