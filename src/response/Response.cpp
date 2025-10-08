@@ -130,7 +130,7 @@ void Response::AddHTTPHeaders()
 {
 	Status status(this->_statusNum);
 	if (status.getStatusCode() >= 400) // if its an error
-		this->_content = createErrorPageContent(status);
+		this->_content = fetchErrorPageContent(status);
 	this->_contentLength = this->_content.size();
 
 	std::stringstream header;
@@ -209,6 +209,29 @@ std::string Response::createErrorPageContent(const Status &num)
 	return (outputString.str());
 }
 
-// std::string Response::fetchErrorPageContent(const Status &num)
-// {
-// }
+std::string Response::fetchErrorPageContent(const Status &num)
+{
+	std::stringstream errorKey;
+	std::ifstream inputErrorFile;
+	std::stringstream outputString;
+	std::string line;
+	std::string errorPagePath;
+	errorKey << "error_page_" << num.getStatusCode();
+
+	if (_request->getConf().getParamMap().find(errorKey.str()) != _request->getConf().getParamMap().end())
+		errorPagePath = _request->getRoute()->getRootDirectory() + _request->getConf().getParamMap().find(errorKey.str())->second;
+	else
+		return (createErrorPageContent(num));
+
+	inputErrorFile.open(errorPagePath.c_str());
+	if (!inputErrorFile.is_open())
+	{
+		std::cerr << RED << "fetchErrorPageContent: Could not open error file: " << errorPagePath << STOP_COLOR << std::endl;
+		return (createErrorPageContent(num));
+	}
+	while (getline(inputErrorFile, line))
+		outputString << line;
+	inputErrorFile.close();
+
+	return (outputString.str());
+}
