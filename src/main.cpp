@@ -2,7 +2,7 @@
 
 volatile sig_atomic_t g_running = 1;
 
-void listeningLoop(Poller& poller)
+void listeningLoop(Poller &poller)
 {
 	while (g_running)
 	{
@@ -10,16 +10,21 @@ void listeningLoop(Poller& poller)
 	}
 }
 
-int main(int , char** argv)
+int main(int argc, char **argv)
 {
+	if (argc != 2)
+	{
+		std::cout << "Usage: ./webserv configuration_file" << std::endl;
+		return (1);
+	}
 	// parsing config and setting up routes, or if no config setting up default
-	std::vector<ServerConf>	serversConfs;
-	serversConfs = ConfigParser::parseConfigFile(static_cast<const char*>(argv[1]));
+	std::vector<ServerConf> serversConfs;
+	serversConfs = ConfigParser::parseConfigFile(static_cast<const char *>(argv[1]));
 
 	// constructing servers matching the configs
-	Poller	poller;
+	Poller poller;
 
-	std::vector<ServerSocket*>	servers;
+	std::vector<ServerSocket *> servers;
 	for (size_t i = 0; i < serversConfs.size(); i++)
 		servers.push_back(new ServerSocket(poller, serversConfs[i]));
 
@@ -33,4 +38,3 @@ int main(int , char** argv)
 
 	return 0;
 }
-
