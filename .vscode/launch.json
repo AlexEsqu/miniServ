@@ -73,6 +73,31 @@
         }
       ]
     },
+	{
+      "name": "Debug webserv error conf",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/webserv",
+      "args": ["${workspaceFolder}/confs/error.conf"],
+      "stopAtEntry": true,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "preLaunchTask": "build debug",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ]
+    },
     {
       "name": "Debug Verbose",
       "type": "cppdbg",
