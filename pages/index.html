@@ -1,104 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Webserv</title>
-    <link href="./styles.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
-    <script src="./app.js" defer></script>
-  </head>
-  <body>
-    <div class="window">
-      <div class="title-bar">
-        <div class="title-bar-text">Webserv</div>
-      </div>
-
-      <div class="window-body">
-        <p>Hello, world! Here is our little website!</p>
-      </div>
-    </div>
-    <div class="window">
-      <div class="title-bar">
-        <div class="title-bar-text">A little presentation of us!</div>
-        <div class="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Maximize"></button>
-          <button aria-label="Close"></button>
-        </div>
-      </div>
-      <div class="window-body">
-        <menu role="tablist">
-          <button
-            aria-selected="true"
-            class="tablist-button"
-            id="tablist-button-alex"
-            aria-controls="alex-article"
-          >
-            Alex
-          </button>
-          <button
-            aria-selected="false"
-            class="tablist-button"
-            id="tablist-button-elvire"
-            aria-controls="elvire-article"
-          >
-            Elvire
-          </button>
-          <button
-            aria-selected="false"
-            class="tablist-button"
-            id="tablist-button-add-yourself"
-            aria-controls="add-yourself-article"
-          >
-            Add Yourself
-          </button>
-        </menu>
-        <article role="tabpanel" class="presentation-article" id="alex-article">
-          <img style="width: 100%" src="./img/Alex.webp" />
-          <p>hello my name is alex</p>
-        </article>
-
-        <article
-          role="tabpanel"
-          hidden="hidden"
-          class="presentation-article"
-          id="elvire-article"
-        >
-          <img style="width: 100%" src="./img/Elvire.webp" />
-          <p>hello my name is Elvire</p>
-        </article>
-        <article
-          role="tabpanel"
-          hidden="hidden"
-          class="presentation-article"
-          id="add-yourself-article"
-        >
-
-          <div class="field-row">
-            <form method="post" action="upload/" id="form">
-				<div class="field-row-stacked" >
-                <label for="user-name">Name</label>
-                <input id="user-name" type="text" />
-              </div>
-              <div class="field-row-stacked" >
-                <label for="user-picture">Submit your picture</label>
-                <input id="user-picture" type="file" accept="image/*" />
-              </div>
-              <div class="field-row-stacked" ">
-                <label for="user-description">Description</label>
-  				<textarea id="user-description"placeholder="Describe yourself"></textarea>              
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Webserv</title>
+		<link href="./styles.css" rel="stylesheet" />
+		<link rel="stylesheet" href="https://unpkg.com/xp.css" />
+		<script src="./app.js" defer></script>
+	</head>
+	<body>
+		<div class="window">
+			<div class="title-bar">
+				<div class="title-bar-text">Command Prompt</div>
 			</div>
-            </form>
-          </div>
-		  
-        </article>
-        <section id ="form-buttons" class="field-row">
-          <button type="submit" form="form" id="form-button-ok">OK</button>
-          <button type="reset" form="form" id="form-button-cancel">Cancel</button>
-        </section>
-      </div>
-    </div>
-    <footer></footer>
-  </body>
+			<div class="window-body">
+				<pre>➜  Usage : ./webserv configuration_file.conf</pre>
+			</div>
+		</div>
+
+		<div class="window" id="presentation-window">
+			<div class="title-bar">
+				<div class="title-bar-text">A little presentation of us!</div>
+				<div class="title-bar-controls">
+					<button class="Close" aria-label="Close"></button>
+				</div>
+			</div>
+			<div class="window-body">
+				<menu role="tablist">
+					<button aria-selected="true" class="tablist-button" id="tablist-button-alex" aria-controls="alex-article">Alex</button>
+					<button aria-selected="false" class="tablist-button" id="tablist-button-elvire" aria-controls="elvire-article">Elvire</button>
+					<button aria-selected="false" class="tablist-button" id="tablist-button-add-yourself" aria-controls="add-yourself-article">Add Yourself</button>
+				</menu>
+				<article role="tabpanel" class="presentation-article" id="alex-article">
+					<img style="width: 100%" src="./img/Alex.webp" />
+					<p>hello my name is alex</p>
+				</article>
+
+				<article role="tabpanel" hidden="hidden" class="presentation-article" id="elvire-article">
+					<img style="width: 100%" src="./img/Elvire.webp" />
+					<p>hello my name is Elvire</p>
+				</article>
+
+				<article role="tabpanel" hidden="hidden" class="presentation-article" id="add-yourself-article">
+					<div class="field-row">
+						<form method="post" action="upload/" id="form">
+							<div class="field-row-stacked">
+								<label for="user-name">Name</label>
+								<input id="user-name" type="text" />
+							</div>
+							<div class="field-row-stacked">
+								<label for="user-picture">Submit your picture</label>
+								<input id="user-picture" type="file" accept="image/*" />
+							</div>
+							<div class="field-row-stacked">
+								<label for="user-description">Description</label>
+								<textarea id="user-description" placeholder="Describe yourself"></textarea>
+							</div>
+						</form>
+					</div>
+				</article>
+				<section id="form-buttons" class="field-row">
+					<button type="submit" form="form" id="form-button-ok">OK</button>
+					<button type="reset" form="form" id="form-button-cancel">Cancel</button>
+				</section>
+			</div>
+		</div>
+		<div
+			class="window"
+			id="article-window-1">
+			<div class="title-bar">
+				<div class="title-bar-text">Article</div>
+				<div class="title-bar-controls">
+					<button class="Close" aria-label="Close"></button>
+				</div>
+			</div>
+			<div class="window-body">
+				<p>
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce quis metus metus. Nam at accumsan ex, ut varius mi. Duis eget sem consectetur ipsum fringilla dictum.
+					Vestibulum commodo venenatis lorem, cursus pellentesque risus efficitur id. In justo ex, efficitur id tincidunt ut, suscipit vel felis. Quisque dapibus non nisi tincidunt
+					pretium. Donec vel nunc ac turpis scelerisque porta. Morbi egestas lectus tempus, condimentum lectus non, egestas risus. Quisque id purus ultricies, eleifend urna eget,
+					ullamcorper lectus. Phasellus id nulla risus. Phasellus ultricies justo eget mauris tempor, non eleifend neque venenatis. Nulla mattis diam vitae arcu auctor, eget
+					suscipit justo egestas. In maximus orci viverra bibendum sollicitudin. Nulla felis arcu, fringilla in hendrerit quis, sodales a nulla. Phasellus ac maximus dolor.
+					Pellentesque pellentesque ex vel tellus venenatis tristique. Sed a tellus blandit, posuere mi eu, faucibus nunc. Suspendisse ligula tellus, vestibulum porta condimentum
+					eget, consequat nec justo. Aliquam erat volutpat. Cras orci eros, semper quis mi at, varius euismod quam. Suspendisse gravida libero mi, id scelerisque nulla aliquet
+					vitae. In hac habitasse platea dictumst. Ut dignissim sodales est, ullamcorper lacinia turpis aliquam quis. Vivamus arcu leo, iaculis at lorem ut, laoreet egestas velit.
+					Sed laoreet sed mauris in tempus. Donec blandit pharetra ultricies. Pellentesque ac tellus felis. Aenean tristique, ipsum in mattis pellentesque, augue orci fermentum
+					neque, et tincidunt orci justo non ipsum. Nullam vulputate in mauris ut porta. Morbi velit urna, posuere ac porta sed, pretium non magna. Suspendisse euismod a ante a
+					tristique. Morbi et sem quis justo molestie consectetur. Vestibulum sollicitudin eu ligula nec convallis. Nam ac purus id diam tincidunt pharetra non nec est. Sed pretium
+					ultricies lobortis. Phasellus arcu eros, sodales vitae nulla id, euismod rutrum libero. Suspendisse vitae magna magna. Donec molestie enim in sem suscipit sodales. Mauris
+					ultrices nisi elit, eu tristique urna euismod sit amet. In vel urna sapien. Donec rutrum diam orci, sed consequat justo tempor eget. Nulla ac justo mauris. Fusce odio
+					tellus, feugiat et nunc hendrerit, aliquam fringilla dolor. Morbi aliquet lacus non metus sollicitudin pretium. Nam tempor, urna ac tempor bibendum, nibh velit
+					condimentum sapien, iaculis pretium nisl orci eu lacus. Donec id felis quis velit venenatis euismod. Nullam lacinia fringilla blandit. Aliquam erat volutpat. Phasellus
+					lacinia mattis rutrum.
+				</p>
+			</div>
+		</div>
+	</body>
+	<footer>
+		<div class="title-bar">
+			<div id="main-footer-tab">./webserv</div>
+		</div>
+	</footer>
 </html>
+<!--  -->
