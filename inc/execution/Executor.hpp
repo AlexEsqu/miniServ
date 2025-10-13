@@ -42,22 +42,22 @@ public:
 
 	// create a fork to execute file into a pipe
 
-	void			executeFile(Response& response);
+	void			executeFile(Request& request);
 
 	// create custom env using CGI to be used when executing the file
 
-	std::string	formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
-	std::string	formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
-	void		addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
-	std::vector<std::string>	generateEnvStrVec(Response& response);
+	std::string		formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
+	std::string		formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
+	void			addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
+	std::vector<std::string>	generateEnvStrVec(Request& request);
 
 	// read result from other end of pipe, put it into response content
 
-	void		readResultIntoContent(Response& response, int fd);
+	void			addResultToContent(Response &response, int fd);
 
 	//-------------- ABSTRACT FUNCTIONS --------------------//
 
-	virtual void	execFileWithFork(Response& response, const std::string& filePath, int* pipefd) = 0;
-	virtual bool	canExecuteFile(Response& response) = 0;
+	virtual void	execFileWithFork(Request& request, const std::string& filePath, int* pipefd) = 0;
+	virtual bool	canExecuteFile(const std::string& filePath) const = 0;
 
 };

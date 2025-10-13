@@ -27,6 +27,13 @@ ContentFetcher::~ContentFetcher()
 		delete *item;
 }
 
+//----------------- INTERNAL ---------------------//
+
+void	ContentFetcher::addExecutor(Executor* executor)
+{
+	executors.push_back(executor);
+}
+
 //------------------- MEMBER FUNCTIONS ------------------------//
 
 std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
@@ -69,9 +76,9 @@ bool	ContentFetcher::isDirectory(const char *path)
 	return S_ISDIR(path_stat.st_mode);
 }
 
-void	ContentFetcher::serveStatic(Response& response)
+void	ContentFetcher::serveStatic(Request& request)
 {
-	std::string			fileURL(response.getRoutedURL());
+	std::string			fileURL(request.getResponse()->getRoutedURL());
 
 	std::cout << "routed path is " << fileURL << "\n";
 
@@ -80,44 +87,54 @@ void	ContentFetcher::serveStatic(Response& response)
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
-		response.setStatusNum(404);
-		response.AddHTTPHeaders();
+		request.getResponse()->setStatusNum(404);
+		request.getResponse()->createHTTPHeaders();
 		return;
 	}
 
-	response.setContentType(getTypeBasedOnExtension(fileURL));
+	request.getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
 	size_t	size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
-	response.setContent(buffer);
+	request.getResponse()->addToContent(buffer.data());
 	std::string	result(buffer.data());
 }
 
-void ContentFetcher::executeIfCGI(Response& response)
+void ContentFetcher::getItemFromServer(Request& request)
 {
 	for (size_t i = 0; i < executors.size(); i++)
 	{
-		if(executors[i]->canExecuteFile(response))
-			return executors[i]->executeFile(response);
+		if(executors[i]->canExecuteFile(request.getResponse()->getRoutedURL()))
+			return executors[i]->executeFile(request);
 	}
 
 	std::cout << CGI_FORMAT(" NO CGI ");
-	serveStatic(response);
+	serveStatic(request);
 }
 
-void	ContentFetcher::addExecutor(Executor* executor)
+void ContentFetcher::postItemFromServer(Request& )
 {
-	executors.push_back(executor);
+
 }
 
-void	ContentFetcher::fetchPage(Request& request, Response& response)
+void ContentFetcher::deleteItemFromServer(Request& )
+{
+	std::cout << "DELETE is not yet implemented\n";
+}
+
+
+void	ContentFetcher::fillRequest(Request& request)
 {
 	if (request.getMethod() == "GET")
-		executeIfCGI(response);
+		getItemFromServer(request);
+	if (request.getMethod() == "POST")
+		postItemFromServer(request);
+	if (request.getMethod() == "DELETE")
+		deleteItemFromServer(request);
 }
 
 
-Response	ContentFetcher::createPage(Request* request)
+Response	ContentFetcher::createResponse(Request* request)
 {
 	request->setResponse(new Response);
 
@@ -127,7 +144,6 @@ Response	ContentFetcher::createPage(Request* request)
 		request->getResponse()->setRequest(request);
 		request->getResponse()->setRoutedUrl(request->getRequestedURL());
 
-		fetchPage(*request, *request->getResponse());
 	}
 
 	catch (const HTTPError& e)
@@ -136,7 +152,7 @@ Response	ContentFetcher::createPage(Request* request)
 		std::cout << e.what() << "\n";
 	}
 
-	request->getResponse()->AddHTTPHeaders();
+	request->getResponse()->createHTTPHeaders();
 
 	return (*request->getResponse());
 }

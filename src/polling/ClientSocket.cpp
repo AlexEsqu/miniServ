@@ -42,7 +42,6 @@ void	ClientSocket::resetRequest()
 {
 	delete _request;
 	_request = NULL;
-	memset(_headerBuffer, '\0', sizeof(_headerBuffer));
 }
 
 void	ClientSocket::setResponse(std::string response)

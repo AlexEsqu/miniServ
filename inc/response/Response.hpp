@@ -5,6 +5,7 @@
 #include "Request.hpp"
 #include "Status.hpp"
 #include "Route.hpp"
+#include "Buffer.hpp"
 
 class Request;
 
@@ -15,6 +16,7 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	int					_statusNum;
+
 	Request*			_request;
 
 	std::string			_routedPath;
@@ -23,10 +25,11 @@ private:
 
 	std::string			_contentType;
 	size_t				_contentLength;
-	std::string			_content;
-	std::string			_HTTPResponse;
+	std::string			_HTTPHeaders;
 
-	std::string			_responseFilePath;
+	Buffer				_responsePage;
+	size_t				_byteSent;
+
 
 public:
 
@@ -43,23 +46,26 @@ public:
 
 	//-------------------- SETTER ------------------------//
 
-	void			AddHTTPHeaders();
+	void			createHTTPHeaders();
+
 	void			setStatusNum(int number);
 	void			setContent(std::string content);
-	void			setContent(std::vector<char> content);
 	void			setRoutedUrl(std::string url);
+
 	// void			setResponse(std::string response);
+
 	void			setRequest(Request* request);
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
-	void			setBufferFilePath(std::string filePath);
 
 	//-------------------- GETTERS -----------------------//
 
-	std::string		getHTTPResponse() const ;
 	Request*		getRequest();
 	int				getStatus() const;
-	std::string		getBufferFilePath() const;
+	std::string		getHTTPHeaders() const;
+	std::string		getRoutedURL() const;
+
+	std::string		getHTTPResponseChunk(size_t size);
 
 	//------------------- OPERATORS ----------------------//
 
@@ -68,7 +74,6 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	std::string		createErrorPageContent(const Status& num);
-	std::string		getRoutedURL() const;
+	void			addToContent(std::string contentChunk);
 
-	void			testFilename();
 };

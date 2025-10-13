@@ -43,11 +43,27 @@ public:
 
 	//--------------- MEMBER FUNCTION --------------------//
 
-	void			fetchPage(Request& request, Response& response);
-	void			executeIfCGI(Response& response);
-	void			serveStatic(Response& response);
+	void			fillRequest(Request& request);
+
+	// GET method
+
+	void			getItemFromServer(Request& request);
+	void			serveStatic(Request& request);
+
+	// POST method
+
+	void			postItemFromServer(Request& request);
+
+	// DELETE method
+
+	void			deleteItemFromServer(Request& request);
+
+	// Response Writing
+
+	Response		createResponse(Request* request);
+
+	// Execution
 
 	void			addExecutor(Executor* executor);
-	Response		createPage(Request* request);
 
 };

@@ -28,9 +28,9 @@ PHPExecutor& PHPExecutor::operator=(const PHPExecutor&)
 
 //---------------- MEMBER FUNCTION -------------------//
 
-std::vector<const char*>	PHPExecutor::buildEnv(Response& response)
+std::vector<const char*>	PHPExecutor::buildEnv(Request& request)
 {
-	std::vector<std::string>	envAsStr = generateEnvStrVec(response);
+	std::vector<std::string>	envAsStr = generateEnvStrVec(request);
 
 	std::vector<const char*>	env;
 	env.reserve(envAsStr.size() + 1);
@@ -55,7 +55,7 @@ std::vector<const char*> PHPExecutor::buildArgv(const char* program, const char*
 }
 
 
-void	PHPExecutor::execFileWithFork(Response& response, const std::string& fileToExecPath, int* pipefd)
+void	PHPExecutor::execFileWithFork(Request& request, const std::string& fileToExecPath, int* pipefd)
 {
 	const char*		program = "/usr/bin/php";
 	const char*		flag = "-f";
@@ -72,7 +72,7 @@ void	PHPExecutor::execFileWithFork(Response& response, const std::string& fileTo
 
 	// assemble into an execve approved array of char*, add EOF at end
 	std::vector<const char*> argv(buildArgv(program, flag, fileToExecPath));
-	std::vector<const char*> env(buildEnv(response));
+	std::vector<const char*> env(buildEnv(request));
 
 	execve(program, (char**)argv.data(), (char**)env.data());
 
@@ -84,11 +84,11 @@ void	PHPExecutor::execFileWithFork(Response& response, const std::string& fileTo
 	exit(-1);
 }
 
-bool	PHPExecutor::canExecuteFile(Response& response)
+bool	PHPExecutor::canExecuteFile(const std::string& filePath) const
 {
 	const char*	allowedExtension = ".php";
 
-	std::size_t pos = response.getRoutedURL().find(allowedExtension);
+	std::size_t pos = filePath.find(allowedExtension);
 	if (pos == std::string::npos)
 		return false;
 	else

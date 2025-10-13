@@ -13,6 +13,7 @@ Response::Response()
 Response::Response(Request *req)
 	: _statusNum(200)
 	, _request(req)
+	, _byteSent(0)
 {
 	if (_request->getMethod() == "POST")
 		setStatusNum(201);
@@ -23,10 +24,11 @@ Response::Response(Request *req)
 Response::Response(Request *req, int status)
 	: _statusNum(status)
 	, _request(req)
+	, _byteSent(0)
 {
 	if (status >= 400)
 	{
-		AddHTTPHeaders();
+		createHTTPHeaders();
 		return;
 	}
 }
@@ -36,6 +38,8 @@ Response::Response(const Response &copy)
 	, _request(copy._request)
 	, _routedPath(copy._routedPath)
 	, _contentType(copy._contentType)
+	, _responsePage(copy._responsePage)
+	, _byteSent(copy._byteSent)
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
 }
@@ -63,8 +67,7 @@ Response&	Response::operator=(const Response &other)
 	_request			= other._request;
 	_contentType		= other._contentType;
 	_contentLength		= other._contentLength;
-	_content			= other._content;
-	_HTTPResponse		= other._HTTPResponse;
+	_responsePage		= other._responsePage;
 	return (*this);
 }
 
@@ -89,12 +92,8 @@ void	Response::setContentLength(int length)
 
 void	Response::setContent(std::string content)
 {
-	_content = content;
-}
-
-void	Response::setContent(std::vector<char> content)
-{
-	_content = std::string(content.begin(), content.end());
+	_responsePage.clearBuffer();
+	_responsePage.writeToBuffer(content);
 }
 
 void	Response::setRequest(Request* request)
@@ -112,19 +111,10 @@ void	Response::setRoutedUrl(std::string url)
 	std::cout << GREEN << _routedPath << STOP_COLOR;
 }
 
-void	Response::setBufferFilePath(std::string filePath)
-{
-	_responseFilePath = filePath;
-}
-
 ///////////////////////////////////////////////////////////////////
 ///                    GETTERS 			                         //
 ///////////////////////////////////////////////////////////////////
 
-std::string Response::getHTTPResponse() const
-{
-	return (this->_HTTPResponse);
-}
 
 Request *Response::getRequest()
 {
@@ -141,21 +131,49 @@ int			Response::getStatus() const
 	return (_statusNum);
 }
 
-std::string Response::getBufferFilePath() const
+std::string	Response::getHTTPHeaders() const
 {
-	return (_responseFilePath);
+	return (_HTTPHeaders);
+}
+
+std::string Response::getHTTPResponseChunk(size_t size)
+{
+	std::string result;
+	result.reserve(size);
+
+	if (_byteSent < _HTTPHeaders.size()) {
+		size_t headerBytesRemaining = _HTTPHeaders.size() - _byteSent;
+		size_t headerBytesToSend = std::min(size, headerBytesRemaining);
+
+		result.append(_HTTPHeaders.substr(_byteSent, headerBytesToSend));
+		_byteSent += headerBytesToSend;
+		size -= headerBytesToSend;
+	}
+
+	if (size > 0 && _byteSent >= _HTTPHeaders.size()) {
+		size_t bodyOffset = _byteSent - _HTTPHeaders.size();
+		char	buffer[bodyOffset];
+
+		_responsePage.readFromBuffer(buffer, size);
+		result.append(buffer);
+		_byteSent += result.size();
+	}
+
+	return result;
+
 }
 
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////
 
-void Response::AddHTTPHeaders()
+void Response::createHTTPHeaders()
 {
 	Status status(this->_statusNum);
 	if (status.getStatusCode() >= 400) // if its an error
-		this->_content = createErrorPageContent(status);
-	this->_contentLength = this->_content.size();
+		setContent(createErrorPageContent(status));
+
+	this->_contentLength = _responsePage.getBufferSize();
 
 	std::stringstream	header;
 	header << _request->getProtocol() << " " << status << "\r\n"
@@ -173,7 +191,7 @@ void Response::AddHTTPHeaders()
 
 	header << "\r\n";
 
-	this->_HTTPResponse = header.str() + _content;
+	_HTTPHeaders = header.str();
 }
 
 std::string Response::createErrorPageContent(const Status &num)
@@ -203,4 +221,9 @@ std::string Response::createErrorPageContent(const Status &num)
 	}
 	inputErrorFile.close();
 	return (outputString.str());
+}
+
+void		Response::addToContent(std::string contentChunk)
+{
+	_responsePage.writeToBuffer(contentChunk);
 }

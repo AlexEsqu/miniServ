@@ -32,7 +32,7 @@ Executor::~Executor()
 
 //---------------- MEMBER FUNCTION -------------------//
 
-void	Executor::readResultIntoContent(Response& response, int fd)
+void	Executor::addResultToContent(Response &response, int fd)
 {
 	std::string	s = "";
 
@@ -46,18 +46,18 @@ void	Executor::readResultIntoContent(Response& response, int fd)
 	// 	std::cout << "Pipe read was : [" << s << "]\n";
 	// #endif
 
-	response.setContent(s);
+	response.addToContent(s);
 }
 
-std::vector<std::string>	Executor::generateEnvStrVec(Response& response)
+std::vector<std::string>	Executor::generateEnvStrVec(Request& request)
 {
 	std::vector<std::string>	envAsStrVec;
 
-	addCGIEnvironment(envAsStrVec, *(response.getRequest()));
+	addCGIEnvironment(envAsStrVec, request);
 
 	std::map<std::string, std::string>::const_iterator item;
-	for (item = response.getRequest()->getAdditionalHeaderInfo().begin();
-		item != response.getRequest()->getAdditionalHeaderInfo().end(); item++)
+	for (item = request.getAdditionalHeaderInfo().begin();
+		item != request.getAdditionalHeaderInfo().end(); item++)
 	{
 		envAsStrVec.push_back(formatAsHTTPVariable(item->first, item->second));
 	}
@@ -115,7 +115,7 @@ void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Req
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
 }
 
-void	Executor::executeFile(Response& response)
+void	Executor::executeFile(Request& request)
 {
 	int	fork_pid;
 	int	pipefd[2];
@@ -128,11 +128,11 @@ void	Executor::executeFile(Response& response)
 		return;
 
 	if (fork_pid == 0)
-		execFileWithFork(response, response.getRoutedURL(), pipefd);
+		execFileWithFork(request, request.getResponse()->getRoutedURL(), pipefd);
 
 	else {
 		close(pipefd[WRITE]);
-		readResultIntoContent(response, pipefd[READ]);
+		addResultToContent(*(request.getResponse()), pipefd[READ]);
 		close(pipefd[READ]);
 	}
 

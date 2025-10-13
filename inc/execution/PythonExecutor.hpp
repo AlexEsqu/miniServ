@@ -7,8 +7,8 @@ class PythonExecutor : public Executor
 private:
 
 	std::vector<const char*>	buildArgv(const char* program, const std::string& filePath);
-	std::vector<const char*>	buildEnv(Response& response);
-	void	execFileWithFork(Response& response, const std::string& filePath, int* pipefd);
+	std::vector<const char*>	buildEnv(Request& request);
+	void						execFileWithFork(Request& request, const std::string& filePath, int* pipefd);
 
 public:
 
@@ -26,7 +26,7 @@ public:
 	PythonExecutor&	operator=(const PythonExecutor&);
 
 	//--------------- MEMBER FUNCTION --------------------//
-	
-	bool	canExecuteFile(Response& response);
+
+	bool	canExecuteFile(const std::string& filePath) const;
 
 };
