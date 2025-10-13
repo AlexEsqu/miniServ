@@ -42,3 +42,74 @@ Array.from(crossButttons).forEach((button) => {
 Array.from(tablistButtons).forEach((button) => {
 	button.addEventListener("click", (e) => tablistHandler(e));
 });
+
+// drag and drop
+// const draggable = document.getElementById('presentation-window');
+// const windows = document.getElementByClassname('window');
+
+// let offsetX, offsetY;
+
+// draggable.addEventListener('mousedown', (e) => {
+
+//     // Calculate the offset position
+//     offsetX = e.clientX - draggable.getBoundingClientRect().left;
+//     offsetY = e.clientY - draggable.getBoundingClientRect().top;
+
+//     // Add event listeners to the document for mousemove and mouseup
+//     document.addEventListener('mousemove', mouseMoveHandler);
+//     document.addEventListener('mouseup', mouseUpHandler);
+// });
+
+// function mouseMoveHandler(e) {
+//     // Update the position of the draggable element
+//     draggable.style.left = `${e.clientX - offsetX}px`;
+//     draggable.style.top = `${e.clientY - offsetY}px`;
+//     draggable.style.position = 'absolute'; // Set position to absolute
+// }
+
+// function mouseUpHandler() {
+//     // Remove event listeners when mouse is released
+//     document.removeEventListener('mousemove', mouseMoveHandler);
+//     document.removeEventListener('mouseup', mouseUpHandler);
+// }
+
+const windows = document.getElementsByClassName("window");
+
+let offsetX,
+	offsetY,
+	activeWindow = null;
+
+for (let w of windows) {
+	w.addEventListener("mousedown", (e) => {
+		activeWindow = w;
+
+		// Bring the active window to front (optional)
+		activeWindow.style.zIndex = 1000;
+
+		// Calculate offset between cursor and window top-left corner
+		offsetX = e.clientX - activeWindow.getBoundingClientRect().left;
+		offsetY = e.clientY - activeWindow.getBoundingClientRect().top;
+
+		// Add global listeners
+		document.addEventListener("mousemove", mouseMoveHandler);
+		document.addEventListener("mouseup", mouseUpHandler);
+	});
+}
+
+function mouseMoveHandler(e) {
+	if (!activeWindow) return;
+	activeWindow.style.position = "absolute";
+	activeWindow.style.left = `${e.clientX - offsetX}px`;
+	activeWindow.style.top = `${e.clientY - offsetY}px`;
+}
+
+function mouseUpHandler() {
+	if (!activeWindow) return;
+
+	// Optional: reset z-index if desired
+	activeWindow.style.zIndex = "";
+
+	activeWindow = null;
+	document.removeEventListener("mousemove", mouseMoveHandler);
+	document.removeEventListener("mouseup", mouseUpHandler);
+}
