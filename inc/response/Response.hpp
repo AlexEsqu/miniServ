@@ -21,8 +21,6 @@ private:
 
 	std::string			_routedPath;
 
-	int					_CGI;
-
 	std::string			_contentType;
 	size_t				_contentLength;
 	std::string			_HTTPHeaders;
@@ -65,7 +63,7 @@ public:
 	std::string		getHTTPHeaders() const;
 	std::string		getRoutedURL() const;
 
-	std::string		getHTTPResponseChunk(size_t size);
+	std::string		getHTTPResponse();
 
 	//------------------- OPERATORS ----------------------//
 

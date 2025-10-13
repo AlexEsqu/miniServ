@@ -136,31 +136,18 @@ std::string	Response::getHTTPHeaders() const
 	return (_HTTPHeaders);
 }
 
-std::string Response::getHTTPResponseChunk(size_t size)
+std::string Response::getHTTPResponse()
 {
 	std::string result;
-	result.reserve(size);
 
-	if (_byteSent < _HTTPHeaders.size()) {
-		size_t headerBytesRemaining = _HTTPHeaders.size() - _byteSent;
-		size_t headerBytesToSend = std::min(size, headerBytesRemaining);
+	result.append(_HTTPHeaders);
 
-		result.append(_HTTPHeaders.substr(_byteSent, headerBytesToSend));
-		_byteSent += headerBytesToSend;
-		size -= headerBytesToSend;
-	}
-
-	if (size > 0 && _byteSent >= _HTTPHeaders.size()) {
-		size_t bodyOffset = _byteSent - _HTTPHeaders.size();
-		char	buffer[bodyOffset];
-
-		_responsePage.readFromBuffer(buffer, size);
-		result.append(buffer);
-		_byteSent += result.size();
-	}
+	char	buffer[_responsePage.getBufferSize()];
+	_responsePage.readFromBuffer(buffer, _responsePage.getBufferSize());
+	result.append(buffer);
+	_byteSent += result.size();
 
 	return result;
-
 }
 
 ///////////////////////////////////////////////////////////////////

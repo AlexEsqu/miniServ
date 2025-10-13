@@ -10,7 +10,7 @@ Request::Request(const ServerConf& conf, std::string requestChunk)
 	, _conf(conf)
 	, _route(NULL)
 	, _status(200)
-	, _parsingState(PARSING_REQUEST_LINE)
+	, _requestState(PARSING_REQUEST_LINE)
 {
 	addRequestChunk(requestChunk);
 }
@@ -81,7 +81,7 @@ const Status&		Request::getStatus() const
 
 int					Request::getParsingState() const
 {
-	return _parsingState;
+	return _requestState;
 }
 
 const Route*		Request::getRoute() const
@@ -126,6 +126,11 @@ void	Request::setRoute(const Route* route)
 void			Request::setResponse(Response* response)
 {
 	_response = response;
+}
+
+void			Request::setParsingState(e_requestState requestState)
+{
+	_requestState = requestState;
 }
 
 // Valid request line (1st line of a HTTP request) must have the format:
@@ -180,7 +185,7 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	chunk.erase(0, lineEnd);
 
 	// set parsing state to the next step
-	_parsingState = PARSING_HEADERS;
+	_requestState = PARSING_HEADERS;
 
 	// indicate the request line has been received in full
 	return RECEIVED_ALL;
@@ -232,7 +237,7 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 	// else if (!_contentLength && chunk.find("\r\n\r\n") == std::string::npos)
 	// 	return WAITING_FOR_MORE;
 
-	_parsingState = PARSING_DONE;
+	_requestState = PARSING_DONE;
 
 	return RECEIVED_ALL;
 }
@@ -261,7 +266,7 @@ e_dataProgress Request::parseChunkedBody(std::string& chunk)
 			if (_unparsedHeaderBuffer.size() < offset + 2)
 				return WAITING_FOR_MORE;
 			offset += 2; // skips final CRLF
-			_parsingState = PARSING_DONE;
+			_requestState = PARSING_DONE;
 			return RECEIVED_ALL;
 		}
 
@@ -294,7 +299,7 @@ e_dataProgress		Request::parseChunkedBody(std::istream& in)
 
 		// if the chunk size is zero, chunked parsing is done, returning
 		if (chunkSize == 0) {
-			_parsingState = PARSING_DONE;
+			_requestState = PARSING_DONE;
 			return RECEIVED_ALL;
 		}
 
@@ -321,9 +326,9 @@ e_dataProgress		Request::parseChunkedBody(std::istream& in)
 // and returns if the current parsed item (header, body...) is not finished
 void	Request::addRequestChunk(std::string chunk)
 {
-	while (_parsingState != PARSING_DONE)
+	while (_requestState != PARSING_DONE)
 	{
-		switch (_parsingState)
+		switch (_requestState)
 		{
 			case PARSING_REQUEST_LINE:
 			{
@@ -362,19 +367,19 @@ void	Request::addRequestChunk(std::string chunk)
 void				Request::setIfParsingBody()
 {
 	if (_method == "HEAD" || _method == "GET")
-		_parsingState = PARSING_DONE;
+		_requestState = PARSING_DONE;
 	if (_requestHeaderMap.find("Transfer-Encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["Transfer-Encoding"] == "chunked")
 	{
-		_parsingState = PARSING_BODY_CHUNKED;
+		_requestState = PARSING_BODY_CHUNKED;
 	}
 	else if (_requestHeaderMap.find("Content-Length") != _requestHeaderMap.end())
 	{
 		_contentLength = atoi(_requestHeaderMap["Content-Length"].c_str());
-		_parsingState = PARSING_BODY;
+		_requestState = PARSING_BODY;
 	}
 	else
-		_parsingState = PARSING_DONE;
+		_requestState = PARSING_DONE;
 }
 
 // Matching route is required at the parsing stage to know if a request is using a valid method

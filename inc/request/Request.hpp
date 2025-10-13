@@ -11,14 +11,16 @@
 #include "Status.hpp"
 #include "Buffer.hpp"
 
-enum e_parseState {
+enum e_requestState {
 	PARSING_REQUEST_LINE,
 	PARSING_HEADERS,
 	PARSING_BODY,
 	PARSING_BODY_CHUNKED,
 	PARSING_DONE,
-	FETCHING_ONGOING,
-	FETCHING_DONE
+	FILLING_ONGOING,
+	FILLING_DONE,
+	SENDING_ONGOING,
+	SENDING_DONE
 };
 
 enum e_methods
@@ -26,6 +28,7 @@ enum e_methods
 	GET,
 	HEAD,
 	POST,
+	PUT,
 	DELETE,
 	UNSUPPORTED
 };
@@ -62,7 +65,7 @@ private:
 	size_t						_contentLength;
 	Status						_status;
 
-	e_parseState				_parsingState;
+	e_requestState				_requestState;
 
 	Buffer 						_requestBodyBuffer;
 
@@ -93,6 +96,7 @@ public:
 	void				setIfParsingBody();
 	void				setRoute(const Route* route);
 	void				setResponse(Response* response);
+	void				setParsingState(e_requestState requestState);
 
 	//-------------------- GETTERS -----------------------//
 

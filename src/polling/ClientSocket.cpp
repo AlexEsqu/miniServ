@@ -160,8 +160,8 @@ void	ClientSocket::readRequest()
 
 void ClientSocket::sendResponse()
 {
-	if (_response.empty())
-		return;
+
+	_response = _request->getResponse()->getHTTPResponse();
 
 	size_t totalToSend = _response.length();
 	size_t totalSent = 0;

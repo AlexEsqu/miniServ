@@ -24,8 +24,7 @@ private:
 	std::string			_fullHeader;
 	Request*			_request;
 	std::string			_response;
-	std::string			_bufferRequestFilePath;
-	std::string			_bufferResponseFilePath;
+
 	size_t				_headerSize;
 
 public:

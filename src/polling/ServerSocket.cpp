@@ -113,8 +113,10 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 			if (connecting->getRequest() && connecting->getRequest()->getParsingState() == PARSING_DONE)
 			{
 				_cf->fillRequest(*(connecting->getRequest()));
-				// TO DO : First execute CGI / get page, only once fully gotten can create response
-				connecting->setResponse(connecting->getRequest()->getResponse()->getHTTPResponse());
+			}
+
+			if (connecting->getRequest() && connecting->getRequest()->getParsingState() == FILLING_DONE)
+			{
 				connecting->setEpollEventsMask(EPOLLOUT | EPOLLERR);
 				_poller.updateSocketEvent(connecting);
 			}
@@ -140,20 +142,22 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 	else if (event.events & EPOLLOUT)
 	{
 		// if request is complete, fetch content and wrap in HTTP header
-		if (connecting->getRequest() &&
-			(connecting->getRequest()->getParsingState() == PARSING_DONE
-				|| connecting->getRequest()->getStatus().getStatusCode() >= 400))
+		if (connecting->getRequest() && connecting->getRequest()->getParsingState() == FILLING_DONE)
 		{
 			connecting->sendResponse();
 
-			if (connecting->getRequest()->isKeepAlive())
+			if (connecting->getRequest()->getParsingState() == SENDING_DONE)
 			{
-				connecting->resetRequest();
-				connecting->setEpollEventsMask(EPOLLIN | EPOLLERR);
-				_poller.updateSocketEvent(connecting);
+				if (connecting->getRequest()->isKeepAlive())
+				{
+					connecting->resetRequest();
+					connecting->setEpollEventsMask(EPOLLIN | EPOLLERR);
+					_poller.updateSocketEvent(connecting);
+				}
+				else
+					removeConnection(connecting);
 			}
-			else
-				removeConnection(connecting);
+
 		}
 	}
 

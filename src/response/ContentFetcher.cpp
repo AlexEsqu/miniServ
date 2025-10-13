@@ -102,6 +102,7 @@ void	ContentFetcher::serveStatic(Request& request)
 
 void ContentFetcher::getItemFromServer(Request& request)
 {
+
 	for (size_t i = 0; i < executors.size(); i++)
 	{
 		if(executors[i]->canExecuteFile(request.getResponse()->getRoutedURL()))
@@ -143,7 +144,6 @@ Response	ContentFetcher::createResponse(Request* request)
 		request->getResponse()->setStatusNum(request->getStatus().getStatusCode());
 		request->getResponse()->setRequest(request);
 		request->getResponse()->setRoutedUrl(request->getRequestedURL());
-
 	}
 
 	catch (const HTTPError& e)
