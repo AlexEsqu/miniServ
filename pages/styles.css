@@ -1,59 +1,61 @@
 body {
-  background-image: url("img/big-yoshi-wallpaper.png");
-  background-size: cover;
-  font-family: "Comic Sans";
-  margin: 0;
-  height: 100%;
+	background-image: url("img/big-yoshi-wallpaper.png");
+	background-size: cover;
+	font-family: "Comic Sans";
+	margin: 0;
+	height: 100%;
+	display: flex;
 }
 
 .window {
-  margin: 32px;
-  width: 500px;
+	margin: 32px;
 }
 
 footer {
-  font-family: Trebuchet MS;
-  background: linear-gradient(
-    180deg,
-    #0997ff,
-    #0053ee 8%,
-    #0050ee 40%,
-    #06f 88%,
-    #06f 93%,
-    #005bff 95%,
-    #003dd7 96%,
-    #003dd7
-  );
-  padding: 3px 5px 3px 3px;
-  border-top: 1px solid #0831d9;
-  border-left: 1px solid #0831d9;
-  border-right: 1px solid #001ea0;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 7px;
-  font-size: 13px;
-  text-shadow: 1px 1px #0f1089;
-  height: 21px;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+	font-family: Trebuchet MS;
+	background: linear-gradient(180deg, #0997ff, #0053ee 8%, #0050ee 40%, #06f 88%, #06f 93%, #005bff 95%, #003dd7 96%, #003dd7);
+	padding: 3px 5px 3px 3px;
+	border-top: 1px solid #0831d9;
+	border-left: 1px solid #0831d9;
+	border-right: 1px solid #001ea0;
+	border-top-left-radius: 8px;
+	border-top-right-radius: 7px;
+	font-size: 13px;
+	text-shadow: 1px 1px #0f1089;
+	height: 21px;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }
 
 article img {
-  width: 100%;
+	width: 100%;
 }
 
 .field-row-stacked {
-  width: 200px;
+	width: 200px;
 }
 
 textarea {
-  resize: none;
+	resize: none;
 }
 form div {
 	padding: 6px 0;
 }
 #form-buttons {
-  justify-content: flex-end;
-  display: none;
+	justify-content: flex-end;
+	display: none;
 }
+
+.left {
+	width: 45%;
+}
+.right {
+	width: 55%;
+}
+
+.left .window {
+	width: 80%;
+}
+
