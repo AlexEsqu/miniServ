@@ -77,15 +77,18 @@ const windows = document.getElementsByClassName("window");
 
 let offsetX,
 	offsetY,
-	activeWindow = null;
+	activeWindow = null,
+	i = 1;
 
 for (let w of windows) {
 	w.addEventListener("mousedown", (e) => {
 		activeWindow = w;
 
 		// Bring the active window to front (optional)
-		activeWindow.style.zIndex = 1000;
-
+		activeWindow.style.zIndex = 10 + i;
+		Array.from(activeWindow.getElementsByTagName("*")).forEach((child) => {
+			child.style.zIndex = 10 + i;
+		});
 		// Calculate offset between cursor and window top-left corner
 		offsetX = e.clientX - activeWindow.getBoundingClientRect().left;
 		offsetY = e.clientY - activeWindow.getBoundingClientRect().top;
@@ -93,6 +96,7 @@ for (let w of windows) {
 		// Add global listeners
 		document.addEventListener("mousemove", mouseMoveHandler);
 		document.addEventListener("mouseup", mouseUpHandler);
+		i++;
 	});
 }
 
@@ -107,7 +111,6 @@ function mouseUpHandler() {
 	if (!activeWindow) return;
 
 	// Optional: reset z-index if desired
-	activeWindow.style.zIndex = "";
 
 	activeWindow = null;
 	document.removeEventListener("mousemove", mouseMoveHandler);
