@@ -8,8 +8,21 @@ FileHandler::FileHandler()
 	, _isInitialized(false)
 	, _isWriting(false)
 	, _isReading(false)
+	, _isPermanent(false)
 {
 }
+
+// constructor for permanent files
+FileHandler::FileHandler(const std::string& filePath)
+	: _filePath(filePath)
+	, _totalSize(0)
+	, _isInitialized(false)
+	, _isWriting(false)
+	, _isReading(false)
+	, _isPermanent(true)
+{
+}
+
 
 FileHandler::FileHandler(const FileHandler& original)
 	: _filePath(original._filePath)
@@ -17,13 +30,16 @@ FileHandler::FileHandler(const FileHandler& original)
 	, _isInitialized(original._isInitialized)
 	, _isWriting(false)
 	, _isReading(false)
-{}
+	, _isPermanent(original._isPermanent)
+{
+}
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 FileHandler::~FileHandler()
 {
-	clearFile();
+	if (!_isPermanent)
+		clearFile();
 }
 
 //----------------------------- OPERATOR -------------------------------------//
@@ -90,7 +106,8 @@ std::string FileHandler::generateTempFileName(const std::string& prefix)
 
 void	FileHandler::createFile()
 {
-	_filePath = generateTempFileName(TMP_PREFIX);
+	if (_filePath.empty())
+		_filePath = generateTempFileName(TMP_PREFIX);
 
 	createFile(_filePath);
 }

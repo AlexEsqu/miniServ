@@ -25,11 +25,14 @@ private:
 	bool			_isWriting;
 	bool			_isReading;
 
+	bool			_isPermanent;
+
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
 	FileHandler();
+	FileHandler(const std::string& filePath); // for uploads
 	FileHandler(const FileHandler& original);
 
 	//----------------- DESTRUCTOR -----------------------//

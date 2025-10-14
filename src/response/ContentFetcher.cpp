@@ -113,14 +113,16 @@ void ContentFetcher::postItemFromServer(Request& request)
 {
 	std::cout << "Processing POST request to: " << request.getResponse()->getRoutedURL() << std::endl;
 
-	if (request.getResponse()->getRoutedURL().find("upload") != std::string::npos) {
-		handleFileUpload(request);
-	} else {
-		handleFormSubmission(request);
-	}
+	handleFileUpload(request);
+
+	// if (request.getResponse()->getRoutedURL().find("upload") != std::string::npos) {
+	// 	handleFileUpload(request);
+	// } else {
+	// 	handleFormSubmission(request);
+	// }
 }
 
-void ContentFetcher::handleFormSubmission(Request& request)
+void	ContentFetcher::handleFormSubmission(Request& request)
 {
 	std::string postData = request.getBody();
 
@@ -138,8 +140,12 @@ void ContentFetcher::handleFormSubmission(Request& request)
 	request.getResponse()->setStatusNum(200);
 }
 
-void ContentFetcher::handleFileUpload(Request& request)
+void	ContentFetcher::handleFileUpload(Request& request)
 {
+	FileHandler	upload("pages/uploads/beep");
+
+	upload.writeToFile(request.getBody());
+
 	std::string uploadResponse =
 		"<!DOCTYPE html>"
 		"<html><head><title>Upload Complete</title></head>"
@@ -151,7 +157,7 @@ void ContentFetcher::handleFileUpload(Request& request)
 	request.getResponse()->setStatusNum(201);
 }
 
-void ContentFetcher::deleteItemFromServer(Request& )
+void	ContentFetcher::deleteItemFromServer(Request& )
 {
 	std::cout << "DELETE is not yet implemented\n";
 }
