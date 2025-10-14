@@ -20,7 +20,7 @@ content-type: text/plain
 
 ###
 
-POST http://localhost:8080/beep.txt
+POST http://localhost:8080/beep2.txt
 content-type: plain/text
 
 {
