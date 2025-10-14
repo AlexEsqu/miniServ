@@ -176,8 +176,9 @@ void Response::createHTTPHeaders()
 {
 	Status status(this->_statusNum);
 	if (status.getStatusCode() >= 400) // if its an error
-		this->_content = fetchErrorPageContent(status);
-	this->_contentLength = this->_content.size();
+		setContent(fetchErrorPageContent(status));
+
+	this->_contentLength = _responsePage.getBufferSize();
 
 	std::stringstream header;
 	header << _request->getProtocol() << " " << status << "\r\n"
@@ -195,31 +196,7 @@ void Response::createHTTPHeaders()
 
 	header << "\r\n";
 
-	this->_HTTPResponse = header.str() + _content;
-}
-
-///////////////////////////////////////////////////////////////////
-///                    GETTERS 			                         //
-///////////////////////////////////////////////////////////////////
-
-std::string Response::getHTTPResponse() const
-{
-	return (this->_HTTPResponse);
-}
-
-Request *Response::getRequest()
-{
-	return (_request);
-}
-
-std::string Response::getRoutedURL() const
-{
-	return (_routedPath);
-}
-
-int Response::getStatus() const
-{
-	return (_statusNum);
+	_HTTPHeaders = header.str();
 }
 
 std::string Response::createErrorPageContent(const Status &num)
@@ -279,6 +256,5 @@ std::string Response::fetchErrorPageContent(const Status &num)
 	while (getline(inputErrorFile, line))
 		outputString << line;
 	inputErrorFile.close();
-
 	return (outputString.str());
 }

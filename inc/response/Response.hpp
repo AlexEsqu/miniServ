@@ -69,12 +69,8 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	std::string createErrorPageContent(const Status &num);
-	std::string fetchErrorPageContent(const Status &num);
-
-	std::string getRoutedURL() const;
-	void testFilename();
-	std::string		createErrorPageContent(const Status& num);
+	std::string		createErrorPageContent(const Status &num);
+	std::string		fetchErrorPageContent(const Status &num);
 	void			addToContent(std::string contentChunk);
 
 };
