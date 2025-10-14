@@ -4,7 +4,6 @@
 
 ContentFetcher::ContentFetcher()
 {
-
 }
 
 ContentFetcher::ContentFetcher(const ContentFetcher &original)
@@ -12,7 +11,7 @@ ContentFetcher::ContentFetcher(const ContentFetcher &original)
 	*this = original;
 }
 
-ContentFetcher& ContentFetcher::operator=(const ContentFetcher &original)
+ContentFetcher &ContentFetcher::operator=(const ContentFetcher &original)
 {
 	if (this != &original)
 		executors = original.executors;
@@ -23,7 +22,7 @@ ContentFetcher& ContentFetcher::operator=(const ContentFetcher &original)
 
 ContentFetcher::~ContentFetcher()
 {
-	for (std::vector<Executor*>::iterator item = executors.begin(); item != executors.end(); item++)
+	for (std::vector<Executor *>::iterator item = executors.begin(); item != executors.end(); item++)
 		delete *item;
 }
 
@@ -36,7 +35,7 @@ void	ContentFetcher::addExecutor(Executor* executor)
 
 //------------------- MEMBER FUNCTIONS ------------------------//
 
-std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
+std::string ContentFetcher::getTypeBasedOnExtension(const std::string &filePath)
 {
 	size_t dotPos = filePath.find_last_of('.');
 	if (dotPos == std::string::npos)
@@ -45,30 +44,45 @@ std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
 	std::string extension = filePath.substr(dotPos + 1);
 
 	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-	if (extension == "html" || extension == "htm") return "text/html";
-	if (extension == "css") return "text/css";
-	if (extension == "js") return "application/javascript";
-	if (extension == "jpg" || extension == "jpeg") return "image/jpeg";
-	if (extension == "png") return "image/png";
-	if (extension == "gif") return "image/gif";
-	if (extension == "svg") return "image/svg+xml";
-	if (extension == "ico") return "image/x-icon";
-	if (extension == "txt") return "text/plain";
-	if (extension == "pdf") return "application/pdf";
-	if (extension == "webp") return "image/webp";
+	if (extension == "html" || extension == "htm")
+		return "text/html";
+	if (extension == "css")
+		return "text/css";
+	if (extension == "js")
+		return "application/javascript";
+	if (extension == "jpg" || extension == "jpeg")
+		return "image/jpeg";
+	if (extension == "png")
+		return "image/png";
+	if (extension == "gif")
+		return "image/gif";
+	if (extension == "svg")
+		return "image/svg+xml";
+	if (extension == "ico")
+		return "image/x-icon";
+	if (extension == "txt")
+		return "text/plain";
+	if (extension == "pdf")
+		return "application/pdf";
+	if (extension == "webp")
+		return "image/webp";
+	if (extension == "png")
+		return "image/png";
 
 	return "text/plain";
 }
 
-size_t	ContentFetcher::getSizeOfFile(const std::string& filename) {
+size_t ContentFetcher::getSizeOfFile(const std::string &filename)
+{
 	struct stat st;
-	if(stat(filename.c_str(), &st) != 0) {
+	if (stat(filename.c_str(), &st) != 0)
+	{
 		return 0;
 	}
 	return st.st_size;
 }
 
-bool	ContentFetcher::isDirectory(const char *path)
+bool ContentFetcher::isDirectory(const char *path)
 {
 	struct stat path_stat;
 	stat(path, &path_stat);
@@ -79,7 +93,7 @@ void	ContentFetcher::serveStatic(Request& request)
 {
 	std::string			fileURL(request.getResponse()->getRoutedURL());
 
-	std::ifstream		input(fileURL.c_str(), std::ios::binary);
+	std::ifstream input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
@@ -192,7 +206,7 @@ Response	ContentFetcher::createResponseToFill(Request* request)
 		request->getResponse()->setRoutedUrl(request->getRequestedURL());
 	}
 
-	catch (const HTTPError& e)
+	catch (const HTTPError &e)
 	{
 		std::cout << "error in fetcher\n";
 		std::cout << e.what() << "\n";

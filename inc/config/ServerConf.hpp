@@ -30,7 +30,7 @@ public:
 	//----------------- CONSTRUCTORS ---------------------//
 
 	ServerConf();
-	ServerConf(std::map<std::string, std::string> paramMap, std::vector<Route> routes);
+	ServerConf(std::map<std::string, std::string> paramMap);
 	ServerConf(const ServerConf& copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -47,6 +47,7 @@ public:
 	unsigned int				getMaxSizeClientRequestBody() const;
 	const std::vector<Route>&	getRoutes() const;
 	const std::string&			getRoot() const;
+	const std::map<std::string, std::string>	&getParamMap() const;
 
 	//------------------- SETTERS ------------------------//
 

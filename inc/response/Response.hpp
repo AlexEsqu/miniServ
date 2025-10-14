@@ -12,7 +12,6 @@ class Request;
 class Response
 {
 private:
-
 	//------------------ ATTRIBUTES ----------------------//
 
 	int					_statusNum;
@@ -30,17 +29,16 @@ private:
 
 
 public:
-
 	//----------------- CONSTRUCTORS ---------------------//
 
 	Response();
-	Response(Request* req);
-	Response(Request* req, int status);
-	Response(const Response& copy);
+	Response(Request *req);
+	Response(Request *req, int status);
+	Response(const Response &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
 
-	virtual	~Response();
+	virtual ~Response();
 
 	//-------------------- SETTER ------------------------//
 
@@ -67,10 +65,15 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	Response		&operator=(const Response& other);
+	Response &operator=(const Response &other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
+	std::string createErrorPageContent(const Status &num);
+	std::string fetchErrorPageContent(const Status &num);
+
+	std::string getRoutedURL() const;
+	void testFilename();
 	std::string		createErrorPageContent(const Status& num);
 	void			addToContent(std::string contentChunk);
 
