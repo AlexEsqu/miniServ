@@ -113,6 +113,8 @@ public:
 	int					getParsingState() const;
 	Response*			getResponse();
 
+	std::string			getBody() const;
+
 	bool				isKeepAlive();
 
 	//------------------- OPERATORS ----------------------//

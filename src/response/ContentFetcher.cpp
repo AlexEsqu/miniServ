@@ -55,7 +55,7 @@ std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
 	if (extension == "ico") return "image/x-icon";
 	if (extension == "txt") return "text/plain";
 	if (extension == "pdf") return "application/pdf";
-	if (extension == "webp") return "image/wepb";
+	if (extension == "webp") return "image/webp";
 	if (extension == "png") return "image/png";
 
 	return "text/plain";
@@ -79,8 +79,6 @@ bool	ContentFetcher::isDirectory(const char *path)
 void	ContentFetcher::serveStatic(Request& request)
 {
 	std::string			fileURL(request.getResponse()->getRoutedURL());
-
-	std::cout << "routed path is " << fileURL << "\n";
 
 	std::ifstream		input(fileURL.c_str(), std::ios::binary);
 
@@ -111,9 +109,46 @@ void ContentFetcher::getItemFromServer(Request& request)
 	serveStatic(request);
 }
 
-void ContentFetcher::postItemFromServer(Request& )
+void ContentFetcher::postItemFromServer(Request& request)
 {
+	std::cout << "Processing POST request to: " << request.getResponse()->getRoutedURL() << std::endl;
 
+	if (request.getResponse()->getRoutedURL().find("upload") != std::string::npos) {
+		handleFileUpload(request);
+	} else {
+		handleFormSubmission(request);
+	}
+}
+
+void ContentFetcher::handleFormSubmission(Request& request)
+{
+	std::string postData = request.getBody();
+
+	std::cout << "POST data received: " << postData << std::endl;
+
+	std::string responseContent =
+		"<!DOCTYPE html>"
+		"<html><head><title>Form Submitted</title></head>"
+		"<body><h1>Form submitted successfully!</h1>"
+		"<p>Data received: " + postData + "</p>"
+		"<a href='/'>Back to home</a></body></html>";
+
+	request.getResponse()->setContentType("text/html");
+	request.getResponse()->addToContent(responseContent.c_str());
+	request.getResponse()->setStatusNum(200);
+}
+
+void ContentFetcher::handleFileUpload(Request& request)
+{
+	std::string uploadResponse =
+		"<!DOCTYPE html>"
+		"<html><head><title>Upload Complete</title></head>"
+		"<body><h1>File uploaded successfully!</h1>"
+		"<a href='/'>Back to home</a></body></html>";
+
+	request.getResponse()->setContentType("text/html");
+	request.getResponse()->addToContent(uploadResponse.c_str());
+	request.getResponse()->setStatusNum(201);
 }
 
 void ContentFetcher::deleteItemFromServer(Request& )
@@ -124,6 +159,9 @@ void ContentFetcher::deleteItemFromServer(Request& )
 
 void	ContentFetcher::fillRequest(Request& request)
 {
+	// create a response object in the request, with routed url
+	createResponseToFill(&request);
+
 	if (request.getMethod() == "GET")
 		getItemFromServer(request);
 	if (request.getMethod() == "POST")
@@ -131,10 +169,13 @@ void	ContentFetcher::fillRequest(Request& request)
 	if (request.getMethod() == "DELETE")
 		deleteItemFromServer(request);
 	request.setParsingState(FILLING_DONE);
+
+	// creating HTTP headers wrapping the response (needs to be at the end to have Content Size)
+	request.getResponse()->createHTTPHeaders();
 }
 
 
-Response	ContentFetcher::createResponse(Request* request)
+Response	ContentFetcher::createResponseToFill(Request* request)
 {
 	request->setResponse(new Response);
 
@@ -150,8 +191,6 @@ Response	ContentFetcher::createResponse(Request* request)
 		std::cout << "error in fetcher\n";
 		std::cout << e.what() << "\n";
 	}
-
-	request->getResponse()->createHTTPHeaders();
 
 	return (*request->getResponse());
 }

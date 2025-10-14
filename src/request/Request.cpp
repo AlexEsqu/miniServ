@@ -94,6 +94,15 @@ Response*			Request::getResponse()
 	return (_response);
 }
 
+std::string			Request::getBody() const
+{
+	std::cout << "Body requested : [" << _requestBodyBuffer.getMemoryBuffer() << "]\n";
+
+	// BEWARE this is not returning anything deemed big enough to be put into file buffering...
+	// TO DO: fix
+	return _requestBodyBuffer.getMemoryBuffer();
+}
+
 bool				Request::isKeepAlive()
 {
 	if (_requestHeaderMap.find("Connection") != _requestHeaderMap.end())
@@ -143,6 +152,8 @@ void	Request::setRequestLine(std::string &requestLine)
 	setMethod(trim(splitRequestLine[0]));
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
+
+	std::cout << _method << " " << _requestedFileName << " ";
 }
 
 void	Request::addAsHeaderVar(std::string &keyValueString)
@@ -154,7 +165,10 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 		std::string value = keyValueString.substr(equalPos + 1);
 		key = trim(key);
 		value = trim(value);
+		strToLower(key);
+		strToLower(value);
 		_requestHeaderMap[key] = value;
+		std::cout << "[" << key << "] = [" << value << "]\n";
 	}
 }
 
@@ -179,8 +193,6 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	// create request line out of chunk and possible unparsed leftover
 	std::string requestLine = _unparsedHeaderBuffer + chunk.substr(0, lineEnd);
 	_unparsedHeaderBuffer.clear();
-
-	std::cout << "request line is ["<<  requestLine << "]\n";
 
 	setRequestLine(requestLine);
 
@@ -221,7 +233,7 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 	}
 
 	// erase data used from the chunk, store the rest
-	chunk.erase(0, lineEnd);
+	chunk.erase(0, lineEnd + 2);
 
 	return RECEIVED_ALL;
 }
@@ -329,6 +341,8 @@ e_dataProgress		Request::parseChunkedBody(std::istream& in)
 // and returns if the current parsed item (header, body...) is not finished
 void	Request::addRequestChunk(std::string chunk)
 {
+	std::cout << "chunk is [" << chunk << "]\n";
+
 	while (_requestState != PARSING_DONE)
 	{
 		switch (_requestState)
@@ -371,18 +385,20 @@ void				Request::setIfParsingBody()
 {
 	if (_method == "HEAD" || _method == "GET")
 		_requestState = PARSING_DONE;
-	if (_requestHeaderMap.find("Transfer-Encoding") != _requestHeaderMap.end()
-		&& _requestHeaderMap["Transfer-Encoding"] == "chunked")
+	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
+		&& _requestHeaderMap["transfer-encoding"] == "chunked")
 	{
 		_requestState = PARSING_BODY_CHUNKED;
 	}
-	else if (_requestHeaderMap.find("Content-Length") != _requestHeaderMap.end())
+	else if (_requestHeaderMap.find("content-length") != _requestHeaderMap.end())
 	{
-		_contentLength = atoi(_requestHeaderMap["Content-Length"].c_str());
+		_contentLength = atoi(_requestHeaderMap["content-length"].c_str());
 		_requestState = PARSING_BODY;
 	}
 	else
 		_requestState = PARSING_DONE;
+
+	std::cout << "Is parsing body ? 2 == " << _requestState << "\n";
 }
 
 // Matching route is required at the parsing stage to know if a request is using a valid method

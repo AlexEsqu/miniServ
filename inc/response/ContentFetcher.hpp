@@ -24,8 +24,6 @@ private:
 	size_t			getSizeOfFile(const std::string& filename);
 	std::string		getTypeBasedOnExtension(const std::string& filePath);
 
-
-
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
@@ -53,6 +51,8 @@ public:
 	// POST method
 
 	void			postItemFromServer(Request& request);
+	void			handleFormSubmission(Request& request);
+	void			handleFileUpload(Request& request);
 
 	// DELETE method
 
@@ -60,7 +60,7 @@ public:
 
 	// Response Writing
 
-	Response		createResponse(Request* request);
+	Response		createResponseToFill(Request* request);
 
 	// Execution
 
