@@ -142,7 +142,7 @@ void	ContentFetcher::handleFormSubmission(Request& request)
 
 void	ContentFetcher::handleFileUpload(Request& request)
 {
-	FileHandler	upload("pages/uploads/beep");
+	FileHandler	upload(request.getResponse()->getRoutedURL());
 
 	upload.writeToFile(request.getBody());
 
