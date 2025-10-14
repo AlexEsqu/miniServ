@@ -3,8 +3,8 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 ServerConf::ServerConf()
-	: _port(8080)
-	, _maxSizeClientRequestBody(__INT_MAX__)
+	: _maxSizeClientRequestBody(__INT_MAX__)
+	, _port(8080)
 {
 
 #ifdef DEBUG
@@ -13,8 +13,8 @@ ServerConf::ServerConf()
 }
 
 ServerConf::ServerConf(std::map<std::string, std::string> paramMap)
-	: _port(8080)
-	, _maxSizeClientRequestBody(__INT_MAX__)
+	: _maxSizeClientRequestBody(__INT_MAX__)
+	, _port(8080)
 	, _paramMap(paramMap)
 {
 	if (_paramMap.find("listen") != _paramMap.end()) {
@@ -62,7 +62,7 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 		_port = other._port;
 		_serverName = other._serverName;
 		_root = other._root;
-		
+
 		_paramMap = other._paramMap;
 		for (size_t i = 0; i < other._routes.size(); ++i)
 			_routes.push_back(Route(other._routes[i]));
