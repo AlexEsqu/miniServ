@@ -73,4 +73,6 @@ public:
 	std::string		fetchErrorPageContent(const Status &num);
 	void			addToContent(std::string contentChunk);
 
+	void			routeUrlForGet(std::string url);
+	void			routeUrlForPostDel(std::string url);
 };

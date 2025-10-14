@@ -108,7 +108,15 @@ bool isDirectory(const char *path)
 	return S_ISDIR(path_stat.st_mode);
 }
 
-void Response::setRoutedUrl(std::string url)
+
+void	Response::routeUrlForPostDel(std::string url)
+{
+	std::cout << "size of Routes : " << _request->getConf().getRoutes().size() << "\n";
+
+	_routedPath = url;
+}
+
+void	Response::routeUrlForGet(std::string url)
 {
 	int i = 0;
 	int len = _request->getRoute()->getDefaultFiles().size();
@@ -128,6 +136,14 @@ void Response::setRoutedUrl(std::string url)
 	}
 	if (i == len)
 		_routedPath = "";
+}
+
+void Response::setRoutedUrl(std::string url)
+{
+	if (_request->getMethod() == "GET" or _request->getMethod() == "HEAD")
+		routeUrlForGet(url);
+	else
+		routeUrlForPostDel(url);
 }
 
 ///////////////////////////////////////////////////////////////////

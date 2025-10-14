@@ -40,6 +40,8 @@ Route&	Route::operator=(const Route &other)
 		this->_allowedCGI		= other._allowedCGI;
 		this->_uploadDirectory	= other._uploadDirectory;
 		this->_allowedMethods	= other._allowedMethods;
+		for (size_t i = 0; i < other._nestedRoutes.size(); i++)
+			this->_nestedRoutes.push_back(other._nestedRoutes[i]);
 	}
 	return (*this);
 }
@@ -121,8 +123,6 @@ bool	Route::matchesRegex(const std::string& path, const std::string& pattern) co
 
 const Route*	Route::getMatchingRoute(std::string requestPath) const
 {
-	std::cout << "Matching " << requestPath <<  " with " << getRootDirectory() << "\n";
-
 	if (isPathMatch(requestPath))
 	{
 		for (size_t i = 0; i < _nestedRoutes.size(); i++) {
@@ -156,12 +156,9 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 		_routedPath = paramMap.at("root");
 
 	if (paramMap.find("index") != paramMap.end())
-	{
 		_defaultFiles = split(paramMap.at("index"), ' ');
-		std::cout << "default file = " << _defaultFiles[0] << " \n";
-	}
-	// else
-	// 	_defaultFiles.push_back("index.html");
+	else
+		_defaultFiles.push_back("index.html");
 
 	if (paramMap.find("autoindex") != paramMap.end())
 		_autoindex = (paramMap.at("autoindex") == "on");

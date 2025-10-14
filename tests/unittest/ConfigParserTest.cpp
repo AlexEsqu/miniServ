@@ -2,6 +2,7 @@
 #include "server.hpp"
 #include <fstream>
 #include <sstream>
+#include <cstdio>
 
 // Helper function to create temporary config files for testing
 static void createTempConfigFile(const std::string& filename, const std::string& content) {
@@ -308,4 +309,457 @@ TEST_CASE("ConfigParser parses server block with nested location blocks") {
 	// CHECK(configs[0].getRoutes()[0].getRoutes()[0].getDefaultFiles() == "beep.html");
 
 	std::remove(configPath.c_str());
+}
+
+TEST_CASE("ConfigParser utility functions") {
+
+	SUBCASE("isClosedCurlyBrace function") {
+		std::string closingBrace = "}";
+		std::string closingBraceWithSpaces = "  }  ";
+		std::string notClosingBrace = "{ something";
+		std::string empty = "";
+
+		CHECK(ConfigParser::isClosedCurlyBrace(closingBrace) == true);
+		CHECK(ConfigParser::isClosedCurlyBrace(closingBraceWithSpaces) == true);
+		CHECK(ConfigParser::isClosedCurlyBrace(notClosingBrace) == false);
+		CHECK(ConfigParser::isClosedCurlyBrace(empty) == false);
+	}
+
+	SUBCASE("addLineAsServerKeyValue function") {
+		std::map<std::string, std::string> paramMap;
+
+		// Test normal key-value pair
+		std::string line1 = "listen 8080;";
+		ConfigParser::addLineAsServerKeyValue(line1, paramMap);
+		CHECK(paramMap["listen"] == "8080");
+
+		// Test key-value with spaces
+		std::string line2 = "  server_name   example.com  ;  ";
+		ConfigParser::addLineAsServerKeyValue(line2, paramMap);
+		CHECK(paramMap["server_name"] == "example.com");
+
+		// Test without semicolon
+		std::string line3 = "root /var/www/html";
+		ConfigParser::addLineAsServerKeyValue(line3, paramMap);
+		CHECK(paramMap["root"] == "/var/www/html");
+
+		// Test empty line (should be ignored)
+		std::string line4 = "";
+		size_t sizeBefore = paramMap.size();
+		ConfigParser::addLineAsServerKeyValue(line4, paramMap);
+		CHECK(paramMap.size() == sizeBefore);
+	}
+}
+
+TEST_CASE("ConfigParser parseServerBlock function") {
+
+	SUBCASE("Simple server block parsing") {
+		std::string configContent =
+			"listen 8080;\n"
+			"root /var/www/html;\n"
+			"}\n";
+
+		std::stringstream ss(configContent);
+		std::ifstream mockStream;
+
+		createTempConfigFile("test_simple.conf",
+			"server {\n" + configContent);
+
+		std::ifstream configFile("test_simple.conf");
+		std::string line;
+		getline(configFile, line);
+
+		ServerConf result = ConfigParser::parseServerBlock(configFile);
+
+		CHECK(result.getPort() == 8080);
+		CHECK(result.getRoot() == "/var/www/html");
+
+		std::remove("test_simple.conf");
+	}
+
+	SUBCASE("Server block with comments and empty lines") {
+		createTempConfigFile("test_comments.conf",
+			"server {\n"
+			"    # This is a comment\n"
+			"    listen 9000;\n"
+			"    \n"
+			"    # Another comment\n"
+			"    root /home/user/www;\n"
+			"}\n");
+
+		std::ifstream configFile("test_comments.conf");
+		std::string line;
+		getline(configFile, line);
+
+		ServerConf result = ConfigParser::parseServerBlock(configFile);
+
+		CHECK(result.getPort() == 9000);
+		CHECK(result.getRoot() == "/home/user/www");
+
+		std::remove("test_comments.conf");
+	}
+
+	SUBCASE("Server block with location block (should be skipped)") {
+		createTempConfigFile("test_location.conf",
+			"server {\n"
+			"    listen 3000;\n"
+			"    root /app;\n"
+			"    location / {\n"
+			"        try_files $uri $uri/ =404;\n"
+			"    }\n"
+			"}\n");
+
+		std::ifstream configFile("test_location.conf");
+		std::string line;
+		getline(configFile, line);
+
+		ServerConf result = ConfigParser::parseServerBlock(configFile);
+
+		CHECK(result.getPort() == 3000);
+		CHECK(result.getRoot() == "/app");
+
+		std::remove("test_location.conf");
+	}
+}
+
+TEST_CASE("ConfigParser parseConfigFile function") {
+
+	SUBCASE("Single server configuration") {
+		createTempConfigFile("test_single_server.conf",
+			"# Nginx configuration\n"
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"}\n");
+
+		const char* configPath = "test_single_server.conf";  // ✅ C++98: use const char*
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+		CHECK(configs.size() == 1);
+		CHECK(configs[0].getPort() == 8080);
+		CHECK(configs[0].getRoot() == "/var/www");
+
+		std::remove("test_single_server.conf");
+	}
+
+	SUBCASE("Multiple server configurations") {
+		createTempConfigFile("test_multiple_servers.conf",
+			"# First server\n"
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www/site1;\n"
+			"}\n"
+			"\n"
+			"# Second server\n"
+			"server {\n"
+			"    listen 8081;\n"
+			"    root /var/www/site2;\n"
+			"}\n");
+
+		const char* configPath = "test_multiple_servers.conf";  // ✅ C++98: use const char*
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+		CHECK(configs.size() == 2);
+		CHECK(configs[0].getPort() == 8080);
+		CHECK(configs[0].getRoot() == "/var/www/site1");
+		CHECK(configs[1].getPort() == 8081);
+		CHECK(configs[1].getRoot() == "/var/www/site2");
+
+		std::remove("test_multiple_servers.conf");
+	}
+
+	SUBCASE("Configuration with global directives (should be ignored)") {
+		createTempConfigFile("test_global_directives.conf",
+			"user nginx;\n"
+			"worker_processes 1;\n"
+			"\n"
+			"events {\n"
+			"    worker_connections 1024;\n"
+			"}\n"
+			"\n"
+			"http {\n"
+			"    server {\n"
+			"        listen 8080;\n"
+			"        root /var/www;\n"
+			"    }\n"
+			"}\n");
+
+		ConfigParser parser;
+		const char* configPath = "test_global_directives.conf";  // ✅ C++98: use const char*
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath);
+
+		CHECK(configs.size() == 1);
+		CHECK(configs[0].getPort() == 8080);
+
+		std::remove("test_global_directives.conf");
+	}
+
+	SUBCASE("Empty configuration file") {
+		createTempConfigFile("test_empty.conf", "");
+
+		ConfigParser parser;
+		const char* configPath = "test_empty.conf";  // ✅ C++98: use const char*
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath);
+
+		CHECK(configs.size() == 0);
+
+		std::remove("test_empty.conf");
+	}
+
+	SUBCASE("Configuration file with only comments") {
+		createTempConfigFile("test_only_comments.conf",
+			"# This is a comment\n"
+			"# Another comment\n"
+			"# No server blocks here\n");
+
+		ConfigParser parser;
+		const char* configPath = "test_only_comments.conf";  // ✅ C++98: use const char*
+		std::vector<ServerConf> configs = parser.parseConfigFile(configPath);
+
+		CHECK(configs.size() == 0);
+
+		std::remove("test_only_comments.conf");
+	}
+
+	SUBCASE("Non-existent configuration file") {
+		const char* configPath = "non_existent_file.conf";  // ✅ C++98: use const char*
+
+		CHECK_THROWS_AS(ConfigParser::parseConfigFile(configPath), std::runtime_error);
+	}
+}
+
+TEST_CASE("ConfigParser edge cases and error handling") {
+
+	SUBCASE("Server block without closing brace") {
+		createTempConfigFile("test_no_closing_brace.conf",
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n");
+
+		const char* configPath = "test_no_closing_brace.conf";  // ✅ C++98: use const char*
+
+		CHECK_THROWS_AS(ConfigParser::parseConfigFile(configPath), std::runtime_error);
+
+		std::remove("test_no_closing_brace.conf");
+	}
+
+	SUBCASE("Server block with nested location blocks") {
+		createTempConfigFile("test_nested_locations.conf",
+			"server {\n"
+			"    listen 8080;\n"
+			"    location /api {\n"
+			"        proxy_pass http://backend;\n"
+			"        location /api/v1 {\n"
+			"            auth_basic \"API\";\n"
+			"        }\n"
+			"    }\n"
+			"    root /var/www;\n"
+			"}\n");
+
+		const char* configPath = "test_nested_locations.conf";  // ✅ C++98: use const char*
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+		CHECK(configs.size() == 1);
+		CHECK(configs[0].getPort() == 8080);
+		CHECK(configs[0].getRoot() == "/var/www");
+
+		std::remove("test_nested_locations.conf");
+	}
+
+	SUBCASE("Server block with various directive formats") {
+		createTempConfigFile("test_various_formats.conf",
+			"server {\n"
+			"    listen    8080   ;\n"
+			"    root\t/var/www\t;\n"
+			"    index index.html index.htm\n"
+			"}\n");
+
+		const char* configPath = "test_various_formats.conf";  // ✅ C++98: use const char*
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+		CHECK(configs.size() == 1);
+		CHECK(configs[0].getPort() == 8080);
+		CHECK(configs[0].getRoot() == "/var/www");
+
+		std::remove("test_various_formats.conf");
+	}
+}
+
+TEST_CASE("ConfigParser parses server block with multiple location blocks") {
+
+	SUBCASE("Multiple simple location blocks") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"        index api.html;\n"
+			"    }\n"
+			"    location /static {\n"
+			"        root /var/www/static;\n"
+			"        autoindex on;\n"
+			"    }\n"
+			"    location /upload {\n"
+			"        root /var/www/uploads;\n"
+			"        allow_methods POST DELETE;\n"
+			"    }\n"
+			"}\n";
+
+		const char* configPath = "test_multiple_routes.conf";  // ✅ C++98: use const char*
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+		CHECK(configs.size() == 1);
+		CHECK(configs[0].getPort() == 8080);
+		CHECK(configs[0].getRoot() == "/var/www");
+
+		// Note: You'll need to implement getRoutes() method to test routes
+		// const std::vector<Route>& routes = configs[0].getRoutes();
+		// CHECK(routes.size() == 4); // 3 location blocks + 1 default route
+
+		std::remove(configPath);
+	}
+
+	SUBCASE("Nested location blocks with multiple levels") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"        location /api/v1 {\n"
+			"            root /var/www/api/v1;\n"
+			"            index v1.html;\n"
+			"            location /api/v1/auth {\n"
+			"                root /var/www/api/v1/auth;\n"
+			"                allow_methods POST;\n"
+			"            }\n"
+			"        }\n"
+			"        location /api/v2 {\n"
+			"            root /var/www/api/v2;\n"
+			"            index v2.html;\n"
+			"        }\n"
+			"    }\n"
+			"    location /docs {\n"
+			"        root /var/www/docs;\n"
+			"        autoindex on;\n"
+			"    }\n"
+			"}\n";
+
+		const char* configPath = "test_nested_multiple_routes.conf";  // ✅ C++98: use const char*
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+		CHECK(configs.size() == 1);
+		CHECK(configs[0].getPort() == 8080);
+
+		// Note: You'll need to implement route access methods to test nested routes
+
+		std::remove(configPath);
+	}
+
+	SUBCASE("Routes with overlapping paths") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location / {\n"
+			"        root /var/www/html;\n"
+			"        index index.html;\n"
+			"    }\n"
+			"    location /app {\n"
+			"        root /var/www/app;\n"
+			"        index app.html;\n"
+			"    }\n"
+			"    location /app/admin {\n"
+			"        root /var/www/app/admin;\n"
+			"        allow_methods GET POST;\n"
+			"    }\n"
+			"    location /app/api {\n"
+			"        root /var/www/app/api;\n"
+			"        allow_methods GET POST PUT DELETE;\n"
+			"    }\n"
+			"}\n";
+
+		const char* configPath = "test_overlapping_routes.conf";  // ✅ C++98: use const char*
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+		CHECK(configs.size() == 1);
+		// Note: Add route-specific tests when getRoutes() is implemented
+
+		std::remove(configPath);
+	}
+}
+
+TEST_CASE("ConfigParser error handling with multiple routes") {
+
+	SUBCASE("Missing closing brace in nested location") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"        location /api/v1 {\n"
+			"            root /var/www/api/v1;\n"
+			"        location /api/v2 {\n"
+			"            root /var/www/api/v2;\n"
+			"        }\n"
+			"    }\n"
+			"}\n";
+
+		const char* configPath = "test_missing_brace_nested.conf";  // ✅ C++98: use const char*
+		createTempConfigFile(configPath, configContent);
+
+		CHECK_THROWS_AS(ConfigParser::parseConfigFile(configPath), std::runtime_error);
+
+		std::remove(configPath);
+	}
+
+	SUBCASE("Invalid location directive") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    location {\n"  // Missing path
+			"        root /var/www;\n"
+			"    }\n"
+			"}\n";
+
+		const char* configPath = "test_invalid_location.conf";  // ✅ C++98: use const char*
+		createTempConfigFile(configPath, configContent);
+
+		CHECK_THROWS_AS(ConfigParser::parseConfigFile(configPath), std::runtime_error);
+
+		std::remove(configPath);
+	}
+}
+
+TEST_CASE("ConfigParser parses server block with nested location blocks") {
+	const std::string configContent =
+		"server {\n"
+		"    listen 8080;\n"
+		"    location /api {\n"
+		"        proxy_pass http://backend;\n"
+		"        location /api/v1 {\n"
+		"            index \"beep.html\";\n"
+		"        }\n"
+		"    }\n"
+		"    root /var/www;\n"
+		"}\n";
+
+	const char* configPath = "test_nested_location_block.conf";  // ✅ C++98: use const char*
+	createTempConfigFile(configPath, configContent);
+
+	std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath);
+
+	CHECK(configs.size() == 1);
+	CHECK(configs[0].getPort() == 8080);
+	CHECK(configs[0].getRoot() == "/var/www");
+	// CHECK(configs[0].getRoutes()[0].getRoutes()[0].getDefaultFiles() == "beep.html");
+
+	std::remove(configPath);
 }

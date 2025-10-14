@@ -143,8 +143,6 @@ Route	ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const st
 
 	route.setRouteParam(paramMap);
 
-	std::cout << route.getRootDirectory() << "\n";
-
 	return route;
 }
 
