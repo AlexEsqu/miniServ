@@ -6,7 +6,7 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 Request::Request(const ServerConf& conf, std::string requestChunk)
-	: _unparsedHeaderBuffer(requestChunk)
+	: _unparsedHeaderBuffer()
 	, _conf(conf)
 	, _route(NULL)
 	, _status(200)
@@ -179,10 +179,13 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	// create request line out of chunk and possible unparsed leftover
 	std::string requestLine = _unparsedHeaderBuffer + chunk.substr(0, lineEnd);
 	_unparsedHeaderBuffer.clear();
+
+	std::cout << "request line is ["<<  requestLine << "]\n";
+
 	setRequestLine(requestLine);
 
-	// erase data used from the chunk
-	chunk.erase(0, lineEnd);
+	// erase data used from the chunk and unneeded \r\n
+	chunk.erase(0, lineEnd + 1);
 
 	// set parsing state to the next step
 	_requestState = PARSING_HEADERS;

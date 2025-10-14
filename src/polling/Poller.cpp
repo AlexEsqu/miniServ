@@ -100,7 +100,7 @@ void	Poller::processEvents()
 
 void	Poller::launchEpollListenLoop()
 {
-	std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
+	// std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
 	waitForEvents();
 	processEvents();
 }

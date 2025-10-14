@@ -122,6 +122,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 			}
 		}
 
+		// if any HTTP error happens, create an error page to send and display
 		catch ( HTTPError &e )
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");

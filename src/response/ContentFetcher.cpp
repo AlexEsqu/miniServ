@@ -97,12 +97,10 @@ void	ContentFetcher::serveStatic(Request& request)
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
 	request.getResponse()->addToContent(buffer.data());
-	std::string	result(buffer.data());
 }
 
 void ContentFetcher::getItemFromServer(Request& request)
 {
-
 	for (size_t i = 0; i < executors.size(); i++)
 	{
 		if(executors[i]->canExecuteFile(request.getResponse()->getRoutedURL()))
@@ -132,6 +130,7 @@ void	ContentFetcher::fillRequest(Request& request)
 		postItemFromServer(request);
 	if (request.getMethod() == "DELETE")
 		deleteItemFromServer(request);
+	request.setParsingState(FILLING_DONE);
 }
 
 

@@ -155,7 +155,6 @@ void	ClientSocket::readRequest()
 		// clear buffer for further use
 		memset(_buffer, '\0', sizeof(_buffer));
 	}
-
 }
 
 void ClientSocket::sendResponse()
@@ -190,6 +189,8 @@ void ClientSocket::sendResponse()
 	}
 	_response.clear();
 	std::cout << "Successfully sent " << totalSent << " bytes" << std::endl;
+	if (totalSent == totalToSend)
+		_request->setParsingState(SENDING_DONE);
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 }

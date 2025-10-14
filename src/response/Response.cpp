@@ -213,4 +213,6 @@ std::string Response::createErrorPageContent(const Status &num)
 void		Response::addToContent(std::string contentChunk)
 {
 	_responsePage.writeToBuffer(contentChunk);
+
+	std::cout << contentChunk << "\n";
 }
