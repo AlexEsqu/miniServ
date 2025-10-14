@@ -23,7 +23,7 @@ private:
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
-	void			writeToBuffer(const char* data, size_t size);
+
 	size_t			readFile(char* buffer, size_t size);
 
 public:
@@ -53,6 +53,9 @@ public:
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void			writeToBuffer(const std::string& data);
+	void			writeToBuffer(const char* data, size_t size);
 	size_t			readFromBuffer(char* buffer, size_t size);
+	size_t			readFromBuffer(char* buffer, size_t size, size_t offset) const;
+	std::string		getAllContent() const;
 	void			clearBuffer();
 };

@@ -142,9 +142,8 @@ std::string Response::getHTTPResponse()
 
 	result.append(_HTTPHeaders);
 
-	char	buffer[_responsePage.getBufferSize()];
-	_responsePage.readFromBuffer(buffer, _responsePage.getBufferSize());
-	result.append(buffer);
+	std::string content = _responsePage.getAllContent();
+	result.append(content);
 	_byteSent += result.size();
 
 	return result;
@@ -210,9 +209,7 @@ std::string Response::createErrorPageContent(const Status &num)
 	return (outputString.str());
 }
 
-void		Response::addToContent(std::string contentChunk)
+void		Response::addToContent(const std::string content)
 {
-	_responsePage.writeToBuffer(contentChunk);
-
-	std::cout << contentChunk << "\n";
+	_responsePage.writeToBuffer(content.c_str(), content.size());
 }

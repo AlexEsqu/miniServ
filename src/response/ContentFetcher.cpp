@@ -56,7 +56,6 @@ std::string	ContentFetcher::getTypeBasedOnExtension(const std::string& filePath)
 	if (extension == "txt") return "text/plain";
 	if (extension == "pdf") return "application/pdf";
 	if (extension == "webp") return "image/webp";
-	if (extension == "png") return "image/png";
 
 	return "text/plain";
 }
@@ -94,7 +93,8 @@ void	ContentFetcher::serveStatic(Request& request)
 	size_t	size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
-	request.getResponse()->addToContent(buffer.data());
+	std::string binaryContent(buffer.begin(), buffer.end());
+	request.getResponse()->addToContent(binaryContent);
 }
 
 void ContentFetcher::getItemFromServer(Request& request)

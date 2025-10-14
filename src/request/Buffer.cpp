@@ -42,24 +42,7 @@ Buffer&			Buffer::operator=(const Buffer& other)
 
 //------------------------- INTERNAL FUNCTIONS ------------------------------//
 
-void			Buffer::writeToBuffer(const char* data, size_t size)
-{
-	if (!_usingFile && (_memBuffer.size() + size > _threshold))
-	{
-		_fileBuffer.createFile();
-		_fileBuffer.writeToFile(_memBuffer);
-		_memBuffer.clear();
-		_usingFile = true;
-	}
-	if (_usingFile)
-	{
-		_fileBuffer.writeToFile(data, size);
-	}
-	else
-	{
-		_memBuffer.append(data, size);
-	}
-}
+
 
 //------------------------------ GETTER --------------------------------------//
 
@@ -112,6 +95,25 @@ void			Buffer::writeToBuffer(const std::string& data)
 	writeToBuffer(data.c_str(), data.size());
 }
 
+void			Buffer::writeToBuffer(const char* data, size_t size)
+{
+	if (!_usingFile && (_memBuffer.size() + size > _threshold))
+	{
+		_fileBuffer.createFile();
+		_fileBuffer.writeToFile(_memBuffer);
+		_memBuffer.clear();
+		_usingFile = true;
+	}
+	if (_usingFile)
+	{
+		_fileBuffer.writeToFile(data, size);
+	}
+	else
+	{
+		_memBuffer.append(data, size);
+	}
+}
+
 void			Buffer::clearBuffer()
 {
 	if (_usingFile)
@@ -130,9 +132,43 @@ size_t			Buffer::readFromBuffer(char* buffer, size_t size)
 	{
 		size_t toRead = std::min(size, _memBuffer.size());
 		std::memcpy(buffer, _memBuffer.data(), toRead);
-		_memBuffer.erase(0, toRead);
 		return toRead;
 	}
+}
+
+size_t Buffer::readFromBuffer(char* buffer, size_t size, size_t offset) const
+{
+	if (_usingFile) {
+		std::ifstream file(_fileBuffer.getFilePath().c_str(), std::ios::binary);
+		file.seekg(offset);
+		file.read(buffer, size);
+		return file.gcount();
+	} else {
+		if (offset >= _memBuffer.size()) return 0;
+
+		size_t toRead = std::min(size, _memBuffer.size() - offset);
+		std::memcpy(buffer, _memBuffer.data() + offset, toRead);
+		return toRead;
+	}
+}
+
+std::string Buffer::getAllContent() const
+{
+	if (_usingFile)
+	{
+		std::ifstream file(_fileBuffer.getFilePath().c_str(), std::ios::binary);
+		if (!file.is_open())
+		{
+			std::cout << "failed to open buffer\n";
+			return ("");
+		}
+
+		std::ostringstream oss;
+		oss << file.rdbuf();
+		return (oss.str());
+	}
+	else
+		return (_memBuffer);
 }
 
 // size_t			Buffer::findInBuffer(const std::string& signature) const

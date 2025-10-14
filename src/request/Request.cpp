@@ -94,13 +94,23 @@ Response*			Request::getResponse()
 	return (_response);
 }
 
-std::string			Request::getBody() const
+std::string Request::getBody() const
 {
-	std::cout << "Body requested : [" << _requestBodyBuffer.getMemoryBuffer() << "]\n";
+	std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
+	std::cout << "Buffer using file: " << _requestBodyBuffer.isUsingFile() << std::endl;
+	std::cout << "Buffer size: " << _requestBodyBuffer.getBufferSize() << std::endl;
 
-	// BEWARE this is not returning anything deemed big enough to be put into file buffering...
-	// TO DO: fix
-	return _requestBodyBuffer.getMemoryBuffer();
+	if (_requestBodyBuffer.isUsingFile()) {
+		std::cout << "Reading from file buffer..." << std::endl;
+		std::string content = _requestBodyBuffer.getAllContent();
+		std::cout << "File content size: " << content.size() << std::endl;
+		return content;
+	} else {
+		std::cout << "Reading from memory buffer..." << std::endl;
+		std::string content = _requestBodyBuffer.getMemoryBuffer();
+		std::cout << "Memory content size: " << content.size() << std::endl;
+		return content;
+	}
 }
 
 bool				Request::isKeepAlive()
@@ -168,7 +178,7 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 		strToLower(key);
 		strToLower(value);
 		_requestHeaderMap[key] = value;
-		std::cout << "[" << key << "] = [" << value << "]\n";
+		// std::cout << "[" << key << "] = [" << value << "]\n";
 	}
 }
 
@@ -197,7 +207,7 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	setRequestLine(requestLine);
 
 	// erase data used from the chunk and unneeded \r\n
-	chunk.erase(0, lineEnd + 1);
+	chunk.erase(0, lineEnd + 2);
 
 	// set parsing state to the next step
 	_requestState = PARSING_HEADERS;
@@ -341,8 +351,6 @@ e_dataProgress		Request::parseChunkedBody(std::istream& in)
 // and returns if the current parsed item (header, body...) is not finished
 void	Request::addRequestChunk(std::string chunk)
 {
-	std::cout << "chunk is [" << chunk << "]\n";
-
 	while (_requestState != PARSING_DONE)
 	{
 		switch (_requestState)
@@ -397,8 +405,6 @@ void				Request::setIfParsingBody()
 	}
 	else
 		_requestState = PARSING_DONE;
-
-	std::cout << "Is parsing body ? 2 == " << _requestState << "\n";
 }
 
 // Matching route is required at the parsing stage to know if a request is using a valid method
