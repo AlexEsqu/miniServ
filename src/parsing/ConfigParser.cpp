@@ -28,7 +28,7 @@ ConfigParser::~ConfigParser()
 
 //---------------------------- OPERATORS ------------------------------------//
 
-ConfigParser &ConfigParser::operator=(const ConfigParser &)
+ConfigParser	&ConfigParser::operator=(const ConfigParser &)
 {
 	return (*this);
 }
@@ -39,14 +39,14 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &)
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-bool ConfigParser::isClosedCurlyBrace(std::string &line)
+bool	ConfigParser::isClosedCurlyBrace(std::string &line)
 {
 	if (trim(line) == "}")
 		return true;
 	return false;
 }
 
-void ConfigParser::addLineAsServerKeyValue(std::string &line, std::map<std::string, std::string> &paramMap)
+void	ConfigParser::addLineAsServerKeyValue(std::string &line, std::map<std::string, std::string> &paramMap)
 {
 	// removes leading/trailing whitespace
 	line = trim(line);
@@ -74,7 +74,7 @@ void ConfigParser::addLineAsServerKeyValue(std::string &line, std::map<std::stri
 	}
 }
 
-std::string ConfigParser::extractLocationPath(const std::string &locationLine)
+std::string	ConfigParser::extractLocationPath(const std::string &locationLine)
 {
 	size_t start = locationLine.find("location") + 8;
 	size_t end = locationLine.find('{');
@@ -88,7 +88,7 @@ std::string ConfigParser::extractLocationPath(const std::string &locationLine)
 	return pathPart;
 }
 
-void ConfigParser::addLineAsLocationKeyValue(std::string &line, std::map<std::string, std::string> &paramMap)
+void	ConfigParser::addLineAsLocationKeyValue(std::string &line, std::map<std::string, std::string> &paramMap)
 {
 	line = trim(line);
 	if (line.empty())
@@ -110,7 +110,7 @@ void ConfigParser::addLineAsLocationKeyValue(std::string &line, std::map<std::st
 	}
 }
 
-Route ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const std::string &locationLine)
+Route	ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const std::string &locationLine)
 {
 	Route route;
 	std::map<std::string, std::string> paramMap;
@@ -122,6 +122,7 @@ Route ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const st
 	while (getline(configFileStream, line) && !ConfigParser::isClosedCurlyBrace(line))
 	{
 		trim(line);
+		std::cout << line << "\n";
 
 		if (line.empty() || ltrim(line)[0] == '#')
 			continue;
@@ -142,23 +143,29 @@ Route ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const st
 
 	route.setRouteParam(paramMap);
 
+	std::cout << route.getRootDirectory() << "\n";
+
 	return route;
 }
 
-// MAke sure the base server has the basic necessary rules such as a root, an index, and methods
-void ConfigParser::addDefaultRoute(ServerConf &serverConf)
+// Makes sure the base server has the basic necessary rules such as a root, an index, and methods
+void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 {
-
 	Route defaultRoute;
 
 	defaultRoute.setURLPath("/");
 
 	std::map<std::string, std::string> defaultParams;
 
-	defaultParams["root"] = serverConf.getRoot().empty() ? "/var/www/html" : serverConf.getRoot();
+	if (serverConf.getRoot().empty())
+		defaultParams["root"] = "/var/www/html";
+	else
+		defaultParams["root"] = serverConf.getRoot();
 
-	defaultParams["index"] = serverConf.getParamMap().find("index") == serverConf.getParamMap().end() ? "index.html" : serverConf.getParamMap().at("index");
-
+	if (serverConf.getParamMap().find("index") == serverConf.getParamMap().end())
+		defaultParams["index"] = "index.html";
+	else
+		defaultParams["index"] = serverConf.getParamMap().at("index");
 
 	if (serverConf.getParamMap().find("allow_methods") == serverConf.getParamMap().end()) // if map entry == map.end(), it doesn't exist in the map; HOWEVER map[entry] can return a value and create an entry if none existed
 		defaultParams["allow_methods"] = "GET POST DELETE";
@@ -194,7 +201,8 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 			parseLocationBlock(configFileStream, line);
 
 		// adds all lines to a map of key setting and value
-		addLineAsServerKeyValue(line, paramMap);
+		else
+			addLineAsServerKeyValue(line, paramMap);
 	}
 
 	// check the server block is closed
@@ -210,9 +218,7 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 		serverConf.setServerName(paramMap["server_name"]);
 
 	if (paramMap.find("root") != paramMap.end())
-	{
 		serverConf.setRoot(paramMap["root"]);
-	}
 
 	std::cout << "Config block parsed :\n";
 	for (std::map<std::string, std::string>::iterator it = paramMap.begin(); it != paramMap.end(); it++)

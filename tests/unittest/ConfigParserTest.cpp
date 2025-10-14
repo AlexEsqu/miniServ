@@ -60,22 +60,19 @@ TEST_CASE("ConfigParser parseServerBlock function") {
 
 		std::stringstream ss(configContent);
 		std::ifstream mockStream;
-		// Note: This test would need a way to mock ifstream or use a real file
 
-		// Create a temporary file for testing
 		createTempConfigFile("test_simple.conf",
 			"server {\n" + configContent);
 
 		std::ifstream configFile("test_simple.conf");
 		std::string line;
-		getline(configFile, line); // Skip "server {" line
+		getline(configFile, line);
 
 		ServerConf result = ConfigParser::parseServerBlock(configFile);
 
 		CHECK(result.getPort() == 8080);
 		CHECK(result.getRoot() == "/var/www/html");
 
-		// Clean up
 		std::remove("test_simple.conf");
 	}
 
@@ -91,7 +88,7 @@ TEST_CASE("ConfigParser parseServerBlock function") {
 
 		std::ifstream configFile("test_comments.conf");
 		std::string line;
-		getline(configFile, line); // Skip "server {" line
+		getline(configFile, line);
 
 		ServerConf result = ConfigParser::parseServerBlock(configFile);
 
@@ -113,7 +110,7 @@ TEST_CASE("ConfigParser parseServerBlock function") {
 
 		std::ifstream configFile("test_location.conf");
 		std::string line;
-		getline(configFile, line); // Skip "server {" line
+		getline(configFile, line);
 
 		ServerConf result = ConfigParser::parseServerBlock(configFile);
 

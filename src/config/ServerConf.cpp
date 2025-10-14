@@ -27,8 +27,10 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap)
 }
 
 ServerConf::ServerConf(const ServerConf &copy)
-	: _port(copy._port)
-	, _maxSizeClientRequestBody(copy._maxSizeClientRequestBody)
+	: _maxSizeClientRequestBody(copy._maxSizeClientRequestBody)
+	, _port(copy._port)
+	, _serverName(copy._serverName)
+	, _root(copy._root)
 	, _paramMap(copy._paramMap)
 {
 	for (size_t i = 0; i < copy._routes.size(); ++i)
@@ -55,8 +57,12 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 {
 	if (this != &other)
 	{
-		_port = other._port;
 		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
+
+		_port = other._port;
+		_serverName = other._serverName;
+		_root = other._root;
+		
 		_paramMap = other._paramMap;
 		for (size_t i = 0; i < other._routes.size(); ++i)
 			_routes.push_back(Route(other._routes[i]));

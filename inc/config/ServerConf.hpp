@@ -18,10 +18,12 @@ class ServerConf
 
 private:
 
+	unsigned int		_maxSizeClientRequestBody;
+
 	unsigned int		_port;
 	std::string			_serverName;
-	unsigned int		_maxSizeClientRequestBody;
 	std::string			_root;
+
 	std::vector<Route>	_routes;
 	std::map<std::string, std::string>	_paramMap;
 
