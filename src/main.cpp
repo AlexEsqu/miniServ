@@ -10,31 +10,57 @@ void listeningLoop(Poller &poller)
 	}
 }
 
-int main(int argc, char **argv)
+void	checkConfigExist(int argc, char **argv)
 {
 	if (argc != 2)
 	{
 		std::cout << "Usage: ./webserv configuration_file" << std::endl;
-		return (1);
+		exit(1);
 	}
-	// parsing config and setting up routes, or if no config setting up default
+
+	std::ifstream configFile(argv[1]);
+	if (!configFile.is_open())
+	{
+		std::cout << "The configuration file is not valid" << std::endl;
+		exit(1);
+	}
+	configFile.close();
+}
+
+int main(int argc, char **argv)
+{
+	// SERVER CONFIGURATION
+
+	// check the config file exists
+	checkConfigExist(argc, argv);
+
+	// parsing config file to create config objects with routes, ports, setup...
 	std::vector<ServerConf> serversConfs;
 	serversConfs = ConfigParser::parseConfigFile(static_cast<const char *>(argv[1]));
 
-	// constructing servers matching the configs
+	// constructing epoll instance to poll (i.e. watch) the server and client sockets
 	Poller poller;
 
-	std::vector<ServerSocket *> servers;
+	// opening sockets listening on the configured ports, acting as servers
+	std::vector<ServerSocket *> serverSockets;
 	for (size_t i = 0; i < serversConfs.size(); i++)
-		servers.push_back(new ServerSocket(poller, serversConfs[i]));
+		serverSockets.push_back(new ServerSocket(poller, serversConfs[i]));
 
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
 
+
+	// SERVER RUNNING LOOP
+
+	// using the poller to watch for any socket ready to write or read, and act accordingly
 	listeningLoop(poller);
 
-	for (size_t i = 0; i < servers.size(); i++)
-		delete servers[i];
+
+	// CLEAN UP
+
+	// deleting the allocated info contained in the server sockets
+	for (size_t i = 0; i < serverSockets.size(); i++)
+		delete serverSockets[i];
 
 	return 0;
 }
