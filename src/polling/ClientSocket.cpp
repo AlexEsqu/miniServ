@@ -157,7 +157,7 @@ void	ClientSocket::readRequest()
 	}
 }
 
-void ClientSocket::sendResponse()
+void	ClientSocket::sendResponse()
 {
 
 	_response = _request->getResponse()->getHTTPResponse();
@@ -193,5 +193,40 @@ void ClientSocket::sendResponse()
 		_request->setParsingState(SENDING_DONE);
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
+}
+
+
+bool	ClientSocket::hasRequest()
+{
+	return (_request != NULL);
+}
+
+bool	ClientSocket::hasParsedRequest()
+{
+	if (!hasRequest())
+		return false;
+
+	return (_request->getParsingState() == PARSING_DONE);
+}
+
+bool	ClientSocket::hasFilledResponse()
+{
+	if (!hasRequest())
+		return false;
+
+	return (_request->getParsingState() == FILLING_DONE);
+}
+
+bool	ClientSocket::hasSentResponse()
+{
+	if (!hasRequest())
+		return false;
+
+	return (_request->getParsingState() == SENDING_DONE);
+}
+
+void	ClientSocket::closeConnectionOrResestRequest()
+{
+	
 }
 

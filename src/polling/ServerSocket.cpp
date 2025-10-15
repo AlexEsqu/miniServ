@@ -110,12 +110,10 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 		{
 			connecting->readRequest();
 
-			if (connecting->getRequest() && connecting->getRequest()->getParsingState() == PARSING_DONE)
-			{
+			if (connecting->hasParsedRequest())
 				_cf->fillRequest(*(connecting->getRequest()));
-			}
 
-			if (connecting->getRequest() && connecting->getRequest()->getParsingState() == FILLING_DONE)
+			if (connecting->hasFilledResponse())
 			{
 				connecting->setEpollEventsMask(EPOLLOUT | EPOLLERR);
 				_poller.updateSocketEvent(connecting);
@@ -142,12 +140,12 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 	// socket ready to receive data
 	else if (event.events & EPOLLOUT)
 	{
-		// if request is complete, fetch content and wrap in HTTP header
-		if (connecting->getRequest() && connecting->getRequest()->getParsingState() == FILLING_DONE)
+		// if response is complete, send the data
+		if (connecting->hasFilledResponse())
 		{
 			connecting->sendResponse();
 
-			if (connecting->getRequest()->getParsingState() == SENDING_DONE)
+			if (connecting->hasSentResponse())
 			{
 				if (connecting->getRequest()->isKeepAlive())
 				{
