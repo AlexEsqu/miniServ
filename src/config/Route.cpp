@@ -39,7 +39,9 @@ Route&	Route::operator=(const Route &other)
 		this->_autoindex		= other._autoindex;
 		this->_allowedCGI		= other._allowedCGI;
 		this->_uploadDirectory	= other._uploadDirectory;
-		this->_allowedMethods	= other._allowedMethods;
+		this->_allow_methods	= other._allow_methods;
+
+		_nestedRoutes.clear();
 		for (size_t i = 0; i < other._nestedRoutes.size(); i++)
 			this->_nestedRoutes.push_back(other._nestedRoutes[i]);
 	}
@@ -53,7 +55,7 @@ std::string Route::getRootDirectory() const
 	return (this->_routedPath);
 }
 
-std::vector<std::string> Route::getDefaultFiles() const
+const std::vector<std::string> Route::getDefaultFiles() const
 {
 	return (this->_defaultFiles);
 }
@@ -78,36 +80,44 @@ std::string Route::getURLPath() const
 	return (this->_urlPath);
 }
 
-const std::vector<Route>&	Route::getRoutes() const {
+const std::vector<Route>&	Route::getRoutes() const
+{
 	return _nestedRoutes;
+}
+
+const std::vector<std::string>	Route::getAllowedMethods() const
+{
+	return _allow_methods;
+}
+
+bool	Route::isAllowedMethod(const std::string& methodAsString) const
+{
+	if (_allow_methods.empty())
+		return false;
+	return (std::find(_allow_methods.begin(), _allow_methods.end(), methodAsString) != _allow_methods.end());
 }
 
 bool	Route::isPathMatch(const std::string& requestPath) const
 {
-	std::cout << "is it close to " << _urlPath << "\n";
+	std::cout << "Checking if " << requestPath << " matches " << _urlPath << std::endl;
 
-	// // exact match: "= /exact"
-	// if (_urlPath[0] == '=' && _urlPath.length() > 1) {
-	// 	std::string exactPath = _urlPath.substr(2); // Skip "= "
-	// 	return (requestPath == exactPath);
-	// }
+	if (_urlPath == "/")
+		return true;
 
-	// // regex match: "~ ^/api/.*$"
-	// if (_urlPath[0] == '~' && _urlPath.length() > 1) {
-	// 	std::string pattern = _urlPath.substr(2); // Skip "~ "
-	// 	return matchesRegex(requestPath, pattern);
-	// }
+	// Check if request path starts with route path
+	if (requestPath.find(_urlPath) == 0)
+	{
+		// Exact match
+		if (requestPath.length() == _urlPath.length())
+			return true;
 
-	// // case-insensitive regex: "~* pattern"
-	// if (_urlPath.substr(0, 2) == "~*") {
-	// 	std::string	lowerRequestPath = requestPath;
-	// 	lowerRequestPath = strToLower(lowerRequestPath);
-	// 	std::string pattern = _urlPath.substr(3); // Skip "~* "
-	// 	return matchesRegex(strToLower(lowerRequestPath), strToLower(pattern));
-	// }
+		// Path continues with / (proper prefix)
+		if (requestPath.length() > _urlPath.length() &&
+			requestPath[_urlPath.length()] == '/')
+			return true;
+	}
 
-	// // prefix match (default): "/api"
-	return (requestPath.find(_urlPath) == 0);
+	return false;
 }
 
 bool	Route::matchesRegex(const std::string& path, const std::string& pattern) const
@@ -166,10 +176,15 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 		_autoindex = true;
 
 	if (paramMap.find("allow_methods") != paramMap.end())
-		_allowedMethods = split(paramMap.at("allow_methods"), ' ');
+		_allow_methods = split(paramMap.at("allow_methods"), ' ');
+	else
+	{
+		_allow_methods.push_back("GET");
+		_allow_methods.push_back("HEAD");
+	}
 
 	if (paramMap.find("cgi_extension") != paramMap.end())
-		_allowedMethods = split(paramMap.at("cgi_extension"), ' ');
+		_allowedCGI = split(paramMap.at("cgi_extension"), ' ');
 }
 
 void	Route::addNestedRoute(Route& route)

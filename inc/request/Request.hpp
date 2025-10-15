@@ -11,6 +11,7 @@
 #include "Status.hpp"
 #include "Buffer.hpp"
 
+// Used in Request object for machine state receiving and parsing of request chunks
 enum e_requestState {
 	PARSING_REQUEST_LINE,
 	PARSING_HEADERS,
@@ -33,6 +34,8 @@ enum e_methods
 	UNSUPPORTED
 };
 
+// Used when receiving data from sockets, to indicate whether a chunk can be parsed
+// or is missing informations and more content is needed
 enum e_dataProgress {
 	WAITING_FOR_MORE,
 	RECEIVED_ALL
@@ -50,30 +53,32 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	std::string					_unparsedHeaderBuffer;
+	// REQUEST DATA
 
-	std::string					_method;			// could be set as the enum already ?
-	// e_methods					_methodCode;
-	std::string					_protocol;			// we only support HTTP/1.1
-	std::string					_requestedFileName;	// for example "/home.html"
-	std::map
-		<std::string,
-		std::string>			_requestHeaderMap;
+	std::string			_methodAsString;		// type of request as string
+	e_methods			_method;				// type of request parsed as enum
+	std::string			_protocol;				// must be HTTP/1.1
+	std::string			_URI;					// for example "/" or "/home.html"
 
-	const ServerConf&			_conf;
-	const Route*				_route;
-	size_t						_contentLength;
-	Status						_status;
+	std::map<std::string,std::string>	_requestHeaderMap; // key=value of all header variables
+	size_t				_contentLength;			// length of the request body to be expected
+	std::string			_unparsedHeaderBuffer;	// may store chunks of request header
+	Buffer 				_requestBodyBuffer;		// stores the body of the request
 
-	e_requestState				_requestState;
+	// CONFIGURATION APPLICABLE TO THE REQUEST
 
-	Buffer 						_requestBodyBuffer;
+	const ServerConf&	_conf;					// configuration of the server socket
+	const Route*		_route;					// route matched through the URI
+	std::string			_routedURI;				// for example "/var/www/html/home.html"
 
-	Response*					_response;
+	// REQUEST CURRENT STATE
 
-	//-------------- INTERNAL FUNCTIONS -------------------//
+	e_requestState		_requestState;			// current state of the request (parsing, fufilling, sending)
+	Status				_status;				// keeps track of request status code
 
+	// REQUEST RESULT
 
+	Response*			_response;				// allocated when needed, stores the response content, generates headers
 
 public:
 
@@ -121,6 +126,13 @@ public:
 
 	Request&			operator=(const Request &other);
 
+	//----------------- VALIDATORS  ----------------------//
+
+	void				validateRequestLine();
+	void				checkMethodIsAllowed();
+	const Route*		findMatchingRoute();
+
+
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	void				addRequestChunk(std::string chunk);
@@ -130,7 +142,6 @@ public:
 	e_dataProgress		parseChunkedBody(std::string& chunk);
 	e_dataProgress		parseChunkedBody(std::istream& in);
 
-	const Route*		findMatchingRoute();
 
 };
 

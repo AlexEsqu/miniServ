@@ -182,6 +182,7 @@ void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 {
 	std::map<std::string, std::string> paramMap;
+	std::vector<Route> routes;
 
 	// goes through the server config block until the closing bracket
 	std::string line;
@@ -196,7 +197,10 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 
 		// handle nested location blocks
 		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{')
-			parseLocationBlock(configFileStream, line);
+		{
+			Route route = parseLocationBlock(configFileStream, line);
+			routes.push_back(route);
+		}
 
 		// adds all lines to a map of key setting and value
 		else
@@ -218,11 +222,14 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 	if (paramMap.find("root") != paramMap.end())
 		serverConf.setRoot(paramMap["root"]);
 
+	#ifdef DEBUG
 	std::cout << "Config block parsed :\n";
 	for (std::map<std::string, std::string>::iterator it = paramMap.begin(); it != paramMap.end(); it++)
-	{
 		std::cout << "[" << it->first << "] = [" << it->second << "]\n";
-	}
+	#endif
+
+	for (size_t i = 0; i < routes.size(); i++)
+		serverConf.addRoute(routes[i]);
 
 	addDefaultRoute(serverConf);
 

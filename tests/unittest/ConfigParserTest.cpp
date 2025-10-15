@@ -310,3 +310,440 @@ TEST_CASE("ConfigParser parses server block with nested location blocks") {
 
 	std::remove(configPath.c_str());
 }
+
+TEST_CASE("Route creation and accessibility from ServerConf") {
+
+	SUBCASE("Single location block creates route correctly") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"        index api.html api.json;\n"
+			"        autoindex on;\n"
+			"        allow_methods GET POST;\n"
+			"    }\n"
+			"}\n";
+
+		const std::string configPath = "test_single_route.conf";
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+
+		REQUIRE(configs.size() == 1);
+
+		// Check that routes are accessible
+		const std::vector<Route>& routes = configs[0].getRoutes();
+		CHECK(routes.size() == 2); // 1 location block + 1 default route
+
+		// Find the API route
+		const Route* apiRoute = NULL;
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/api") {
+				apiRoute = &routes[i];
+				break;
+			}
+		}
+
+		REQUIRE(apiRoute != NULL);
+		CHECK(apiRoute->getRootDirectory() == "/var/www/api");
+		CHECK(apiRoute->getDefaultFiles().size() == 2);
+		CHECK(apiRoute->getDefaultFiles()[0] == "api.html");
+		CHECK(apiRoute->getDefaultFiles()[1] == "api.json");
+		CHECK(apiRoute->isAutoIndex() == true);
+
+		std::remove(configPath.c_str());
+	}
+
+	SUBCASE("Multiple location blocks create multiple routes") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"        allow_methods GET POST PUT DELETE;\n"
+			"    }\n"
+			"    location /static {\n"
+			"        root /var/www/static;\n"
+			"        autoindex on;\n"
+			"        allow_methods GET;\n"
+			"    }\n"
+			"    location /upload {\n"
+			"        root /var/www/uploads;\n"
+			"        allow_methods POST DELETE;\n"
+			"        autoindex off;\n"
+			"    }\n"
+			"}\n";
+
+		const std::string configPath = "test_multiple_routes.conf";
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+
+		REQUIRE(configs.size() == 1);
+
+		const std::vector<Route>& routes = configs[0].getRoutes();
+		CHECK(routes.size() == 4); // 3 location blocks + 1 default route
+
+		// Helper function to find route by path
+		const Route* findRouteByPath = NULL;
+
+		// Find API route
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/api") {
+				findRouteByPath = &routes[i];
+				break;
+			}
+		}
+		REQUIRE(findRouteByPath != NULL);
+		CHECK(findRouteByPath->getRootDirectory() == "/var/www/api");
+
+		// Find static route
+		findRouteByPath = NULL;
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/static") {
+				findRouteByPath = &routes[i];
+				break;
+			}
+		}
+		REQUIRE(findRouteByPath != NULL);
+		CHECK(findRouteByPath->getRootDirectory() == "/var/www/static");
+		CHECK(findRouteByPath->isAutoIndex() == true);
+
+		// Find upload route
+		findRouteByPath = NULL;
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/upload") {
+				findRouteByPath = &routes[i];
+				break;
+			}
+		}
+		REQUIRE(findRouteByPath != NULL);
+		CHECK(findRouteByPath->getRootDirectory() == "/var/www/uploads");
+		CHECK(findRouteByPath->isAutoIndex() == false);
+
+		std::remove(configPath.c_str());
+	}
+
+	SUBCASE("Nested location blocks create nested routes") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"        location /api/v1 {\n"
+			"            root /var/www/api/v1;\n"
+			"            index v1.html;\n"
+			"            location /api/v1/auth {\n"
+			"                root /var/www/api/v1/auth;\n"
+			"                allow_methods POST;\n"
+			"            }\n"
+			"        }\n"
+			"        location /api/v2 {\n"
+			"            root /var/www/api/v2;\n"
+			"            index v2.html;\n"
+			"        }\n"
+			"    }\n"
+			"}\n";
+
+		const std::string configPath = "test_nested_routes.conf";
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+
+		REQUIRE(configs.size() == 1);
+
+		const std::vector<Route>& routes = configs[0].getRoutes();
+		CHECK(routes.size() == 2); // 1 location block + 1 default route
+
+		// Find API route
+		const Route* apiRoute = NULL;
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/api") {
+				apiRoute = &routes[i];
+				break;
+			}
+		}
+
+		REQUIRE(apiRoute != NULL);
+		CHECK(apiRoute->getRootDirectory() == "/var/www/api");
+
+		// Check nested routes
+		const std::vector<Route>& nestedRoutes = apiRoute->getRoutes();
+		CHECK(nestedRoutes.size() == 2); // /api/v1 and /api/v2
+
+		// Find v1 route
+		const Route* v1Route = NULL;
+		for (size_t i = 0; i < nestedRoutes.size(); i++) {
+			if (nestedRoutes[i].getURLPath() == "/api/v1") {
+				v1Route = &nestedRoutes[i];
+				break;
+			}
+		}
+
+		REQUIRE(v1Route != NULL);
+		CHECK(v1Route->getRootDirectory() == "/var/www/api/v1");
+		CHECK(v1Route->getDefaultFiles().size() == 1);
+		CHECK(v1Route->getDefaultFiles()[0] == "v1.html");
+
+		// Check double-nested route (auth)
+		const std::vector<Route>& v1NestedRoutes = v1Route->getRoutes();
+		CHECK(v1NestedRoutes.size() == 1);
+		CHECK(v1NestedRoutes[0].getURLPath() == "/api/v1/auth");
+		CHECK(v1NestedRoutes[0].getRootDirectory() == "/var/www/api/v1/auth");
+
+		// Find v2 route
+		const Route* v2Route = NULL;
+		for (size_t i = 0; i < nestedRoutes.size(); i++) {
+			if (nestedRoutes[i].getURLPath() == "/api/v2") {
+				v2Route = &nestedRoutes[i];
+				break;
+			}
+		}
+
+		REQUIRE(v2Route != NULL);
+		CHECK(v2Route->getRootDirectory() == "/var/www/api/v2");
+		CHECK(v2Route->getDefaultFiles().size() == 1);
+		CHECK(v2Route->getDefaultFiles()[0] == "v2.html");
+
+		std::remove(configPath.c_str());
+	}
+
+	SUBCASE("Default route is always created") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    index custom.html;\n"
+			"    allow_methods GET POST;\n"
+			"}\n";
+
+		const std::string configPath = "test_default_route.conf";
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+
+		REQUIRE(configs.size() == 1);
+
+		const std::vector<Route>& routes = configs[0].getRoutes();
+		CHECK(routes.size() == 1); // Only default route
+
+		// Find default route
+		const Route* defaultRoute = NULL;
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/") {
+				defaultRoute = &routes[i];
+				break;
+			}
+		}
+
+		REQUIRE(defaultRoute != NULL);
+		CHECK(defaultRoute->getRootDirectory() == "/var/www");
+		CHECK(defaultRoute->getDefaultFiles().size() == 1);
+		CHECK(defaultRoute->getDefaultFiles()[0] == "custom.html");
+
+		std::remove(configPath.c_str());
+	}
+}
+
+TEST_CASE("Route path matching functionality") {
+
+	SUBCASE("Basic path matching works correctly") {
+		Route route;
+		route.setURLPath("/api");
+
+		CHECK(route.isPathMatch("/api") == true);
+		CHECK(route.isPathMatch("/api/") == true);
+		CHECK(route.isPathMatch("/api/users") == true);
+		CHECK(route.isPathMatch("/api/v1/users") == true);
+		CHECK(route.isPathMatch("/different") == false);
+		CHECK(route.isPathMatch("/ap") == false);
+	}
+
+	SUBCASE("Root path matching works correctly") {
+		Route route;
+		route.setURLPath("/");
+
+		CHECK(route.isPathMatch("/") == true);
+		CHECK(route.isPathMatch("/index.html") == true);
+		CHECK(route.isPathMatch("/any/path") == true);
+		CHECK(route.isPathMatch("/api/test") == true);
+	}
+
+	SUBCASE("Specific path matching works correctly") {
+		Route route;
+		route.setURLPath("/static/css");
+
+		CHECK(route.isPathMatch("/static/css") == true);
+		CHECK(route.isPathMatch("/static/css/") == true);
+		CHECK(route.isPathMatch("/static/css/style.css") == true);
+		CHECK(route.isPathMatch("/static/js") == false);
+		CHECK(route.isPathMatch("/static") == false);
+	}
+}
+
+TEST_CASE("Route getMatchingRoute functionality") {
+
+	SUBCASE("Simple route matching") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"    }\n"
+			"    location /static {\n"
+			"        root /var/www/static;\n"
+			"    }\n"
+			"}\n";
+
+		const std::string configPath = "test_route_matching.conf";
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+		REQUIRE(configs.size() == 1);
+
+		const std::vector<Route>& routes = configs[0].getRoutes();
+
+		// Find specific routes for testing
+		const Route* apiRoute = NULL;
+		const Route* staticRoute = NULL;
+		const Route* defaultRoute = NULL;
+
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/api") {
+				apiRoute = &routes[i];
+			} else if (routes[i].getURLPath() == "/static") {
+				staticRoute = &routes[i];
+			} else if (routes[i].getURLPath() == "/") {
+				defaultRoute = &routes[i];
+			}
+		}
+
+		REQUIRE(apiRoute != NULL);
+		REQUIRE(staticRoute != NULL);
+		REQUIRE(defaultRoute != NULL);
+
+		// Test route matching
+		try {
+			const Route* matched = apiRoute->getMatchingRoute("/api/users");
+			CHECK(matched->getURLPath() == "/api");
+		} catch (const std::runtime_error&) {
+			FAIL("Should have found matching route");
+		}
+
+		try {
+			const Route* matched = staticRoute->getMatchingRoute("/static/css/style.css");
+			CHECK(matched->getURLPath() == "/static");
+		} catch (const std::runtime_error&) {
+			FAIL("Should have found matching route");
+		}
+
+		try {
+			const Route* matched = defaultRoute->getMatchingRoute("/index.html");
+			CHECK(matched->getURLPath() == "/");
+		} catch (const std::runtime_error&) {
+			FAIL("Should have found matching route");
+		}
+
+		std::remove(configPath.c_str());
+	}
+
+	SUBCASE("Nested route matching") {
+		const std::string configContent =
+			"server {\n"
+			"    listen 8080;\n"
+			"    root /var/www;\n"
+			"    location /api {\n"
+			"        root /var/www/api;\n"
+			"        location /api/v1 {\n"
+			"            root /var/www/api/v1;\n"
+			"        }\n"
+			"    }\n"
+			"}\n";
+
+		const std::string configPath = "test_nested_matching.conf";
+		createTempConfigFile(configPath, configContent);
+
+		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+		REQUIRE(configs.size() == 1);
+
+		const std::vector<Route>& routes = configs[0].getRoutes();
+
+		// Find API route
+		const Route* apiRoute = NULL;
+		for (size_t i = 0; i < routes.size(); i++) {
+			if (routes[i].getURLPath() == "/api") {
+				apiRoute = &routes[i];
+				break;
+			}
+		}
+
+		REQUIRE(apiRoute != NULL);
+
+		// Test that nested route is found
+		try {
+			const Route* matched = apiRoute->getMatchingRoute("/api/v1/users");
+			CHECK(matched->getURLPath() == "/api/v1");
+		} catch (const std::runtime_error&) {
+			FAIL("Should have found nested matching route");
+		}
+
+		// Test that parent route is found when no nested match
+		try {
+			const Route* matched = apiRoute->getMatchingRoute("/api/v2/test");
+			CHECK(matched->getURLPath() == "/api");
+		} catch (const std::runtime_error&) {
+			FAIL("Should have found parent matching route");
+		}
+
+		std::remove(configPath.c_str());
+	}
+}
+
+TEST_CASE("Route parameter setting") {
+
+	SUBCASE("Route parameters are set correctly from config") {
+		std::map<std::string, std::string> paramMap;
+		paramMap["root"] = "/var/www/test";
+		paramMap["index"] = "test.html test.php";
+		paramMap["autoindex"] = "on";
+		paramMap["allow_methods"] = "GET POST PUT";
+
+		Route route;
+		route.setRouteParam(paramMap);
+
+		CHECK(route.getRootDirectory() == "/var/www/test");
+		CHECK(route.getDefaultFiles().size() == 2);
+		CHECK(route.getDefaultFiles()[0] == "test.html");
+		CHECK(route.getDefaultFiles()[1] == "test.php");
+		CHECK(route.isAutoIndex() == true);
+	}
+
+	SUBCASE("Route parameters have sensible defaults") {
+		std::map<std::string, std::string> paramMap;
+		paramMap["root"] = "/var/www/minimal";
+
+		Route route;
+		route.setRouteParam(paramMap);
+
+		CHECK(route.getRootDirectory() == "/var/www/minimal");
+		CHECK(route.getDefaultFiles().size() == 1);
+		CHECK(route.getDefaultFiles()[0] == "index.html");
+		CHECK(route.isAutoIndex() == true);
+	}
+
+	SUBCASE("Autoindex off setting works") {
+		std::map<std::string, std::string> paramMap;
+		paramMap["root"] = "/var/www/test";
+		paramMap["autoindex"] = "off";
+
+		Route route;
+		route.setRouteParam(paramMap);
+
+		CHECK(route.isAutoIndex() == false);
+	}
+}

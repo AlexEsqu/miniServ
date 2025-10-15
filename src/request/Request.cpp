@@ -6,17 +6,15 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 Request::Request(const ServerConf& conf, std::string requestChunk)
-	: _unparsedHeaderBuffer()
-	, _conf(conf)
-	, _route(NULL)
-	, _status(200)
+	: _conf(conf)
 	, _requestState(PARSING_REQUEST_LINE)
+	, _status(200)
 {
 	addRequestChunk(requestChunk);
 }
 
 Request::Request(const Request &copy)
-: _conf(copy._conf)
+	: _conf(copy._conf)
 {
 	*this = copy;
 }
@@ -36,9 +34,9 @@ Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
 		_unparsedHeaderBuffer = other._unparsedHeaderBuffer;
-		_method = other._method;
+		_methodAsString = other._methodAsString;
 		_protocol = other._protocol;
-		_requestedFileName = other._requestedFileName;
+		_URI = other._URI;
 		_requestHeaderMap = other._requestHeaderMap;
 		_route = other._route;
 		_requestBodyBuffer = other._requestBodyBuffer;
@@ -51,7 +49,7 @@ Request &Request::operator=(const Request &other)
 
 std::string		Request::getMethod() const
 {
-	return _method;
+	return _methodAsString;
 }
 
 std::string		Request::getProtocol() const
@@ -61,7 +59,7 @@ std::string		Request::getProtocol() const
 
 std::string		Request::getRequestedURL() const
 {
-	return _requestedFileName;
+	return _URI;
 }
 
 std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
@@ -94,7 +92,7 @@ Response*			Request::getResponse()
 	return (_response);
 }
 
-std::string Request::getBody() const
+std::string			Request::getBody() const
 {
 	std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
 	std::cout << "Buffer using file: " << _requestBodyBuffer.isUsingFile() << std::endl;
@@ -124,12 +122,24 @@ bool				Request::isKeepAlive()
 
 void	Request::setMethod(std::string &method)
 {
-	_method = method;
+	_methodAsString = method;
+	if (_methodAsString == "GET")
+		_method = GET;
+	else if (_methodAsString == "PUT")
+		_method = PUT;
+	else if (_methodAsString == "HEAD")
+		_method = HEAD;
+	else if (_methodAsString == "DELETE")
+		_method = DELETE;
+	else if (_methodAsString == "POST")
+		_method = POST;
+	else
+		_method = UNSUPPORTED;
 }
 
 void	Request::setURI(std::string &URI)
 {
-	_requestedFileName = URI;
+	_URI = URI;
 }
 
 void	Request::setProtocol(std::string &protocol)
@@ -142,12 +152,12 @@ void	Request::setRoute(const Route* route)
 	_route = route;
 }
 
-void			Request::setResponse(Response* response)
+void	Request::setResponse(Response* response)
 {
 	_response = response;
 }
 
-void			Request::setParsingState(e_requestState requestState)
+void	Request::setParsingState(e_requestState requestState)
 {
 	_requestState = requestState;
 }
@@ -163,7 +173,7 @@ void	Request::setRequestLine(std::string &requestLine)
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
 
-	std::cout << _method << " " << _requestedFileName << " ";
+	std::cout << _methodAsString << " " << _URI << " ";
 }
 
 void	Request::addAsHeaderVar(std::string &keyValueString)
@@ -178,7 +188,10 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 		strToLower(key);
 		strToLower(value);
 		_requestHeaderMap[key] = value;
-		// std::cout << "[" << key << "] = [" << value << "]\n";
+
+		#ifdef DEBUG
+			std::cout << "adding Header var [" << key << "] = [" << value << "]\n";
+		#endif
 	}
 }
 
@@ -188,6 +201,21 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
+
+void			Request::checkMethodIsAllowed()
+{
+	if (_methodAsString.empty() || _method == UNSUPPORTED)
+		throw HTTPError(this, METHOD_NOT_ALLOWED);
+
+	if (!_route->isAllowedMethod(_methodAsString))
+		throw HTTPError(this, METHOD_NOT_ALLOWED);
+}
+
+void			Request::validateRequestLine()
+{
+	_route = findMatchingRoute();
+	checkMethodIsAllowed();
+}
 
 e_dataProgress	Request::parseRequestLine(std::string& chunk)
 {
@@ -211,6 +239,9 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 
 	// set parsing state to the next step
 	_requestState = PARSING_HEADERS;
+
+	// checks the request line is valid
+	validateRequestLine();
 
 	// indicate the request line has been received in full
 	return RECEIVED_ALL;
@@ -237,10 +268,7 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 	// or if it's empty, I reached the end of the headers and can set if
 	// parsing the body is necessary, which will update the parsing state
 	else
-	{
 		setIfParsingBody();
-		setRoute(findMatchingRoute()); // TO DO: make it a check request validity
-	}
 
 	// erase data used from the chunk, store the rest
 	chunk.erase(0, lineEnd + 2);
@@ -391,7 +419,7 @@ void	Request::addRequestChunk(std::string chunk)
 // unless the request is specifically marked as chunked by transfer encoding
 void				Request::setIfParsingBody()
 {
-	if (_method == "HEAD" || _method == "GET")
+	if (_methodAsString == "HEAD" || _methodAsString == "GET")
 		_requestState = PARSING_DONE;
 	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["transfer-encoding"] == "chunked")
@@ -410,18 +438,23 @@ void				Request::setIfParsingBody()
 // Matching route is required at the parsing stage to know if a request is using a valid method
 const Route*	Request::findMatchingRoute()
 {
-	Route*	result = NULL;
-	size_t	lenMatch = 0; // to make sure the longest matching url is picked
+	const Route* result = NULL;
+	size_t lenMatch = 0;
+
+	std::string requestPath = getRequestedURL();
 
 	for (size_t i = 0; i < getConf().getRoutes().size(); i++)
 	{
-		std::string	possibleMatch = getConf().getRoutes()[i].getURLPath();
+		const Route& route = getConf().getRoutes()[i];
 
-		if (getRequestedURL().find(possibleMatch) != std::string::npos
-			&& possibleMatch.size() > lenMatch)
+		if (route.isPathMatch(requestPath))
 		{
-			lenMatch = possibleMatch.size();
-			result = const_cast<Route*>(&(getConf().getRoutes()[i]));
+			std::string routePath = route.getURLPath();
+			if (routePath.size() > lenMatch)
+			{
+				lenMatch = routePath.size();
+				result = &route;
+			}
 		}
 	}
 
