@@ -114,10 +114,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 				_cf->fillRequest(*(connecting->getRequest()));
 
 			if (connecting->hasFilledResponse())
-			{
-				connecting->setEpollEventsMask(EPOLLOUT | EPOLLERR);
-				_poller.updateSocketEvent(connecting);
-			}
+				setPollingMode(WRITING, connecting);
 		}
 
 		// if any HTTP error happens, create an error page to send and display
@@ -125,8 +122,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
 			std::cerr << e.what() << "\n";
-			connecting->setEpollEventsMask(EPOLLOUT | EPOLLERR);
-			_poller.updateSocketEvent(connecting);
+			setPollingMode(WRITING, connecting);
 		}
 
 		catch ( std::exception &e )
@@ -146,17 +142,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 			connecting->sendResponse();
 
 			if (connecting->hasSentResponse())
-			{
-				if (connecting->getRequest()->isKeepAlive())
-				{
-					connecting->resetRequest();
-					connecting->setEpollEventsMask(EPOLLIN | EPOLLERR);
-					_poller.updateSocketEvent(connecting);
-				}
-				else
-					removeConnection(connecting);
-			}
-
+				closeConnectionOrResetAndKeepAlive(connecting);
 		}
 	}
 
@@ -169,5 +155,22 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 }
 
 
+void		ServerSocket::setPollingMode(e_clientSocketMode mode, ClientSocket* socket)
+{
+	if (mode == WRITING)
+		socket->setEpollEventsMask(EPOLLOUT | EPOLLERR);
+	else
+		socket->setEpollEventsMask(EPOLLIN | EPOLLERR);
+	_poller.updateSocketEvent(socket);
+}
 
-
+void		ServerSocket::closeConnectionOrResetAndKeepAlive(ClientSocket* socket)
+{
+	if (socket->getRequest()->isKeepAlive())
+	{
+		socket->resetRequest();
+		setPollingMode(READING, socket);
+	}
+	else
+		removeConnection(socket);
+}

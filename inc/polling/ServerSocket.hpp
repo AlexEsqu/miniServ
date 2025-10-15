@@ -10,6 +10,13 @@
 #include "PythonExecutor.hpp"
 #include "Poller.hpp"
 
+enum e_clientSocketMode
+{
+	WRITING,
+	READING
+};
+
+
 class ClientSocket;
 
 class Poller;
@@ -47,5 +54,8 @@ public:
 	void				acceptNewConnection();
 	void				removeConnection(ClientSocket* clientSocket);
 	void				handleExistingConnection(ClientSocket* client, epoll_event &event);
+
+	void				setPollingMode(e_clientSocketMode mode, ClientSocket* client);
+	void				closeConnectionOrResetAndKeepAlive(ClientSocket* client);
 
 };

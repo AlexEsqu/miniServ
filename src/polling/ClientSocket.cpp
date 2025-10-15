@@ -141,7 +141,7 @@ void	ClientSocket::readRequest()
 	if (_request == NULL)
 		_request = new Request(_serv.getConf(), _fullHeader);
 
-	// if the request needs more than headers, read into a buffer and add as chunk
+	// else, the request exist and needs more than headers, so read what can be read into a buffer and add as chunk
 	else if (_request->getParsingState() == PARSING_BODY || _request->getParsingState() == PARSING_BODY_CHUNKED)
 	{
 		int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK); // TO DO : optimize to call for content length if known ?
@@ -223,10 +223,5 @@ bool	ClientSocket::hasSentResponse()
 		return false;
 
 	return (_request->getParsingState() == SENDING_DONE);
-}
-
-void	ClientSocket::closeConnectionOrResestRequest()
-{
-	
 }
 
