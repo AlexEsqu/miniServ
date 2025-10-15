@@ -140,6 +140,8 @@ void	Response::routeUrlForGet(std::string url)
 
 void Response::setRoutedUrl(std::string url)
 {
+	std::cout << "routes avaialble : " << _request->getRoute()->getDefaultFiles().size() << "\n";
+
 	if (_request->getMethod() == "GET" or _request->getMethod() == "HEAD")
 		routeUrlForGet(url);
 	else
