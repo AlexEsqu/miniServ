@@ -36,9 +36,13 @@ public:
 	Response(Request *req, int status);
 	Response(const Response &copy);
 
+	//------------------- OPERATORS ----------------------//
+
+	Response		&operator=(const Response &other);
+
 	//----------------- DESTRUCTOR -----------------------//
 
-	virtual ~Response();
+	virtual			~Response();
 
 	//-------------------- SETTER ------------------------//
 
@@ -62,10 +66,6 @@ public:
 	std::string		getRoutedURL() const;
 
 	std::string		getHTTPResponse();
-
-	//------------------- OPERATORS ----------------------//
-
-	Response &operator=(const Response &other);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 

@@ -177,7 +177,7 @@ void	ContentFetcher::deleteItemFromServer(Request& )
 }
 
 
-void	ContentFetcher::fillRequest(Request& request)
+void	ContentFetcher::fillResponse(Request& request)
 {
 	// create a response object in the request, with routed url
 	createResponseToFill(&request);

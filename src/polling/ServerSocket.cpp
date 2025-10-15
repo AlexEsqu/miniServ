@@ -102,52 +102,40 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 
 void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_event &event)
 {
-	// Socket ready to read data
-	if (event.events & EPOLLIN) {
-
+	if (socketIsReadyToReceiveData(event))
+	{
 		// reading the request or request chunk into a Request object
 		try
 		{
 			connecting->readRequest();
 
 			if (connecting->hasParsedRequest())
-				_cf->fillRequest(*(connecting->getRequest()));
+				_cf->fillResponse(*(connecting->getRequest()));
 
 			if (connecting->hasFilledResponse())
 				setPollingMode(WRITING, connecting);
 		}
 
-		// if any HTTP error happens, create an error page to send and display
-		catch ( HTTPError &e )
-		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-			std::cerr << e.what() << "\n";
-			setPollingMode(WRITING, connecting);
-		}
-
+		// catch system error such as alloc, read, or write fail, and remove faulty sockets
 		catch ( std::exception &e )
 		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
-			std::cerr << e.what() << "\n";
+			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n") << e.what() << "\n";
 			removeConnection(connecting);
 		}
 	}
 
-	// socket ready to receive data
-	else if (event.events & EPOLLOUT)
+	else if (socketIsReadyToSendData(event))
 	{
-		// if response is complete, send the data
 		if (connecting->hasFilledResponse())
 		{
 			connecting->sendResponse();
 
 			if (connecting->hasSentResponse())
-				closeConnectionOrResetAndKeepAlive(connecting);
+				closeConnectionOrCleanAndKeepAlive(connecting);
 		}
 	}
 
-	// Socket not doing so well
-	else if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
+	else if (socketIsHavingTrouble(event)) {
 		std::cout << "Connection closed or error occurred" << std::endl;
 		removeConnection(connecting);
 		return;
@@ -164,7 +152,7 @@ void		ServerSocket::setPollingMode(e_clientSocketMode mode, ClientSocket* socket
 	_poller.updateSocketEvent(socket);
 }
 
-void		ServerSocket::closeConnectionOrResetAndKeepAlive(ClientSocket* socket)
+void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 {
 	if (socket->getRequest()->isKeepAlive())
 	{
@@ -173,4 +161,19 @@ void		ServerSocket::closeConnectionOrResetAndKeepAlive(ClientSocket* socket)
 	}
 	else
 		removeConnection(socket);
+}
+
+bool		ServerSocket::socketIsReadyToReceiveData(epoll_event& event)
+{
+	return (event.events & EPOLLIN);
+}
+
+bool		ServerSocket::socketIsReadyToSendData(epoll_event& event)
+{
+	return (event.events & EPOLLOUT);
+}
+
+bool		ServerSocket::socketIsHavingTrouble(epoll_event& event)
+{
+	return (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP));
 }

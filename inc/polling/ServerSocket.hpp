@@ -13,7 +13,8 @@
 enum e_clientSocketMode
 {
 	WRITING,
-	READING
+	READING,
+	ERROR
 };
 
 
@@ -56,6 +57,10 @@ public:
 	void				handleExistingConnection(ClientSocket* client, epoll_event &event);
 
 	void				setPollingMode(e_clientSocketMode mode, ClientSocket* client);
-	void				closeConnectionOrResetAndKeepAlive(ClientSocket* client);
+	void				closeConnectionOrCleanAndKeepAlive(ClientSocket* client);
+
+	bool				socketIsReadyToReceiveData(epoll_event& event);
+	bool				socketIsReadyToSendData(epoll_event& event);
+	bool				socketIsHavingTrouble(epoll_event& event);
 
 };
