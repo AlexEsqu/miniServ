@@ -43,19 +43,19 @@
 
 				<article role="tabpanel" hidden="hidden" class="presentation-article" id="add-yourself-article">
 					<div class="field-row">
-						<form method="post" action="upload/" id="form">
+						<form method="post" action="upload/" id="form" enctype="multipart/form-data">
+							<!-- <div class="field-row-stacked">
+								<label for="name">Name</label>
+								<input type="text" id="name" name="name" />
+							</div> -->
 							<div class="field-row-stacked">
-								<label for="user-name">Name</label>
-								<input id="user-name" type="text" />
+								<label for="picture">Submit your picture</label>
+								<input id="picture" name="picture" type="file" accept="image/*" />
 							</div>
-							<div class="field-row-stacked">
-								<label for="user-picture">Submit your picture</label>
-								<input id="user-picture" type="file" accept="image/*" />
-							</div>
-							<div class="field-row-stacked">
-								<label for="user-description">Description</label>
-								<textarea id="user-description" placeholder="Describe yourself"></textarea>
-							</div>
+							<!-- <div class="field-row-stacked">
+								<label for="description">Description</label>
+								<textarea name="description" id="description" placeholder="Describe yourself"></textarea>
+							</div> -->
 						</form>
 					</div>
 				</article>
@@ -79,7 +79,7 @@
 					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce quis metus metus. Nam at accumsan ex, ut varius mi. Duis eget sem consectetur ipsum fringilla dictum.
 					Vestibulum commodo venenatis lorem, cursus pellentesque risus efficitur id. In justo ex, efficitur id tincidunt ut, suscipit vel felis. Quisque dapibus non nisi tincidunt
 					pretium. Donec vel nunc ac turpis scelerisque porta. Morbi egestas lectus tempus, condimentum lectus non, egestas risus. Quisque id purus ultricies, eleifend urna eget,
-					ullamcorper lectus. Phasellus id nulla risus. Phasellus ultricies justo eget mauris tempor, non eleifend neque venenatis. Nulla mattis diam vitae arcu auctor, eget
+					ullamcorper lectus. Phasellus id nulla risus. <a href="./clock.py">Phasellus</a> ultricies justo eget mauris tempor, non eleifend neque venenatis. Phasellus ultricies justo eget mauris tempor, non eleifend neque venenatis. Nulla mattis diam vitae arcu auctor, eget
 					suscipit justo egestas. In maximus orci viverra bibendum sollicitudin. Nulla felis arcu, fringilla in hendrerit quis, sodales a nulla. Phasellus ac maximus dolor.
 					Pellentesque pellentesque ex vel tellus venenatis tristique. Sed a tellus blandit, posuere mi eu, faucibus nunc. Suspendisse ligula tellus, vestibulum porta condimentum
 					eget, consequat nec justo. Aliquam erat volutpat. Cras orci eros, semper quis mi at, varius euismod quam. Suspendisse gravida libero mi, id scelerisque nulla aliquet
@@ -102,4 +102,4 @@
 		</div>
 	</footer>
 </html>
-<!--  -->
+
