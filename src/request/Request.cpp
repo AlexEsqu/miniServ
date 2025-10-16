@@ -224,7 +224,7 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 void	Request::setError(unsigned int statusCode)
 {
 	_status.setStatusCode(statusCode);
-	_requestState = HAS_ERROR;
+	_hasError = true;
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
@@ -236,6 +236,9 @@ void	Request::setError(unsigned int statusCode)
 
 void			Request::checkMethodIsAllowed()
 {
+	if (_hasError)
+		return;
+
 	if (_methodAsString.empty() || _method == UNSUPPORTED)
 		setError(405);
 
@@ -263,6 +266,7 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	// create request line out of chunk and possible unparsed leftover
 	std::string requestLine = _unparsedHeaderBuffer + chunk.substr(0, lineEnd);
 	setRequestLine(requestLine);
+	validateRequestLine();
 
 	// erase data used from the buffer, from the chunk, and the uneeded \r\n
 	_unparsedHeaderBuffer.clear();
@@ -270,9 +274,6 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 
 	// set parsing state to the next step
 	_requestState = PARSING_HEADERS;
-
-	// checks request line, may set parsing state as HAS_ERROR
-	validateRequestLine();
 
 	// indicate the request line has been received in full
 	return RECEIVED_ALL;
@@ -388,7 +389,6 @@ void	Request::addRequestChunk(std::string chunk)
 					return;
 				break;
 			}
-			// specifically for HAS_ERROR or PARSING_DONE
 			default:
 				return;
 		}
@@ -400,7 +400,8 @@ void	Request::addRequestChunk(std::string chunk)
 // unless the request is specifically marked as chunked by transfer encoding
 void				Request::setIfParsingBody()
 {
-	if (_method == HEAD || _method == GET)
+	// for certain methods and if an error is found in the headers, no need to parse body
+	if (_method == HEAD || _method == GET || _hasError)
 		_requestState = PARSING_DONE;
 	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["transfer-encoding"] == "chunked")

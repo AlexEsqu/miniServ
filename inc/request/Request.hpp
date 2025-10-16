@@ -20,8 +20,7 @@ enum e_requestState {
 	FILLING_ONGOING,
 	FILLING_DONE,
 	SENDING_ONGOING,
-	SENDING_DONE,
-	HAS_ERROR
+	SENDING_DONE
 };
 
 enum e_methods
@@ -77,6 +76,7 @@ private:
 
 	e_requestState		_requestState;			// current state of the request (parsing, fufilling, sending)
 	Status				_status;				// keeps track of request status code
+	bool				_hasError;				// no need to keep parsing unless to empty socket
 
 	// REQUEST RESULT
 
