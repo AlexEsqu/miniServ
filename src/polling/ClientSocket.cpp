@@ -90,76 +90,31 @@ void	ClientSocket::checkForReadError(int valread)
 		throw endSocket();
 }
 
-// read MAX_HEADER_SIZE into socket to check if request has the substring
-// "\r\n\r\b" which means the request headers have been received in full
-bool	ClientSocket::tryToReadHeaderBlock()
-{
-	// if a request object exists, the headers have already been extracted and parsed
-	if (_request)
-		return true;
-
-	int valread = recv(getSocketFd(), _buffer, MAX_HEADER_SIZE, O_NONBLOCK);
-	checkForReadError(valread);
-
-	// for ease of string manipulation, get buffer into a string and clear buffer
-	std::string	headersAsString(_buffer, valread);
-	memset(_buffer, '\0', MAX_HEADER_SIZE);
-
-	// searchs for the end of header string in the read from the buffer
-	size_t		posEndOfHeader = headersAsString.find(END_OF_HEADER_STR);
-
-	// if the end of header is not in the socket, the request headers have not all been received
-	if (posEndOfHeader == std::string::npos)
-	{
-		// much like NGINX or Apache, max length of headers is set at 4k
-		// so if no end of header is found in that amount, throw HTTP Error 413 Entity Too Large
-		if (valread == MAX_HEADER_SIZE)
-			throw HTTPError(NULL, 413); // TO DO: add a request there or change constructor to allow for request less
-
-		// else if the socket simply doesn't contain the MAX_HEADER_SIZE yet,
-		// simply return false and waits for more
-		return false;
-	}
-
-	// else sets headerSize and return true
-	_headerSize = posEndOfHeader + sizeof(END_OF_HEADER_STR);
-	_fullHeader = headersAsString;
-	return true;
-}
-
 void	ClientSocket::readRequest()
 {
 	#ifdef DEBUG
 		std::cout << "\nClient Socket " << getSocketFd();
 	#endif
 
-	// check if the full request headers have been received to extract them, else return to epoll
-	if (!tryToReadHeaderBlock())
-		return;
+	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK);
+	checkForReadError(valread);
 
-	// add a Request object if none exist, make it parse the headers and possible leftover
+	// since some data can be interspeced with \0, creating a string of valread size
+	std::string	requestChunk(_buffer, valread);
+
+	// clear buffer for further use
+	memset(_buffer, '\0', sizeof(_buffer));
+
+	// add a Request object if none exist, make it parse the current chunk
 	if (_request == NULL)
-		_request = new Request(_serv.getConf(), _fullHeader);
-
-	// else, the request exist and needs more than headers, so read what can be read into a buffer and add as chunk
-	else if (_request->getParsingState() == PARSING_BODY)
-	{
-		int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK); // TO DO : optimize to call for content length if known ?
-		checkForReadError(valread);
-
-		// since some data can be interspeced with \0, creating a string of valread size
-		std::string	requestChunk(_buffer, valread);
-
-		_request->addRequestChunk(_buffer);
-
-		// clear buffer for further use
-		memset(_buffer, '\0', sizeof(_buffer));
-	}
+		_request = new Request(_serv.getConf(), requestChunk);
+	// else add the chunk of unparsed material to the existing request
+	else
+		_request->addRequestChunk(requestChunk);
 }
 
 void	ClientSocket::sendResponse()
 {
-
 	_response = _request->getResponse()->getHTTPResponse();
 
 	size_t totalToSend = _response.length();

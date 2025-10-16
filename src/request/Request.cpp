@@ -197,6 +197,8 @@ void	Request::setRequestLine(std::string &requestLine)
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
 
+
+
 	std::cout << _methodAsString << " " << _URI << " ";
 }
 
@@ -260,17 +262,16 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 
 	// create request line out of chunk and possible unparsed leftover
 	std::string requestLine = _unparsedHeaderBuffer + chunk.substr(0, lineEnd);
-	_unparsedHeaderBuffer.clear();
-
 	setRequestLine(requestLine);
 
-	// erase data used from the chunk and unneeded \r\n
+	// erase data used from the buffer, from the chunk, and the uneeded \r\n
+	_unparsedHeaderBuffer.clear();
 	chunk.erase(0, lineEnd + 2);
 
 	// set parsing state to the next step
 	_requestState = PARSING_HEADERS;
 
-	// checks the request line is valid
+	// checks request line, may set parsing state as HAS_ERROR
 	validateRequestLine();
 
 	// indicate the request line has been received in full
