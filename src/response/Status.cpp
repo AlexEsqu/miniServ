@@ -4,44 +4,39 @@
 ///                  CONSTRUCTORS | DESTRUCTORS                  //
 ///////////////////////////////////////////////////////////////////
 
-Status::Status() : _statusMessage("Unknown status code"), _statusCode(0)
+// create a HTTP status code objects initialized at 200
+Status::Status()
 {
-	// std::cout << "Status Constructor called" << std::endl;
+	setStatusCode(200);
 }
 
-Status::Status(unsigned int num) :_statusMessage("Unknown status code")
+// create a HTTP status code objects initialized at the given int
+Status::Status(unsigned int num)
 {
 	Status::setStatusCode(num);
 }
 
-Status::Status(std::string message) : _statusCode(0)
-{
-	Status::setStatusMessage(message);
-}
-
 Status::Status(const Status &copy)
 {
-	// std::cout << "Status copy Constructor called" << std::endl;
 	*this = copy;
 }
 
 Status::~Status()
 {
-	// std::cout << "Status Destructor called" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////
 ///                        OPERATORS                             //
 ///////////////////////////////////////////////////////////////////
 
-Status &Status::operator=(const Status &other)
+Status&			Status::operator=(const Status &other)
 {
 	this->_statusCode = other.getStatusCode();
 	this->_statusMessage = other.getStatusMessage();
 	return (*this);
 }
 
-std::ostream &operator<<(std::ostream &o, Status &status)
+std::ostream&	operator<<(std::ostream &o, Status &status)
 {
 	o << status.getStatusCode() << " "  << status.getStatusMessage();
 	return(o);
@@ -50,24 +45,29 @@ std::ostream &operator<<(std::ostream &o, Status &status)
 ///                    GETTERS | SETTERS                         //
 ///////////////////////////////////////////////////////////////////
 
-unsigned int Status::getStatusCode() const
+unsigned int	Status::getStatusCode() const
 {
 	return(this->_statusCode);
 }
 
-std::string Status::getStringStatusCode() const
+std::string		Status::getStringStatusCode() const
 {
 	std::stringstream temp;
 	temp << this->_statusCode;
 	return(temp.str());
 }
 
-std::string Status::getStatusMessage() const
+std::string		Status::getStatusMessage() const
 {
 	return(this->_statusMessage);
 }
 
-void Status::setStatusCode(unsigned int num)
+bool			Status::hasError() const
+{
+	return _hasError;
+}
+
+void			Status::setStatusCode(unsigned int num)
 {
 	this->_statusCode = num;
 	try
@@ -84,7 +84,7 @@ void Status::setStatusCode(unsigned int num)
 
 }
 
-void Status::setStatusMessage(std::string message)
+void			Status::setStatusMessage(std::string message)
 {
 	this->_statusMessage = message;
 	int i = 0;
@@ -107,7 +107,6 @@ void Status::setStatusMessage(std::string message)
 		std::cerr << RED << e.what() << STOP_COLOR << '\n';
 	}
 }
-
 
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //

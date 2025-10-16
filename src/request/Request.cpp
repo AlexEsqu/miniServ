@@ -5,10 +5,12 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
+// initializes a new request with a first chunk of request content
+// the object starts parsing as it receives information
+// the status is initialized empty, so set at 200 / SUCCESS
 Request::Request(const ServerConf& conf, std::string requestChunk)
 	: _conf(conf)
 	, _requestState(PARSING_REQUEST_LINE)
-	, _status(200)
 {
 	addRequestChunk(requestChunk);
 }
@@ -33,13 +35,13 @@ Request::~Request()
 Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
-		_unparsedHeaderBuffer = other._unparsedHeaderBuffer;
-		_methodAsString = other._methodAsString;
-		_protocol = other._protocol;
-		_URI = other._URI;
-		_requestHeaderMap = other._requestHeaderMap;
-		_route = other._route;
-		_requestBodyBuffer = other._requestBodyBuffer;
+		_unparsedHeaderBuffer	= other._unparsedHeaderBuffer;
+		_methodAsString			= other._methodAsString;
+		_protocol				= other._protocol;
+		_URI					= other._URI;
+		_requestHeaderMap		= other._requestHeaderMap;
+		_route					= other._route;
+		_requestBodyBuffer		= other._requestBodyBuffer;
 	}
 
 	return *this;
@@ -47,17 +49,22 @@ Request &Request::operator=(const Request &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
-std::string		Request::getMethod() const
+std::string			Request::getMethodAsString() const
 {
 	return _methodAsString;
 }
 
-std::string		Request::getProtocol() const
+e_methods			Request::getMethodCode() const
+{
+	return _method;
+}
+
+std::string			Request::getProtocol() const
 {
 	return _protocol;
 }
 
-std::string		Request::getRequestedURL() const
+std::string			Request::getRequestedURL() const
 {
 	return _URI;
 }
@@ -118,6 +125,11 @@ bool				Request::isKeepAlive()
 	return false;
 }
 
+bool				Request::hasError() const
+{
+	return _status.hasError();
+}
+
 //----------------------- SETTERS -----------------------------------//
 
 void	Request::setMethod(std::string &method)
@@ -137,9 +149,17 @@ void	Request::setMethod(std::string &method)
 		_method = UNSUPPORTED;
 }
 
+// extracts the ?key=value CGI param from the URI, storing them in another string
 void	Request::setURI(std::string &URI)
 {
-	_URI = URI;
+	size_t queryPos = URI.find('?');
+	if (queryPos != std::string::npos)
+	{
+		_paramCGI = URI.substr(queryPos + 1, URI.size());
+		_URI = URI.substr(0, queryPos);
+	}
+	else
+		_URI = URI;
 }
 
 void	Request::setProtocol(std::string &protocol)
@@ -168,10 +188,16 @@ void	Request::setRequestLine(std::string &requestLine)
 {
 	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
-		throw HTTPError(this, 400);
+	{
+		std::cout << "Invalid line format";
+		setError(400);
+		return;
+	}
 	setMethod(trim(splitRequestLine[0]));
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
+
+
 
 	std::cout << _methodAsString << " " << _URI << " ";
 }
@@ -195,6 +221,12 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 	}
 }
 
+void	Request::setError(unsigned int statusCode)
+{
+	_status.setStatusCode(statusCode);
+	_requestState = HAS_ERROR;
+}
+
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
 
 
@@ -205,10 +237,10 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 void			Request::checkMethodIsAllowed()
 {
 	if (_methodAsString.empty() || _method == UNSUPPORTED)
-		throw HTTPError(this, METHOD_NOT_ALLOWED);
+		setError(405);
 
 	if (!_route->isAllowedMethod(_methodAsString))
-		throw HTTPError(this, METHOD_NOT_ALLOWED);
+		setError(405);
 }
 
 void			Request::validateRequestLine()
@@ -230,17 +262,16 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 
 	// create request line out of chunk and possible unparsed leftover
 	std::string requestLine = _unparsedHeaderBuffer + chunk.substr(0, lineEnd);
-	_unparsedHeaderBuffer.clear();
-
 	setRequestLine(requestLine);
 
-	// erase data used from the chunk and unneeded \r\n
+	// erase data used from the buffer, from the chunk, and the uneeded \r\n
+	_unparsedHeaderBuffer.clear();
 	chunk.erase(0, lineEnd + 2);
 
 	// set parsing state to the next step
 	_requestState = PARSING_HEADERS;
 
-	// checks the request line is valid
+	// checks request line, may set parsing state as HAS_ERROR
 	validateRequestLine();
 
 	// indicate the request line has been received in full
@@ -283,24 +314,19 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 	_unparsedHeaderBuffer.clear();
 	chunk.clear();
 
-	if (_contentLength && _requestBodyBuffer.getBufferSize() < _contentLength)
-		return WAITING_FOR_MORE;
+	if (_isChunked)
+		return parseChunkedBody();
 
-	// should only be for chunked request ? TO DO : check
-	// else if (!_contentLength && chunk.find("\r\n\r\n") == std::string::npos)
-	// 	return WAITING_FOR_MORE;
+	else if (_requestBodyBuffer.getBufferSize() < _contentLength)
+		return WAITING_FOR_MORE;
 
 	_requestState = PARSING_DONE;
 
 	return RECEIVED_ALL;
 }
 
-e_dataProgress Request::parseChunkedBody(std::string& chunk)
+e_dataProgress Request::parseChunkedBody()
 {
-	_requestBodyBuffer.writeToBuffer(_unparsedHeaderBuffer + chunk);
-	_unparsedHeaderBuffer.clear();
-	chunk.clear();
-
 	size_t offset = 0;
 	while (true) {
 		size_t sizeEnd = _unparsedHeaderBuffer.find("\r\n", offset);
@@ -336,45 +362,6 @@ e_dataProgress Request::parseChunkedBody(std::string& chunk)
 	}
 }
 
-e_dataProgress		Request::parseChunkedBody(std::istream& in)
-{
-	while (true) {
-
-		// checks the size of the chunk has been received
-		std::string sizeLine;
-		if (!std::getline(in, sizeLine, '\n'))
-			return WAITING_FOR_MORE;
-
-		// atoi the size of the chunk
-		size_t chunkSize = 0;
-		std::istringstream iss(sizeLine);
-		iss >> std::hex >> chunkSize;
-
-		// if the chunk size is zero, chunked parsing is done, returning
-		if (chunkSize == 0) {
-			_requestState = PARSING_DONE;
-			return RECEIVED_ALL;
-		}
-
-		// else, extracting the raw data up to chunkSize, or waiting for more
-		std::string chunkData(chunkSize, '\0');
-		in.read(&chunkData[0], chunkSize);
-		if (in.gcount() < static_cast<std::streamsize>(chunkSize))
-			return WAITING_FOR_MORE;
-
-		// if the whole chunk has been extracted, writing it to buffer
-		_requestBodyBuffer.writeToBuffer(chunkData);
-
-		// read and discard trailing CRLF after chunk data for socket ease
-		char crlf[2];
-		in.read(crlf, 2);
-
-		// might be signed the request is malformed or incomplete
-		if (in.gcount() < 2 || std::string(crlf, 2) != "\r\n")
-			return WAITING_FOR_MORE;
-	}
-}
-
 // For every chunk of data added to the request, parsing continues from last state
 // and returns if the current parsed item (header, body...) is not finished
 void	Request::addRequestChunk(std::string chunk)
@@ -393,7 +380,6 @@ void	Request::addRequestChunk(std::string chunk)
 			{
 				if (parseHeaderLine(chunk) == WAITING_FOR_MORE)
 					return;
-
 				break;
 			}
 			case PARSING_BODY:
@@ -402,12 +388,7 @@ void	Request::addRequestChunk(std::string chunk)
 					return;
 				break;
 			}
-			case PARSING_BODY_CHUNKED:
-			{
-				if (parseChunkedBody(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
+			// specifically for HAS_ERROR or PARSING_DONE
 			default:
 				return;
 		}
@@ -419,17 +400,19 @@ void	Request::addRequestChunk(std::string chunk)
 // unless the request is specifically marked as chunked by transfer encoding
 void				Request::setIfParsingBody()
 {
-	if (_methodAsString == "HEAD" || _methodAsString == "GET")
+	if (_method == HEAD || _method == GET)
 		_requestState = PARSING_DONE;
 	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["transfer-encoding"] == "chunked")
 	{
-		_requestState = PARSING_BODY_CHUNKED;
+		_requestState = PARSING_BODY;
+		_isChunked = true;
 	}
 	else if (_requestHeaderMap.find("content-length") != _requestHeaderMap.end())
 	{
 		_contentLength = atoi(_requestHeaderMap["content-length"].c_str());
 		_requestState = PARSING_BODY;
+		_isChunked = false;
 	}
 	else
 		_requestState = PARSING_DONE;
@@ -459,8 +442,11 @@ const Route*	Request::findMatchingRoute()
 	}
 
 	if (result == NULL)
-		throw HTTPError(this, 404);
-
+	{
+		std::cout << RED << "404: No route for: " + requestPath << STOP_COLOR;
+		setError(404);
+		return NULL;
+	}
 	return result;
 }
 

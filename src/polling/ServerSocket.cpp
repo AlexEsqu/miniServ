@@ -102,68 +102,40 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 
 void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_event &event)
 {
-	// Socket ready to read data
-	if (event.events & EPOLLIN) {
-
+	if (socketIsReadyToReceiveData(event))
+	{
 		// reading the request or request chunk into a Request object
 		try
 		{
 			connecting->readRequest();
 
-			if (connecting->getRequest() && connecting->getRequest()->getParsingState() == PARSING_DONE)
-			{
-				_cf->fillRequest(*(connecting->getRequest()));
-			}
+			if (connecting->hasParsedRequest())
+				_cf->fillResponse(*(connecting->getRequest()));
 
-			if (connecting->getRequest() && connecting->getRequest()->getParsingState() == FILLING_DONE)
-			{
-				connecting->setEpollEventsMask(EPOLLOUT | EPOLLERR);
-				_poller.updateSocketEvent(connecting);
-			}
+			if (connecting->hasFilledResponse())
+				setPollingMode(WRITING, connecting);
 		}
 
-		// if any HTTP error happens, create an error page to send and display
-		catch ( HTTPError &e )
-		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-			std::cerr << e.what() << "\n";
-			connecting->setEpollEventsMask(EPOLLOUT | EPOLLERR);
-			_poller.updateSocketEvent(connecting);
-		}
-
+		// catch system error such as alloc, read, or write fail, and remove faulty sockets
 		catch ( std::exception &e )
 		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
-			std::cerr << e.what() << "\n";
+			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n") << e.what() << "\n";
 			removeConnection(connecting);
 		}
 	}
 
-	// socket ready to receive data
-	else if (event.events & EPOLLOUT)
+	else if (socketIsReadyToSendData(event))
 	{
-		// if request is complete, fetch content and wrap in HTTP header
-		if (connecting->getRequest() && connecting->getRequest()->getParsingState() == FILLING_DONE)
+		if (connecting->hasFilledResponse())
 		{
 			connecting->sendResponse();
 
-			if (connecting->getRequest()->getParsingState() == SENDING_DONE)
-			{
-				if (connecting->getRequest()->isKeepAlive())
-				{
-					connecting->resetRequest();
-					connecting->setEpollEventsMask(EPOLLIN | EPOLLERR);
-					_poller.updateSocketEvent(connecting);
-				}
-				else
-					removeConnection(connecting);
-			}
-
+			if (connecting->hasSentResponse())
+				closeConnectionOrCleanAndKeepAlive(connecting);
 		}
 	}
 
-	// Socket not doing so well
-	else if (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) {
+	else if (socketIsHavingTrouble(event)) {
 		std::cout << "Connection closed or error occurred" << std::endl;
 		removeConnection(connecting);
 		return;
@@ -171,5 +143,37 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 }
 
 
+void		ServerSocket::setPollingMode(e_clientSocketMode mode, ClientSocket* socket)
+{
+	if (mode == WRITING)
+		socket->setEpollEventsMask(EPOLLOUT | EPOLLERR);
+	else
+		socket->setEpollEventsMask(EPOLLIN | EPOLLERR);
+	_poller.updateSocketEvent(socket);
+}
 
+void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
+{
+	if (socket->getRequest()->isKeepAlive())
+	{
+		socket->resetRequest();
+		setPollingMode(READING, socket);
+	}
+	else
+		removeConnection(socket);
+}
 
+bool		ServerSocket::socketIsReadyToReceiveData(epoll_event& event)
+{
+	return (event.events & EPOLLIN);
+}
+
+bool		ServerSocket::socketIsReadyToSendData(epoll_event& event)
+{
+	return (event.events & EPOLLOUT);
+}
+
+bool		ServerSocket::socketIsHavingTrouble(epoll_event& event)
+{
+	return (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP));
+}

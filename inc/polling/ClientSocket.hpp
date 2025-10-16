@@ -49,12 +49,19 @@ public:
 	ServerSocket&		getServer();
 	std::string&		getResponse();
 
+	bool				hasRequest();
+	bool				hasParsedRequest();
+	bool				hasFilledResponse();
+	bool				hasSentResponse();
+
 	//----------------- MEMBER FUNCTION ------------------//
 
 	void				checkForReadError(int valread);
 	bool				tryToReadHeaderBlock();
 	bool				tryToReadBodyBlock();
 	bool 				tryToReadChunkBodyBlock();
+
 	void				readRequest();
 	void				sendResponse();
+
 };

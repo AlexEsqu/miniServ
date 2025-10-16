@@ -9,26 +9,43 @@ static const char *_statusMessages[512] __attribute__((unused)) = {"", "", "", "
 
 class Status
 {
+
 private:
-	std::string _statusMessage;
-	unsigned int _statusCode;
-	std::string _errorPage;
+	std::string		_statusMessage;
+	unsigned int	_statusCode;
+	std::string		_errorPage;
+	bool			_hasError;
 
 public:
+
+	//----------------- CONSTRUCTORS ---------------------//
+
 	Status();
 	Status(unsigned int num);
 	Status(std::string message);
 	Status(const Status &copy);
+
+	//----------------- DESTRUCTOR -----------------------//
+
 	virtual ~Status();
 
-	Status &operator=(const Status &other);
+	//------------------- OPERATORS ----------------------//
 
-	std::string getStringStatusCode() const;
-	unsigned int getStatusCode() const;
-	std::string getStatusMessage() const;
+	Status			&operator=(const Status &other);
 
-	void setStatusCode(unsigned int num);
-	void setStatusMessage(std::string message);
+	//-------------------- GETTERS -----------------------//
+
+	std::string		getStringStatusCode() const;
+	unsigned int	getStatusCode() const;
+	std::string		getStatusMessage() const;
+	bool			hasError() const;
+
+	//-------------------- SETTER ------------------------//
+
+	void			setStatusCode(unsigned int num);
+	void			setStatusMessage(std::string message);
+
+	//--------------- MEMBER FUNCTIONS -------------------//
 
 	class UnknownStatusException : public std::exception
 	{
@@ -38,17 +55,6 @@ public:
 			return ("Unknown status code");
 		}
 	};
-
-	// class StatusException : public std::exception
-	// {
-	// public:
-
-	// 	std::string	errorPage();
-	// 	virtual const char *what() const throw()
-	// 	{
-	// 		return ("Unknown status code");
-	// 	}
-	// };
 
 };
 
