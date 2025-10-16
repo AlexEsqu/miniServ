@@ -21,7 +21,8 @@ enum e_requestState {
 	FILLING_ONGOING,
 	FILLING_DONE,
 	SENDING_ONGOING,
-	SENDING_DONE
+	SENDING_DONE,
+	HAS_ERROR
 };
 
 enum e_methods
@@ -107,6 +108,7 @@ public:
 
 	void				setIfParsingBody();
 	void				setParsingState(e_requestState requestState);
+	void				setError(unsigned int statusCode);
 
 	//-------------------- GETTERS -----------------------//
 
@@ -121,6 +123,7 @@ public:
 	const ServerConf&	getConf() const;
 	const Status&		getStatus() const;
 	int					getParsingState() const;
+	bool				hasError() const;
 	Response*			getResponse();
 
 	std::string			getBody() const;
@@ -146,7 +149,6 @@ public:
 	e_dataProgress		parseChunkedBody(std::istream& in);
 
 	const Route*		findMatchingRoute();
-	void				extractIfCGIParam();
 };
 
 

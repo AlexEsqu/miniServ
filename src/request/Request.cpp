@@ -5,10 +5,12 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
+// initializes a new request with a first chunk of request content
+// the object starts parsing as it receives information
+// the status is initialized empty, so set at 200 / SUCCESS
 Request::Request(const ServerConf& conf, std::string requestChunk)
 	: _conf(conf)
 	, _requestState(PARSING_REQUEST_LINE)
-	, _status(200)
 {
 	addRequestChunk(requestChunk);
 }
@@ -33,13 +35,13 @@ Request::~Request()
 Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
-		_unparsedHeaderBuffer = other._unparsedHeaderBuffer;
-		_methodAsString = other._methodAsString;
-		_protocol = other._protocol;
-		_URI = other._URI;
-		_requestHeaderMap = other._requestHeaderMap;
-		_route = other._route;
-		_requestBodyBuffer = other._requestBodyBuffer;
+		_unparsedHeaderBuffer	= other._unparsedHeaderBuffer;
+		_methodAsString			= other._methodAsString;
+		_protocol				= other._protocol;
+		_URI					= other._URI;
+		_requestHeaderMap		= other._requestHeaderMap;
+		_route					= other._route;
+		_requestBodyBuffer		= other._requestBodyBuffer;
 	}
 
 	return *this;
@@ -47,17 +49,17 @@ Request &Request::operator=(const Request &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
-std::string		Request::getMethod() const
+std::string			Request::getMethod() const
 {
 	return _methodAsString;
 }
 
-std::string		Request::getProtocol() const
+std::string			Request::getProtocol() const
 {
 	return _protocol;
 }
 
-std::string		Request::getRequestedURL() const
+std::string			Request::getRequestedURL() const
 {
 	return _URI;
 }
@@ -118,6 +120,11 @@ bool				Request::isKeepAlive()
 	return false;
 }
 
+bool				Request::hasError() const
+{
+	return _status.hasError();
+}
+
 //----------------------- SETTERS -----------------------------------//
 
 void	Request::setMethod(std::string &method)
@@ -137,9 +144,17 @@ void	Request::setMethod(std::string &method)
 		_method = UNSUPPORTED;
 }
 
+// extracts the ?key=value CGI param from the URI, storing them in another string
 void	Request::setURI(std::string &URI)
 {
-	_URI = URI;
+	size_t queryPos = URI.find('?');
+	if (queryPos != std::string::npos)
+	{
+		_paramCGI = URI.substr(queryPos + 1, URI.size());
+		_URI = URI.substr(0, queryPos);
+	}
+	else
+		_URI = URI;
 }
 
 void	Request::setProtocol(std::string &protocol)
@@ -168,7 +183,11 @@ void	Request::setRequestLine(std::string &requestLine)
 {
 	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
-		throw HTTPError(this, 400);
+	{
+		std::cout << "Invalid line format";
+		setError(400);
+		return;
+	}
 	setMethod(trim(splitRequestLine[0]));
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
@@ -195,6 +214,12 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 	}
 }
 
+void	Request::setError(unsigned int statusCode)
+{
+	_status.setStatusCode(statusCode);
+	_requestState = HAS_ERROR;
+}
+
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
 
 
@@ -205,10 +230,10 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 void			Request::checkMethodIsAllowed()
 {
 	if (_methodAsString.empty() || _method == UNSUPPORTED)
-		throw HTTPError(this, METHOD_NOT_ALLOWED);
+		setError(405);
 
 	if (!_route->isAllowedMethod(_methodAsString))
-		throw HTTPError(this, METHOD_NOT_ALLOWED);
+		setError(405);
 }
 
 void			Request::validateRequestLine()
@@ -285,10 +310,6 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 
 	if (_contentLength && _requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
-
-	// should only be for chunked request ? TO DO : check
-	// else if (!_contentLength && chunk.find("\r\n\r\n") == std::string::npos)
-	// 	return WAITING_FOR_MORE;
 
 	_requestState = PARSING_DONE;
 
@@ -435,23 +456,11 @@ void				Request::setIfParsingBody()
 		_requestState = PARSING_DONE;
 }
 
-// extracts the ?key=value CGI param from the URI, storing them in another string
-void	Request::extractIfCGIParam()
-{
-	size_t queryPos = _URI.find('?');
-	if (queryPos != std::string::npos) {
-		_paramCGI = _URI.substr(queryPos + 1, _URI.size());
-		_URI = _URI.substr(0, queryPos);
-	}
-}
-
 // Matching route is required at the parsing stage to know if a request is using a valid method
 const Route*	Request::findMatchingRoute()
 {
 	const Route* result = NULL;
 	size_t lenMatch = 0;
-
-	extractIfCGIParam();
 
 	std::string requestPath = getRequestedURL();
 
@@ -471,8 +480,11 @@ const Route*	Request::findMatchingRoute()
 	}
 
 	if (result == NULL)
-		throw HTTPError(this, 404);
-
+	{
+		std::cout << RED << "404: No route for: " + requestPath << STOP_COLOR;
+		setError(404);
+		return NULL;
+	}
 	return result;
 }
 

@@ -16,12 +16,6 @@ Status::Status(unsigned int num)
 	Status::setStatusCode(num);
 }
 
-// TO DO : Elvire, this feels dangerous, can we delete this function ?
-Status::Status(std::string message)
-{
-	Status::setStatusMessage(message);
-}
-
 Status::Status(const Status &copy)
 {
 	*this = copy;
