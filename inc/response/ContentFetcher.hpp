@@ -58,10 +58,6 @@ public:
 
 	void			deleteItemFromServer(Request& request);
 
-	// Response Writing
-
-	Response		createResponseToFill(Request* request);
-
 	// Execution
 
 	void			addExecutor(Executor* executor);

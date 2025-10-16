@@ -14,8 +14,6 @@ class Response
 private:
 	//------------------ ATTRIBUTES ----------------------//
 
-	int					_statusNum;
-
 	Request*			_request;
 
 	std::string			_routedPath;
@@ -33,7 +31,6 @@ public:
 
 	Response();
 	Response(Request *req);
-	Response(Request *req, int status);
 	Response(const Response &copy);
 
 	//------------------- OPERATORS ----------------------//

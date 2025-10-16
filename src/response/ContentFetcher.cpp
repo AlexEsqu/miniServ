@@ -179,38 +179,26 @@ void	ContentFetcher::deleteItemFromServer(Request& )
 
 void	ContentFetcher::fillResponse(Request& request)
 {
-	// create a response object in the request, with routed url
-	createResponseToFill(&request);
+	// create a response object in the request
+	Response* result = new Response(&request);
 
-	if (request.getMethodCode() == GET)
+	// if an error has been caught when parsing, do nothing
+	// an error page will be automatically generated
+	if (request.hasError())
+		;
+
+	// else use the correct function depending on the method
+	else if (request.getMethodCode() == GET)
 		getItemFromServer(request);
-	if (request.getMethodCode() == POST)
+	else if (request.getMethodCode() == POST)
 		postItemFromServer(request);
-	if (request.getMethodCode() == DELETE)
+	else if (request.getMethodCode() == DELETE)
 		deleteItemFromServer(request);
+	// else if (request.getMethodCode() == PUT)
+	//	deleteItemFromServer(request);
 	request.setParsingState(FILLING_DONE);
 
-	// creating HTTP headers wrapping the response (needs to be at the end to have Content Size)
+	// wrap respone content with HTTP headers
+	// (needs to be at the end to have Content Size)
 	request.getResponse()->createHTTPHeaders();
-}
-
-
-Response	ContentFetcher::createResponseToFill(Request* request)
-{
-	request->setResponse(new Response);
-
-	try
-	{
-		request->getResponse()->setStatusNum(request->getStatus().getStatusCode());
-		request->getResponse()->setRequest(request);
-		request->getResponse()->setRoutedUrl(request->getRequestedURL());
-	}
-
-	catch (const HTTPError &e)
-	{
-		std::cout << "error in fetcher\n";
-		std::cout << e.what() << "\n";
-	}
-
-	return (*request->getResponse());
 }

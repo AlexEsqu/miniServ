@@ -11,29 +11,14 @@ Response::Response()
 }
 
 Response::Response(Request *req)
-	: _statusNum(200)
-	, _request(req)
-	, _byteSent(0)
+	: _request(req)
 {
 	if (_request->getMethodCode() == POST)
 		setStatusNum(201);
 }
 
-Response::Response(Request *req, int status)
-	: _statusNum(status)
-	, _request(req)
-	, _byteSent(0)
-{
-	if (status >= 400)
-	{
-		createHTTPHeaders();
-		return;
-	}
-}
-
 Response::Response(const Response &copy)
-	: _statusNum(copy._statusNum)
-	, _request(copy._request)
+	: _request(copy._request)
 	, _routedPath(copy._routedPath)
 	, _contentType(copy._contentType)
 	, _responsePage(copy._responsePage)
@@ -60,7 +45,6 @@ Response &Response::operator=(const Response &other)
 	if (this == &other)
 		return (*this);
 
-	_statusNum			= other._statusNum;
 	_routedPath			= other._routedPath;
 	_request			= other._request;
 	_contentType		= other._contentType;
@@ -72,11 +56,6 @@ Response &Response::operator=(const Response &other)
 ///////////////////////////////////////////////////////////////////
 ///                    SETTERS				                     //
 ///////////////////////////////////////////////////////////////////
-
-void Response::setStatusNum(int number)
-{
-	this->_statusNum = number;
-}
 
 void Response::setContentType(std::string type)
 {
@@ -163,7 +142,7 @@ std::string Response::getRoutedURL() const
 
 int			Response::getStatus() const
 {
-	return (_statusNum);
+	return (_request->getStatus().getStatusCode());
 }
 
 std::string	Response::getHTTPHeaders() const
@@ -190,14 +169,13 @@ std::string Response::getHTTPResponse()
 
 void Response::createHTTPHeaders()
 {
-	Status status(this->_statusNum);
-	if (status.getStatusCode() >= 400) // if its an error
-		setContent(fetchErrorPageContent(status));
+	if (getStatus() >= 400) // if its an error
+		setContent(fetchErrorPageContent(getStatus()));
 
 	this->_contentLength = _responsePage.getBufferSize();
 
 	std::stringstream header;
-	header << _request->getProtocol() << " " << status << "\r\n"
+	header << _request->getProtocol() << " " << getStatus() << "\r\n"
 		   << "Content-Type: " << _contentType << "\r\n"
 		   << "Content-Length: " << _contentLength << "\r\n"
 		   << "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
