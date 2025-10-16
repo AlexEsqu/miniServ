@@ -13,7 +13,7 @@ TEST_CASE("Request constructor extracts correct values") {
 		"\r\n";
 
 		Request	request(config, HTTPRequest);
-		CHECK(request.getMethod() == "GET");
+		CHECK(request.getMethodAsString() == "GET");
 		CHECK(request.getRequestedURL() == "/");
 		CHECK(request.getProtocol() == "HTTP/1.1");
 		CHECK(request.getAdditionalHeaderInfo()["Host"] == "localhost:8080");
@@ -26,7 +26,7 @@ TEST_CASE("Request constructor extracts correct values") {
 		"\r\n";
 
 		Request	request(config, HTTPRequest);
-		CHECK(request.getMethod() == "GET");
+		CHECK(request.getMethodAsString() == "GET");
 		CHECK(request.getRequestedURL() == "/");
 		CHECK(request.getProtocol() == "HTTP/1.1");
 	}
@@ -40,7 +40,7 @@ TEST_CASE("Request constructor extracts correct values") {
 		"Body: Hello world\r\n";
 
 		Request	request(config, HTTPRequest);
-		CHECK(request.getMethod() == "GET");
+		CHECK(request.getMethodAsString() == "GET");
 		CHECK(request.getRequestedURL() == "/pages/error.html");
 		CHECK(request.getProtocol() == "HTTP/1.1");
 		CHECK(request.getAdditionalHeaderInfo()["Host"] == "localhost:8080");
@@ -92,7 +92,7 @@ TEST_CASE("Incremental parsing of normal HTTP request") {
 	// Simulate receiving the request line in two chunks
 	req.addRequestChunk("GET /index.html HTTP/1.1\r\nHo");
 	CHECK(req.getParsingState() == PARSING_HEADERS);
-	CHECK(req.getMethod() == "GET");
+	CHECK(req.getMethodAsString() == "GET");
 	CHECK(req.getRequestedURL() == "/index.html");
 	CHECK(req.getProtocol() == "HTTP/1.1");
 
@@ -143,7 +143,7 @@ TEST_CASE("Parsing request with no body") {
 
 	req.addRequestChunk("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n");
 	CHECK(req.getParsingState() == PARSING_DONE);
-	CHECK(req.getMethod() == "GET");
+	CHECK(req.getMethodAsString() == "GET");
 	CHECK(req.getRequestedURL() == "/");
 	CHECK(req.getProtocol() == "HTTP/1.1");
 	CHECK(req.getAdditionalHeaderInfo()["Host"] == "localhost");

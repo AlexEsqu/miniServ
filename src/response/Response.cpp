@@ -15,10 +15,8 @@ Response::Response(Request *req)
 	, _request(req)
 	, _byteSent(0)
 {
-	if (_request->getMethod() == "POST")
+	if (_request->getMethodCode() == POST)
 		setStatusNum(201);
-	if (_request->getMethod() == "GET")
-		setStatusNum(200);
 }
 
 Response::Response(Request *req, int status)
@@ -142,7 +140,7 @@ void Response::setRoutedUrl(std::string url)
 {
 	std::cout << "routes avaialble : " << _request->getRoute()->getDefaultFiles().size() << "\n";
 
-	if (_request->getMethod() == "GET" or _request->getMethod() == "HEAD")
+	if (_request->getMethodCode() == GET or _request->getMethodCode() == HEAD)
 		routeUrlForGet(url);
 	else
 		routeUrlForPostDel(url);
@@ -207,7 +205,7 @@ void Response::createHTTPHeaders()
 
 	std::cout << "Content-Length is " << _contentLength << " + " << header.str().size() << "\n";
 
-	if (_request->getMethod() == "POST")
+	if (_request->getMethodAsString() == "POST")
 	{
 		header << "Refresh: 0; url=/\r\n";
 	}

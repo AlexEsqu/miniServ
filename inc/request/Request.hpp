@@ -112,7 +112,8 @@ public:
 
 	//-------------------- GETTERS -----------------------//
 
-	std::string			getMethod() const;
+	std::string			getMethodAsString() const;
+	e_methods			getMethodCode() const;
 	std::string			getProtocol() const;
 	std::string			getRequestedURL() const;
 	const Route*		getRoute() const;

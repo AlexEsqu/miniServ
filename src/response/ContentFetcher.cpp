@@ -182,11 +182,11 @@ void	ContentFetcher::fillResponse(Request& request)
 	// create a response object in the request, with routed url
 	createResponseToFill(&request);
 
-	if (request.getMethod() == "GET")
+	if (request.getMethodCode() == GET)
 		getItemFromServer(request);
-	if (request.getMethod() == "POST")
+	if (request.getMethodCode() == POST)
 		postItemFromServer(request);
-	if (request.getMethod() == "DELETE")
+	if (request.getMethodCode() == DELETE)
 		deleteItemFromServer(request);
 	request.setParsingState(FILLING_DONE);
 

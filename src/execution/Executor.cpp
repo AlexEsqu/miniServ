@@ -105,7 +105,7 @@ std::string	Executor::formatKeyValueIntoSingleString(const std::string& key, con
 void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request)
 {
 	// Standard CGI variables
-	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethod()));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethodAsString()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_URI", request.getRequestedURL()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PROTOCOL", request.getProtocol()));
 	// TO DO : add query string (but CGI is unchunking on his own)

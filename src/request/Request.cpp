@@ -49,9 +49,14 @@ Request &Request::operator=(const Request &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
-std::string			Request::getMethod() const
+std::string			Request::getMethodAsString() const
 {
 	return _methodAsString;
+}
+
+e_methods			Request::getMethodCode() const
+{
+	return _method;
 }
 
 std::string			Request::getProtocol() const
@@ -394,7 +399,7 @@ void	Request::addRequestChunk(std::string chunk)
 // unless the request is specifically marked as chunked by transfer encoding
 void				Request::setIfParsingBody()
 {
-	if (_methodAsString == "HEAD" || _methodAsString == "GET")
+	if (_method == HEAD || _method == GET)
 		_requestState = PARSING_DONE;
 	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["transfer-encoding"] == "chunked")
