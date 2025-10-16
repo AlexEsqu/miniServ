@@ -165,10 +165,10 @@ void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 	else
 		defaultParams["index"] = serverConf.getParamMap().at("index");
 
-	if (serverConf.getParamMap().find("allow_methods") == serverConf.getParamMap().end()) // if map entry == map.end(), it doesn't exist in the map; HOWEVER map[entry] can return a value and create an entry if none existed
-		defaultParams["allow_methods"] = "GET POST DELETE";
+	if (serverConf.getParamMap().find("allowed_methods") == serverConf.getParamMap().end()) // if map entry == map.end(), it doesn't exist in the map; HOWEVER map[entry] can return a value and create an entry if none existed
+		defaultParams["allowed_methods"] = "GET POST DELETE";
 	else
-		defaultParams["allow_methods"] = serverConf.getParamMap().at("allow_methods");
+		defaultParams["allowed_methods"] = serverConf.getParamMap().at("allowed_methods");
 
 	defaultParams["autoindex"] = "off";
 

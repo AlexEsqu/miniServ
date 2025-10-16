@@ -175,8 +175,8 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 	else
 		_autoindex = true;
 
-	if (paramMap.find("allow_methods") != paramMap.end())
-		_allow_methods = split(paramMap.at("allow_methods"), ' ');
+	if (paramMap.find("allowed_methods") != paramMap.end())
+		_allow_methods = split(paramMap.at("allowed_methods"), ' ');
 	else
 	{
 		_allow_methods.push_back("GET");

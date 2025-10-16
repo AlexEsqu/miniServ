@@ -322,7 +322,7 @@ TEST_CASE("Route creation and accessibility from ServerConf") {
 			"        root /var/www/api;\n"
 			"        index api.html api.json;\n"
 			"        autoindex on;\n"
-			"        allow_methods GET POST;\n"
+			"        allowed_methods GET POST;\n"
 			"    }\n"
 			"}\n";
 
@@ -363,16 +363,16 @@ TEST_CASE("Route creation and accessibility from ServerConf") {
 			"    root /var/www;\n"
 			"    location /api {\n"
 			"        root /var/www/api;\n"
-			"        allow_methods GET POST PUT DELETE;\n"
+			"        allowed_methods GET POST PUT DELETE;\n"
 			"    }\n"
 			"    location /static {\n"
 			"        root /var/www/static;\n"
 			"        autoindex on;\n"
-			"        allow_methods GET;\n"
+			"        allowed_methods GET;\n"
 			"    }\n"
 			"    location /upload {\n"
 			"        root /var/www/uploads;\n"
-			"        allow_methods POST DELETE;\n"
+			"        allowed_methods POST DELETE;\n"
 			"        autoindex off;\n"
 			"    }\n"
 			"}\n";
@@ -439,7 +439,7 @@ TEST_CASE("Route creation and accessibility from ServerConf") {
 			"            index v1.html;\n"
 			"            location /api/v1/auth {\n"
 			"                root /var/www/api/v1/auth;\n"
-			"                allow_methods POST;\n"
+			"                allowed_methods POST;\n"
 			"            }\n"
 			"        }\n"
 			"        location /api/v2 {\n"
@@ -518,7 +518,7 @@ TEST_CASE("Route creation and accessibility from ServerConf") {
 			"    listen 8080;\n"
 			"    root /var/www;\n"
 			"    index custom.html;\n"
-			"    allow_methods GET POST;\n"
+			"    allowed_methods GET POST;\n"
 			"}\n";
 
 		const std::string configPath = "test_default_route.conf";
@@ -711,7 +711,7 @@ TEST_CASE("Route parameter setting") {
 		paramMap["root"] = "/var/www/test";
 		paramMap["index"] = "test.html test.php";
 		paramMap["autoindex"] = "on";
-		paramMap["allow_methods"] = "GET POST PUT";
+		paramMap["allowed_methods"] = "GET POST PUT";
 
 		Route route;
 		route.setRouteParam(paramMap);
