@@ -5,7 +5,6 @@
 #include "ClientSocket.hpp"
 #include "ServerConf.hpp"
 #include "ContentFetcher.hpp"
-#include "HTTPError.hpp"
 #include "PHPExecutor.hpp"
 #include "PythonExecutor.hpp"
 #include "Poller.hpp"

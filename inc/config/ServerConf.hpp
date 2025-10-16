@@ -8,7 +8,6 @@
 
 #include "Route.hpp"
 #include "readability.hpp"
-#include "HTTPError.hpp"
 #include "Request.hpp"
 
 class Route;

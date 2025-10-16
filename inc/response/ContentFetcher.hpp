@@ -41,7 +41,7 @@ public:
 
 	//--------------- MEMBER FUNCTION --------------------//
 
-	void			fillResponse(Request& request);
+	void			fillResponse(Request* request);
 
 	// GET method
 

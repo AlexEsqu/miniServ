@@ -28,7 +28,6 @@
 # include "PHPExecutor.hpp"
 # include "PythonExecutor.hpp"
 # include "ContentFetcher.hpp"
-# include "HTTPError.hpp"
 # include "ConfigParser.hpp"
 
 
