@@ -142,7 +142,7 @@ void	ClientSocket::readRequest()
 		_request = new Request(_serv.getConf(), _fullHeader);
 
 	// else, the request exist and needs more than headers, so read what can be read into a buffer and add as chunk
-	else if (_request->getParsingState() == PARSING_BODY || _request->getParsingState() == PARSING_BODY_CHUNKED)
+	else if (_request->getParsingState() == PARSING_BODY)
 	{
 		int valread = recv(getSocketFd(), _buffer, BUFFSIZE, O_NONBLOCK); // TO DO : optimize to call for content length if known ?
 		checkForReadError(valread);

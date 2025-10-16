@@ -308,7 +308,10 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 	_unparsedHeaderBuffer.clear();
 	chunk.clear();
 
-	if (_contentLength && _requestBodyBuffer.getBufferSize() < _contentLength)
+	if (_isChunked)
+		return parseChunkedBody();
+
+	else if (_requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
 
 	_requestState = PARSING_DONE;
@@ -316,12 +319,8 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 	return RECEIVED_ALL;
 }
 
-e_dataProgress Request::parseChunkedBody(std::string& chunk)
+e_dataProgress Request::parseChunkedBody()
 {
-	_requestBodyBuffer.writeToBuffer(_unparsedHeaderBuffer + chunk);
-	_unparsedHeaderBuffer.clear();
-	chunk.clear();
-
 	size_t offset = 0;
 	while (true) {
 		size_t sizeEnd = _unparsedHeaderBuffer.find("\r\n", offset);
@@ -357,45 +356,6 @@ e_dataProgress Request::parseChunkedBody(std::string& chunk)
 	}
 }
 
-e_dataProgress		Request::parseChunkedBody(std::istream& in)
-{
-	while (true) {
-
-		// checks the size of the chunk has been received
-		std::string sizeLine;
-		if (!std::getline(in, sizeLine, '\n'))
-			return WAITING_FOR_MORE;
-
-		// atoi the size of the chunk
-		size_t chunkSize = 0;
-		std::istringstream iss(sizeLine);
-		iss >> std::hex >> chunkSize;
-
-		// if the chunk size is zero, chunked parsing is done, returning
-		if (chunkSize == 0) {
-			_requestState = PARSING_DONE;
-			return RECEIVED_ALL;
-		}
-
-		// else, extracting the raw data up to chunkSize, or waiting for more
-		std::string chunkData(chunkSize, '\0');
-		in.read(&chunkData[0], chunkSize);
-		if (in.gcount() < static_cast<std::streamsize>(chunkSize))
-			return WAITING_FOR_MORE;
-
-		// if the whole chunk has been extracted, writing it to buffer
-		_requestBodyBuffer.writeToBuffer(chunkData);
-
-		// read and discard trailing CRLF after chunk data for socket ease
-		char crlf[2];
-		in.read(crlf, 2);
-
-		// might be signed the request is malformed or incomplete
-		if (in.gcount() < 2 || std::string(crlf, 2) != "\r\n")
-			return WAITING_FOR_MORE;
-	}
-}
-
 // For every chunk of data added to the request, parsing continues from last state
 // and returns if the current parsed item (header, body...) is not finished
 void	Request::addRequestChunk(std::string chunk)
@@ -414,7 +374,6 @@ void	Request::addRequestChunk(std::string chunk)
 			{
 				if (parseHeaderLine(chunk) == WAITING_FOR_MORE)
 					return;
-
 				break;
 			}
 			case PARSING_BODY:
@@ -423,12 +382,7 @@ void	Request::addRequestChunk(std::string chunk)
 					return;
 				break;
 			}
-			case PARSING_BODY_CHUNKED:
-			{
-				if (parseChunkedBody(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
+			// specifically for HAS_ERROR or PARSING_DONE
 			default:
 				return;
 		}
@@ -445,12 +399,14 @@ void				Request::setIfParsingBody()
 	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["transfer-encoding"] == "chunked")
 	{
-		_requestState = PARSING_BODY_CHUNKED;
+		_requestState = PARSING_BODY;
+		_isChunked = true;
 	}
 	else if (_requestHeaderMap.find("content-length") != _requestHeaderMap.end())
 	{
 		_contentLength = atoi(_requestHeaderMap["content-length"].c_str());
 		_requestState = PARSING_BODY;
+		_isChunked = false;
 	}
 	else
 		_requestState = PARSING_DONE;

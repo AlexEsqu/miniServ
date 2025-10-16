@@ -16,7 +16,6 @@ enum e_requestState {
 	PARSING_REQUEST_LINE,
 	PARSING_HEADERS,
 	PARSING_BODY,
-	PARSING_BODY_CHUNKED,
 	PARSING_DONE,
 	FILLING_ONGOING,
 	FILLING_DONE,
@@ -62,6 +61,7 @@ private:
 	std::string			_URI;					// for example "/" or "/home.html"
 
 	std::map<std::string,std::string>	_requestHeaderMap; // key=value of all header variables
+	bool				_isChunked;
 	size_t				_contentLength;			// length of the request body to be expected
 	std::string			_unparsedHeaderBuffer;	// may store chunks of request header
 	Buffer 				_requestBodyBuffer;		// stores the body of the request
@@ -145,8 +145,7 @@ public:
 	e_dataProgress		parseRequestLine(std::string& chunk);
 	e_dataProgress		parseHeaderLine(std::string& chunk);
 	e_dataProgress		parseRequestBody(std::string& chunk);
-	e_dataProgress		parseChunkedBody(std::string& chunk);
-	e_dataProgress		parseChunkedBody(std::istream& in);
+	e_dataProgress		parseChunkedBody();
 
 	const Route*		findMatchingRoute();
 };
