@@ -221,11 +221,20 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 	}
 }
 
+// sets the Status object to error code and raises the error flag
 void	Request::setError(unsigned int statusCode)
 {
 	_status.setStatusCode(statusCode);
 	_hasError = true;
 }
+
+// sets the Status object to error code WITHOUT raising the error flag
+void	Request::setStatus(unsigned int statusCode)
+{
+	_status.setStatusCode(statusCode);
+}
+
+
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
 

@@ -109,6 +109,7 @@ public:
 	void				setIfParsingBody();
 	void				setParsingState(e_requestState requestState);
 	void				setError(unsigned int statusCode);
+	void				setStatus(unsigned int statusCode);
 
 	//-------------------- GETTERS -----------------------//
 

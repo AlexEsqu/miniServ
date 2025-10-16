@@ -110,7 +110,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 			connecting->readRequest();
 
 			if (connecting->hasParsedRequest())
-				_cf->fillResponse(*(connecting->getRequest()));
+				_cf->fillResponse(connecting->getRequest());
 
 			if (connecting->hasFilledResponse())
 				setPollingMode(WRITING, connecting);
@@ -141,7 +141,6 @@ void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_ev
 		return;
 	}
 }
-
 
 void		ServerSocket::setPollingMode(e_clientSocketMode mode, ClientSocket* socket)
 {

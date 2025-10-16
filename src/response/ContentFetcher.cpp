@@ -98,8 +98,7 @@ void	ContentFetcher::serveStatic(Request& request)
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
-		request.getResponse()->setStatusNum(404);
-		request.getResponse()->createHTTPHeaders();
+		request.setError(404);
 		return;
 	}
 
@@ -151,7 +150,7 @@ void	ContentFetcher::handleFormSubmission(Request& request)
 
 	request.getResponse()->setContentType("text/html");
 	request.getResponse()->addToContent(responseContent.c_str());
-	request.getResponse()->setStatusNum(200);
+	request.setStatus(200);
 }
 
 void	ContentFetcher::handleFileUpload(Request& request)
@@ -168,7 +167,7 @@ void	ContentFetcher::handleFileUpload(Request& request)
 
 	request.getResponse()->setContentType("text/html");
 	request.getResponse()->addToContent(uploadResponse.c_str());
-	request.getResponse()->setStatusNum(201);
+	request.setStatus(201);
 }
 
 void	ContentFetcher::deleteItemFromServer(Request& )
@@ -176,29 +175,29 @@ void	ContentFetcher::deleteItemFromServer(Request& )
 	std::cout << "DELETE is not yet implemented\n";
 }
 
-
-void	ContentFetcher::fillResponse(Request& request)
+void	ContentFetcher::fillResponse(Request* request)
 {
-	// create a response object in the request
-	Response* result = new Response(&request);
+	// create a response object and attach it to the request
+	request->setResponse(new Response(request));
 
-	// if an error has been caught when parsing, do nothing
-	// an error page will be automatically generated
-	if (request.hasError())
+	// if an error has been caught when parsing, no need to fetch content
+	if (request->hasError())
 		;
 
-	// else use the correct function depending on the method
-	else if (request.getMethodCode() == GET)
-		getItemFromServer(request);
-	else if (request.getMethodCode() == POST)
-		postItemFromServer(request);
-	else if (request.getMethodCode() == DELETE)
-		deleteItemFromServer(request);
+	// else use the correct function to execute the requested method
+	else if (request->getMethodCode() == GET)
+		getItemFromServer(*request);
+	else if (request->getMethodCode() == POST)
+		postItemFromServer(*request);
+	else if (request->getMethodCode() == DELETE)
+		deleteItemFromServer(*request);
 	// else if (request.getMethodCode() == PUT)
-	//	deleteItemFromServer(request);
-	request.setParsingState(FILLING_DONE);
+	//	postItemFromServer(*request);
+	// else if (request.getMethodCode() == HEAD)
+	//	getItemFromServer(*request);
+	request->setParsingState(FILLING_DONE);
 
-	// wrap respone content with HTTP headers
-	// (needs to be at the end to have Content Size)
-	request.getResponse()->createHTTPHeaders();
+	// wrap response content / error page with HTTP headers
+	// (needs to be at the end to have Content Size matching content fetched)
+	request->getResponse()->createHTTPHeaders();
 }

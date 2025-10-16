@@ -45,7 +45,9 @@ public:
 
 	void			createHTTPHeaders();
 
-	void			setStatusNum(int number);
+	void			setStatus(unsigned int number);
+	void			setError(unsigned int number);
+	
 	void			setContent(std::string content);
 	void			setRoutedUrl(std::string url);
 

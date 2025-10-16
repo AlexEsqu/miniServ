@@ -13,8 +13,6 @@ Response::Response()
 Response::Response(Request *req)
 	: _request(req)
 {
-	if (_request->getMethodCode() == POST)
-		setStatusNum(201);
 }
 
 Response::Response(const Response &copy)
@@ -78,13 +76,24 @@ void Response::setRequest(Request *request)
 	_request = request;
 }
 
+// sets status code but does not raise error flag in request
+void Response::setStatus(unsigned int status)
+{
+	_request->setStatus(status);
+}
+
+// sets status code and raises error flag in request
+void Response::setError(unsigned int status)
+{
+	_request->setError(status);
+}
+
 bool isDirectory(const char *path)
 {
 	struct stat path_stat;
 	stat(path, &path_stat);
 	return S_ISDIR(path_stat.st_mode);
 }
-
 
 void	Response::routeUrlForPostDel(std::string url)
 {
