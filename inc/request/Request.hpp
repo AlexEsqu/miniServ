@@ -146,8 +146,7 @@ public:
 	e_dataProgress		parseChunkedBody(std::istream& in);
 
 	const Route*		findMatchingRoute();
-	void				findRoutedPathAndCGIParam();
-	std::string			extractIfCGIParam();
+	void				extractIfCGIParam();
 };
 
 

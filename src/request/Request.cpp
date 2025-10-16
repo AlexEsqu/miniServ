@@ -436,7 +436,7 @@ void				Request::setIfParsingBody()
 }
 
 // extracts the ?key=value CGI param from the URI, storing them in another string
-std::string	Request::extractIfCGIParam()
+void	Request::extractIfCGIParam()
 {
 	size_t queryPos = _URI.find('?');
 	if (queryPos != std::string::npos) {
