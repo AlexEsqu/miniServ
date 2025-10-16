@@ -70,6 +70,7 @@ private:
 	const ServerConf&	_conf;					// configuration of the server socket
 	const Route*		_route;					// route matched through the URI
 	std::string			_routedURI;				// for example "/var/www/html/home.html"
+	std::string			_paramCGI;
 
 	// REQUEST CURRENT STATE
 
@@ -97,10 +98,14 @@ public:
 	void				setProtocol(std::string& protocol);
 	void				setURI(std::string& uri);
 	void				setRequestLine(std::string& requestLine);
-	void				addAsHeaderVar(std::string& keyValueString);
-	void				setIfParsingBody();
+
 	void				setRoute(const Route* route);
+
+	void				addAsHeaderVar(std::string& keyValueString);
+
 	void				setResponse(Response* response);
+
+	void				setIfParsingBody();
 	void				setParsingState(e_requestState requestState);
 
 	//-------------------- GETTERS -----------------------//
@@ -130,8 +135,6 @@ public:
 
 	void				validateRequestLine();
 	void				checkMethodIsAllowed();
-	const Route*		findMatchingRoute();
-
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
@@ -142,7 +145,9 @@ public:
 	e_dataProgress		parseChunkedBody(std::string& chunk);
 	e_dataProgress		parseChunkedBody(std::istream& in);
 
-
+	const Route*		findMatchingRoute();
+	void				findRoutedPathAndCGIParam();
+	std::string			extractIfCGIParam();
 };
 
 

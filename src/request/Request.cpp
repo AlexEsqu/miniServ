@@ -435,11 +435,23 @@ void				Request::setIfParsingBody()
 		_requestState = PARSING_DONE;
 }
 
+// extracts the ?key=value CGI param from the URI, storing them in another string
+std::string	Request::extractIfCGIParam()
+{
+	size_t queryPos = _URI.find('?');
+	if (queryPos != std::string::npos) {
+		_paramCGI = _URI.substr(queryPos + 1, _URI.size());
+		_URI = _URI.substr(0, queryPos);
+	}
+}
+
 // Matching route is required at the parsing stage to know if a request is using a valid method
 const Route*	Request::findMatchingRoute()
 {
 	const Route* result = NULL;
 	size_t lenMatch = 0;
+
+	extractIfCGIParam();
 
 	std::string requestPath = getRequestedURL();
 
