@@ -96,20 +96,8 @@ void	ClientSocket::readRequest()
 		std::cout << "\nClient Socket " << getSocketFd();
 	#endif
 
-	ssize_t valread = recv(getSocketFd(), _buffer, BUFFSIZE, 0);
-	if (valread < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			// No data available right now (non-blocking) — return and wait for next epoll event
-			return;
-		}
-		// real read error
-		perror("recv failed");
-		throw failedSocketRead();
-	}
-	if (valread == 0) {
-		// peer closed connection
-		throw endSocket();
-	}
+	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, 0);
+	checkForReadError(valread);
 
 	// since some data can be interspeced with \0, creating a string of valread size
 	std::string	requestChunk(_buffer, valread);
