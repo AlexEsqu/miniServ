@@ -9,7 +9,6 @@
 #include "Response.hpp"
 
 #define BUFFSIZE 64000
-#define MAX_HEADER_SIZE 4000
 #define END_OF_HEADER_STR "\r\n\r\n"
 
 class ServerSocket;
@@ -20,7 +19,7 @@ class ClientSocket: public Sockette
 private:
 
 	ServerSocket&		_serv;
-	char				_buffer[MAX_HEADER_SIZE];
+	char				_buffer[BUFFSIZE];
 	std::string			_fullHeader;
 	Request*			_request;
 	std::string			_response;
