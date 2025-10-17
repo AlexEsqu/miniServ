@@ -13,6 +13,7 @@ Response::Response()
 Response::Response(Request *req)
 	: _request(req)
 {
+	setRoutedUrl(_request->getRequestedURL());
 }
 
 Response::Response(const Response &copy)
@@ -83,16 +84,65 @@ void Response::setStatus(unsigned int status)
 }
 
 // sets status code and raises error flag in request
-void Response::setError(unsigned int status)
+void	Response::setError(unsigned int status)
 {
 	_request->setError(status);
 }
 
-bool isDirectory(const char *path)
+bool	isDirectory(const char *path)
 {
 	struct stat path_stat;
 	stat(path, &path_stat);
 	return S_ISDIR(path_stat.st_mode);
+}
+
+bool	isValidPath(std::string& path)
+{
+	std::ifstream in(path.c_str(), std::ios::binary);
+	if (in.is_open() && !isDirectory(path.c_str()))
+		return true;
+	return false;
+}
+
+void	Response::routeToDefaultFiles(std::string& url, const Route* route, std::string& root)
+{
+	for (size_t i = 0; i < route->getDefaultFiles().size(); i++)
+	{
+		std::string possiblePath = root;
+		if (!possiblePath.empty() && *--possiblePath.end() == '/'
+			&& !url.empty() && *url.begin() == '/')
+			possiblePath.erase(possiblePath.size() - 1);
+
+		possiblePath += url;
+		possiblePath += route->getDefaultFiles()[i];
+		if (isValidPath(possiblePath))
+		{
+			_routedPath = possiblePath;
+			return;
+		}
+	}
+	_routedPath.clear();
+	return;
+}
+
+void	Response::routeToFilePath(std::string& url, const Route* route, std::string& root)
+{
+	std::string possiblePath = root;
+	if (!possiblePath.empty() && *--possiblePath.end() == '/'
+		&& !url.empty() && *url.begin() == '/')
+		possiblePath.erase(possiblePath.size() - 1);
+
+	possiblePath += url;
+	if (isValidPath(possiblePath))
+	{
+		_routedPath = possiblePath;
+		return;
+	}
+
+	// if it does not find the file path, assume it is a directory missing its ending /
+	if (*--url.end() != '/')
+		url += '/';
+	routeToDefaultFiles(url, route, root);
 }
 
 void	Response::routeUrlForPostDel(std::string url)
@@ -104,24 +154,20 @@ void	Response::routeUrlForPostDel(std::string url)
 
 void	Response::routeUrlForGet(std::string url)
 {
-	int i = 0;
-	int len = _request->getRoute()->getDefaultFiles().size();
-	while (i < len)
+	const Route*	route = _request->getRoute();
+	if (route == NULL)
 	{
-		std::ifstream path(("/" + _routedPath).c_str());
-
-		if (url[url.size() - 1] == '/')
-			_routedPath = _request->getRoute()->getRootDirectory() + "/" + _request->getRoute()->getDefaultFiles()[i];
-		else
-			_routedPath = _request->getRoute()->getRootDirectory() + url;
-		if (path.is_open() && !isDirectory(_routedPath.c_str()))
-		{
-			return;
-		}
-		i++;
+		setError(404);
+		return;
 	}
-	if (i == len)
-		_routedPath = "";
+
+	std::string		root = route->getRootDirectory();
+
+	if (!url.empty() && *--url.end() == '/')
+		routeToDefaultFiles(url, route, root);
+
+	else
+		routeToFilePath(url, route, root);
 }
 
 void Response::setRoutedUrl(std::string url)
@@ -137,7 +183,6 @@ void Response::setRoutedUrl(std::string url)
 ///////////////////////////////////////////////////////////////////
 ///                    GETTERS 			                         //
 ///////////////////////////////////////////////////////////////////
-
 
 Request *Response::getRequest()
 {

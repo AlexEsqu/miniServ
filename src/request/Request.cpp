@@ -226,6 +226,9 @@ void	Request::setError(unsigned int statusCode)
 {
 	_status.setStatusCode(statusCode);
 	_hasError = true;
+	#ifdef DEBUG
+		std::cerr << "Setting error at " << statusCode << "\n";
+	#endif
 }
 
 // sets the Status object to error code WITHOUT raising the error flag

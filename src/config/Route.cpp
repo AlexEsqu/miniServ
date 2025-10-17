@@ -135,22 +135,20 @@ const Route*	Route::getMatchingRoute(std::string requestPath) const
 {
 	if (isPathMatch(requestPath))
 	{
-		for (size_t i = 0; i < _nestedRoutes.size(); i++) {
+		for (size_t i = 0; i < _nestedRoutes.size(); i++)
+		{
 			try
 			{
 				return _nestedRoutes[i].getMatchingRoute(requestPath);
 			}
-
 			catch (const std::runtime_error&)
 			{
 				continue;
 			}
 		}
-
 		return this;
 	}
-
-	throw std::runtime_error("No matching route found");
+	return NULL;
 }
 
 //---------------------------- SETTERS --------------------------------------//

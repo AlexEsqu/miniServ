@@ -82,18 +82,19 @@ size_t ContentFetcher::getSizeOfFile(const std::string &filename)
 	return st.st_size;
 }
 
-bool ContentFetcher::isDirectory(const char *path)
+bool	ContentFetcher::isDirectory(const char *path)
 {
 	struct stat path_stat;
-	stat(path, &path_stat);
+	if (stat(path, &path_stat) != 0)
+		return false;
 	return S_ISDIR(path_stat.st_mode);
 }
 
 void	ContentFetcher::serveStatic(Request& request)
 {
-	std::string			fileURL(request.getResponse()->getRoutedURL());
+	std::string		fileURL(request.getResponse()->getRoutedURL());
 
-	std::ifstream input(fileURL.c_str(), std::ios::binary);
+	std::ifstream	input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{

@@ -69,7 +69,6 @@ private:
 
 	const ServerConf&	_conf;					// configuration of the server socket
 	const Route*		_route;					// route matched through the URI
-	std::string			_routedURI;				// for example "/var/www/html/home.html"
 	std::string			_paramCGI;
 
 	// REQUEST CURRENT STATE
