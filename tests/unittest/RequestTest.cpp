@@ -109,12 +109,12 @@ TEST_CASE("Incremental parsing of chunked HTTP request") {
 
 	// Simulate receiving request line and headers in chunks
 	req.addRequestChunk("POST /upload HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n");
-	CHECK(req.getParsingState() == PARSING_BODY_CHUNKED);
+	CHECK(req.getParsingState() == PARSING_BODY);
 
 	// Simulate receiving chunked body in two chunks
 	// Chunk: "5\r\nHello\r\n0\r\n\r\n"
 	req.addRequestChunk("5\r\nHe");
-	CHECK(req.getParsingState() == PARSING_BODY_CHUNKED);
+	CHECK(req.getParsingState() == PARSING_BODY);
 
 	req.addRequestChunk("llo\r\n0\r\n\r\n");
 	CHECK(req.getParsingState() == PARSING_DONE);
