@@ -6,6 +6,7 @@
 #include "Response.hpp"
 #include "Executor.hpp"
 #include "ClientSocket.hpp"
+#include "Poller.hpp"
 
 class ContentFetcher
 {
@@ -14,7 +15,8 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	std::vector<Executor*>	executors;
+	std::vector<Executor*>	_executors;
+	Poller*					_poller;		// epoll instance object used to watch pipe if executing CGI
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
@@ -28,7 +30,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	ContentFetcher();
+	ContentFetcher(Poller* poller);
 	ContentFetcher(const ContentFetcher &copy);
 
 	//----------------- DESTRUCTOR -----------------------//

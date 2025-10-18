@@ -2,19 +2,24 @@
 
 //----------------- CONSTRUCTORS ---------------------//
 
-ContentFetcher::ContentFetcher()
+ContentFetcher::ContentFetcher(Poller* poller)
+	: _poller(poller)
 {
 }
 
 ContentFetcher::ContentFetcher(const ContentFetcher &original)
 {
+	if (this != &original)
+		_poller = original._poller;
+		_executors = original._executors;
 	*this = original;
 }
 
 ContentFetcher &ContentFetcher::operator=(const ContentFetcher &original)
 {
 	if (this != &original)
-		executors = original.executors;
+		_poller = original._poller;
+		_executors = original._executors;
 	return *this;
 }
 
@@ -22,7 +27,7 @@ ContentFetcher &ContentFetcher::operator=(const ContentFetcher &original)
 
 ContentFetcher::~ContentFetcher()
 {
-	for (std::vector<Executor *>::iterator item = executors.begin(); item != executors.end(); item++)
+	for (std::vector<Executor *>::iterator item = _executors.begin(); item != _executors.end(); item++)
 		delete *item;
 }
 
@@ -30,7 +35,7 @@ ContentFetcher::~ContentFetcher()
 
 void	ContentFetcher::addExecutor(Executor* executor)
 {
-	executors.push_back(executor);
+	_executors.push_back(executor);
 }
 
 //------------------- MEMBER FUNCTIONS ------------------------//
@@ -113,10 +118,10 @@ void	ContentFetcher::serveStatic(Request& request)
 
 void ContentFetcher::getItemFromServer(Request& request)
 {
-	for (size_t i = 0; i < executors.size(); i++)
+	for (size_t i = 0; i < _executors.size(); i++)
 	{
-		if(executors[i]->canExecuteFile(request.getResponse()->getRoutedURL()))
-			return executors[i]->executeFile(request);
+		if(_executors[i]->canExecuteFile(request.getResponse()->getRoutedURL()))
+			return _executors[i]->executeFile(request);
 	}
 
 	std::cout << CGI_FORMAT(" NO CGI ");
