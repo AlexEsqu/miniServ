@@ -202,3 +202,28 @@ void	ContentFetcher::fillResponse(Request* request)
 	// (needs to be at the end to have Content Size matching content fetched)
 	request->getResponse()->createHTTPHeaders();
 }
+
+e_dataProgress	ContentFetcher::readCGIChunk(Request& request, int pipeFd) {
+
+	char buffer[4096];
+	ssize_t bytesRead;
+
+	// Read from the CGI pipe and put it into the response content
+	while ((bytesRead = read(pipeFd, buffer, sizeof(buffer))) > 0) {
+		std::string	stringBuffer(buffer, sizeof(buffer));
+		request.getResponse()->addToContent(stringBuffer);
+	}
+
+	// If there is nothing the read in the buffer, reached the end of the CGI output
+	if (bytesRead == 0) {
+		return RECEIVED_ALL;
+	}
+
+	// Encountered a read error
+	else if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+		perror("read from CGI pipe failed");
+		throw std::runtime_error("Failed to read CGI output");
+	}
+
+	return WAITING_FOR_MORE;
+}

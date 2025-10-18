@@ -61,5 +61,6 @@ public:
 	// Execution
 
 	void			addExecutor(Executor* executor);
+	e_dataProgress	readCGIChunk(Request& request, int pipeFd);
 
 };

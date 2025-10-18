@@ -25,7 +25,6 @@ private:
 	Buffer				_responsePage;
 	size_t				_byteSent;
 
-
 public:
 	//----------------- CONSTRUCTORS ---------------------//
 
