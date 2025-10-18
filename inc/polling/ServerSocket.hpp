@@ -21,6 +21,8 @@ class ClientSocket;
 
 class Poller;
 
+class ContentFetcher;
+
 class ServerSocket: public Sockette
 {
 

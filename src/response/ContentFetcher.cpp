@@ -10,16 +10,20 @@ ContentFetcher::ContentFetcher(Poller* poller)
 ContentFetcher::ContentFetcher(const ContentFetcher &original)
 {
 	if (this != &original)
+	{
 		_poller = original._poller;
 		_executors = original._executors;
+	}
 	*this = original;
 }
 
 ContentFetcher &ContentFetcher::operator=(const ContentFetcher &original)
 {
 	if (this != &original)
+	{
 		_poller = original._poller;
 		_executors = original._executors;
+	}
 	return *this;
 }
 

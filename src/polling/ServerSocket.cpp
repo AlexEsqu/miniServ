@@ -8,7 +8,7 @@ ServerSocket::ServerSocket(Poller& poller, const ServerConf& conf)
 {
 	setPort(conf.getPort());
 
-	_cf = new ContentFetcher();
+	_cf = new ContentFetcher(&poller);
 	_cf->addExecutor(new PHPExecutor());
 	_cf->addExecutor(new PythonExecutor());
 
