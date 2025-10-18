@@ -55,7 +55,7 @@ std::vector<const char*> PHPExecutor::buildArgv(const char* program, const char*
 }
 
 
-void	PHPExecutor::execFileWithFork(Request& request, const std::string& fileToExecPath, int* pipefd)
+void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
 	const char*		program = "/usr/bin/php";
 	const char*		flag = "-f";
@@ -71,8 +71,8 @@ void	PHPExecutor::execFileWithFork(Request& request, const std::string& fileToEx
 	// unchunk (if needed ?)
 
 	// assemble into an execve approved array of char*, add EOF at end
-	std::vector<const char*> argv(buildArgv(program, flag, fileToExecPath));
-	std::vector<const char*> env(buildEnv(request));
+	std::vector<const char*> argv(buildArgv(program, flag, client->getResponseObject()->getRoutedURL()));
+	std::vector<const char*> env(buildEnv(*client->getRequest()));
 
 	execve(program, (char**)argv.data(), (char**)env.data());
 

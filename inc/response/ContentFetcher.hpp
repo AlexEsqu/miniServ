@@ -5,8 +5,10 @@
 
 #include "Response.hpp"
 #include "Executor.hpp"
+#include "ServerSocket.hpp"
 #include "ClientSocket.hpp"
-#include "Poller.hpp"
+
+class Poller;
 
 class ContentFetcher
 {
@@ -16,7 +18,6 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	std::vector<Executor*>	_executors;
-	Poller*					_poller;		// epoll instance object used to watch pipe if executing CGI
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
@@ -30,7 +31,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	ContentFetcher(Poller* poller);
+	ContentFetcher();
 	ContentFetcher(const ContentFetcher &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -43,26 +44,26 @@ public:
 
 	//--------------- MEMBER FUNCTION --------------------//
 
-	void			fillResponse(Request* request);
+	void			fillResponse(ClientSocket* client);
 
 	// GET method
 
-	void			getItemFromServer(Request& request);
-	void			serveStatic(Request& request);
+	void			getItemFromServer(ClientSocket* client);
+	void			serveStatic(ClientSocket* client);
 
 	// POST method
 
-	void			postItemFromServer(Request& request);
-	void			handleFormSubmission(Request& request);
-	void			handleFileUpload(Request& request);
+	void			postItemFromServer(ClientSocket* client);
+	void			handleFormSubmission(ClientSocket* client);
+	void			handleFileUpload(ClientSocket* client);
 
 	// DELETE method
 
-	void			deleteItemFromServer(Request& request);
+	void			deleteItemFromServer(ClientSocket* client);
 
 	// Execution
 
 	void			addExecutor(Executor* executor);
-	e_dataProgress	readCGIChunk(Request& request, int pipeFd);
+	e_dataProgress	readCGIChunk(ClientSocket* client);
 
 };

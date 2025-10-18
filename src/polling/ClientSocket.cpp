@@ -71,7 +71,79 @@ std::string&	ClientSocket::getResponse()
 	return (_response);
 }
 
+Response*	ClientSocket::getResponseObject()
+{
+	return (_responseObject);
+}
+
+int	ClientSocket::getCgiPipeFd()
+{
+	return (_readingEndOfCgiPipe);
+}
+
+bool	ClientSocket::hasRequest() const
+{
+	return (_request != NULL);
+}
+
+bool	ClientSocket::hasParsedRequest() const
+{
+	if (!hasRequest())
+		return false;
+
+	return (_request->getParsingState() == PARSING_DONE);
+}
+
+bool	ClientSocket::hasFilledResponse() const
+{
+	if (!hasRequest())
+		return false;
+
+	return (_request->getParsingState() == FILLING_DONE);
+}
+
+bool	ClientSocket::hasSentResponse() const
+{
+	if (!hasRequest())
+		return false;
+
+	return (_request->getParsingState() == SENDING_DONE);
+}
+
+bool	ClientSocket::isReadingFromPipe() const
+{
+	return _isReadingFromPipe;
+}
+
 //------------------------- MEMBER FUNCTIONS --------------------------------//
+
+void	ClientSocket::createNewResponse()
+{
+	_responseObject = new Response(getRequest());
+}
+
+void	ClientSocket::deleteResponse()
+{
+	delete _responseObject;
+}
+
+// adds pipe to epoll to monitor, and read from the pipe
+// receiving the response as the content is executed
+void	ClientSocket::startReadingPipe(int pipeFd)
+{
+	#ifdef DEBUG
+	std::cout << "Adding CGI pipe to epoll: " << pipeFd << std::endl;
+	#endif
+
+	_readingEndOfCgiPipe = pipeFd;
+	getServer().getEpoll().addPipe(this, pipeFd);
+	_isReadingFromPipe = true;
+}
+
+void	ClientSocket::stopReadingPipe()
+{
+	_isReadingFromPipe = false;
+}
 
 void	ClientSocket::checkForReadError(int valread)
 {
@@ -115,7 +187,7 @@ void	ClientSocket::readRequest()
 
 void	ClientSocket::sendResponse()
 {
-	_response = _request->getResponse()->getHTTPResponse();
+	_response = getResponseObject()->getHTTPResponse();
 
 	size_t totalToSend = _response.length();
 	size_t totalSent = 0;
@@ -151,32 +223,5 @@ void	ClientSocket::sendResponse()
 }
 
 
-bool	ClientSocket::hasRequest()
-{
-	return (_request != NULL);
-}
 
-bool	ClientSocket::hasParsedRequest()
-{
-	if (!hasRequest())
-		return false;
-
-	return (_request->getParsingState() == PARSING_DONE);
-}
-
-bool	ClientSocket::hasFilledResponse()
-{
-	if (!hasRequest())
-		return false;
-
-	return (_request->getParsingState() == FILLING_DONE);
-}
-
-bool	ClientSocket::hasSentResponse()
-{
-	if (!hasRequest())
-		return false;
-
-	return (_request->getParsingState() == SENDING_DONE);
-}
 

@@ -34,6 +34,37 @@ void	Poller::addServerSocket(ServerSocket& socket)
 	_listeningSockets.insert(socket.getSocketFd());
 }
 
+void	Poller::addPipe(ClientSocket* client, int pipeFd)
+{
+	// Set the pipe to non-blocking mode
+	int flags = fcntl(pipeFd, F_GETFL, 0);
+	if (flags == -1 || fcntl(pipeFd, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		perror("Failed to set pipe to non-blocking mode");
+		throw std::runtime_error("Failed to set pipe to non-blocking mode");
+	}
+
+	// Add the pipe to the epoll instance
+	epoll_event event;
+	event.events = EPOLLIN | EPOLLERR;
+	event.data.ptr = client;
+
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, pipeFd, &event) == -1)
+	{
+		perror("Failed to add pipe to epoll");
+		throw failedEpollCtl();
+	}
+}
+
+void	Poller::removePipe(int pipeFd)
+{
+	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, pipeFd, NULL) == -1) {
+		perror("Failed to remove pipe from epoll");
+		throw failedEpollCtl();
+	}
+	close(pipeFd);
+}
+
 void	Poller::waitForEvents()
 {
 	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);

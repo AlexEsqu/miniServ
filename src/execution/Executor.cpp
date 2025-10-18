@@ -115,27 +115,30 @@ void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Req
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
 }
 
-void	Executor::executeFile(Request& request)
+void	Executor::executeFile(ClientSocket* client)
 {
 	int	fork_pid;
 	int	pipefd[2];
-	int	exit_code = 0;
 
 	if (pipe(pipefd) != 0)
-		return;
+		throw std::runtime_error("pipe failed");
+
 	fork_pid = fork();
 	if (fork_pid == -1)
-		return;
+		throw std::runtime_error("fork failed");
 
 	if (fork_pid == 0)
-		execFileWithFork(request, request.getResponse()->getRoutedURL(), pipefd);
-
-	else {
+	{
+		execFileWithFork(client, pipefd);
+		throw std::runtime_error("exec failed");
+	}
+	else
+	{
 		close(pipefd[WRITE]);
-		addResultToContent(*(request.getResponse()), pipefd[READ]);
-		close(pipefd[READ]);
+		client->startReadingPipe(pipefd[WRITE]);
+		return;
 	}
 
-	waitpid(fork_pid, &exit_code, 0);
-	exit_code = WEXITSTATUS(exit_code);
+	// waitpid(fork_pid, &exit_code, 0);
+	// exit_code = WEXITSTATUS(exit_code);
 }

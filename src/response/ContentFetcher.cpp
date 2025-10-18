@@ -2,8 +2,7 @@
 
 //----------------- CONSTRUCTORS ---------------------//
 
-ContentFetcher::ContentFetcher(Poller* poller)
-	: _poller(poller)
+ContentFetcher::ContentFetcher()
 {
 }
 
@@ -11,7 +10,6 @@ ContentFetcher::ContentFetcher(const ContentFetcher &original)
 {
 	if (this != &original)
 	{
-		_poller = original._poller;
 		_executors = original._executors;
 	}
 	*this = original;
@@ -21,7 +19,6 @@ ContentFetcher &ContentFetcher::operator=(const ContentFetcher &original)
 {
 	if (this != &original)
 	{
-		_poller = original._poller;
 		_executors = original._executors;
 	}
 	return *this;
@@ -99,44 +96,45 @@ bool	ContentFetcher::isDirectory(const char *path)
 	return S_ISDIR(path_stat.st_mode);
 }
 
-void	ContentFetcher::serveStatic(Request& request)
+void	ContentFetcher::serveStatic(ClientSocket* client)
 {
-	std::string		fileURL(request.getResponse()->getRoutedURL());
+	std::string		fileURL(client->getResponseObject()->getRoutedURL());
 
 	std::ifstream	input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
-		request.setError(404);
+		client->getRequest()->setError(404);
 		return;
 	}
 
-	request.getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
+	client->getResponseObject()->setContentType(getTypeBasedOnExtension(fileURL));
 	size_t	size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
 	std::string binaryContent(buffer.begin(), buffer.end());
-	request.getResponse()->addToContent(binaryContent);
+	client->getResponseObject()->addToContent(binaryContent);
 }
 
-void ContentFetcher::getItemFromServer(Request& request)
+void ContentFetcher::getItemFromServer(ClientSocket* client)
 {
 	for (size_t i = 0; i < _executors.size(); i++)
 	{
-		if(_executors[i]->canExecuteFile(request.getResponse()->getRoutedURL()))
-			return _executors[i]->executeFile(request);
+		if(_executors[i]->canExecuteFile(client->getResponseObject()->getRoutedURL()))
+			_executors[i]->executeFile(client);
+		return;
 	}
 
 	std::cout << CGI_FORMAT(" NO CGI ");
-	serveStatic(request);
+	serveStatic(client);
 }
 
-void ContentFetcher::postItemFromServer(Request& request)
+void ContentFetcher::postItemFromServer(ClientSocket* client)
 {
-	std::cout << "Processing POST request to: " << request.getResponse()->getRoutedURL() << std::endl;
+	std::cout << "Processing POST request to: " << client->getResponseObject()->getRoutedURL() << std::endl;
 
-	handleFileUpload(request);
+	handleFileUpload(client);
 
 	// if (request.getResponse()->getRoutedURL().find("upload") != std::string::npos) {
 	// 	handleFileUpload(request);
@@ -145,9 +143,9 @@ void ContentFetcher::postItemFromServer(Request& request)
 	// }
 }
 
-void	ContentFetcher::handleFormSubmission(Request& request)
+void	ContentFetcher::handleFormSubmission(ClientSocket* client)
 {
-	std::string postData = request.getBody();
+	std::string postData = client->getRequest()->getBody();
 
 	std::cout << "POST data received: " << postData << std::endl;
 
@@ -158,16 +156,16 @@ void	ContentFetcher::handleFormSubmission(Request& request)
 		"<p>Data received: " + postData + "</p>"
 		"<a href='/'>Back to home</a></body></html>";
 
-	request.getResponse()->setContentType("text/html");
-	request.getResponse()->addToContent(responseContent.c_str());
-	request.setStatus(200);
+	client->getResponseObject()->setContentType("text/html");
+	client->getResponseObject()->addToContent(responseContent.c_str());
+	client->getRequest()->setStatus(200);
 }
 
-void	ContentFetcher::handleFileUpload(Request& request)
+void	ContentFetcher::handleFileUpload(ClientSocket* client)
 {
-	FileHandler	upload(request.getResponse()->getRoutedURL());
+	FileHandler	upload(client->getResponseObject()->getRoutedURL());
 
-	upload.writeToFile(request.getBody());
+	upload.writeToFile(client->getRequest()->getBody());
 
 	std::string uploadResponse =
 		"<!DOCTYPE html>"
@@ -175,20 +173,22 @@ void	ContentFetcher::handleFileUpload(Request& request)
 		"<body><h1>File uploaded successfully!</h1>"
 		"<a href='/'>Back to home</a></body></html>";
 
-	request.getResponse()->setContentType("text/html");
-	request.getResponse()->addToContent(uploadResponse.c_str());
-	request.setStatus(201);
+	client->getResponseObject()->setContentType("text/html");
+	client->getResponseObject()->addToContent(uploadResponse.c_str());
+	client->getRequest()->setStatus(201);
 }
 
-void	ContentFetcher::deleteItemFromServer(Request& )
+void	ContentFetcher::deleteItemFromServer(ClientSocket*  )
 {
 	std::cout << "DELETE is not yet implemented\n";
 }
 
-void	ContentFetcher::fillResponse(Request* request)
+void	ContentFetcher::fillResponse(ClientSocket* client)
 {
 	// create a response object and attach it to the request
-	request->setResponse(new Response(request));
+	client->createNewResponse();
+
+	Request* request = client->getRequest();
 
 	// if an error has been caught when parsing, no need to fetch content
 	if (request->hasError())
@@ -196,40 +196,42 @@ void	ContentFetcher::fillResponse(Request* request)
 
 	// else use the correct function to execute the requested method
 	else if (request->getMethodCode() == GET)
-		getItemFromServer(*request);
+		getItemFromServer(client);
 	else if (request->getMethodCode() == POST)
-		postItemFromServer(*request);
+		postItemFromServer(client);
 	else if (request->getMethodCode() == DELETE)
-		deleteItemFromServer(*request);
+		deleteItemFromServer(client);
 	// else if (request.getMethodCode() == PUT)
-	//	postItemFromServer(*request);
+	//	postItemFromServer(client);
 	// else if (request.getMethodCode() == HEAD)
-	//	getItemFromServer(*request);
+	//	getItemFromServer(client);
 	request->setParsingState(FILLING_DONE);
 
 	// wrap response content / error page with HTTP headers
 	// (needs to be at the end to have Content Size matching content fetched)
-	request->getResponse()->createHTTPHeaders();
+	client->getResponseObject()->createHTTPHeaders();
 }
 
-e_dataProgress	ContentFetcher::readCGIChunk(Request& request, int pipeFd) {
+e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client) {
 
 	char buffer[4096];
 	ssize_t bytesRead;
 
 	// Read from the CGI pipe and put it into the response content
-	while ((bytesRead = read(pipeFd, buffer, sizeof(buffer))) > 0) {
-		std::string	stringBuffer(buffer, sizeof(buffer));
-		request.getResponse()->addToContent(stringBuffer);
+	while ((bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer))) > 0)
+	{
+		std::string	stringBuffer(buffer, bytesRead);
+		std::cout << "read from pipe: " << stringBuffer;
+		client->getResponseObject()->addToContent(stringBuffer);
 	}
 
 	// If there is nothing the read in the buffer, reached the end of the CGI output
-	if (bytesRead == 0) {
+	if (bytesRead == 0)
 		return RECEIVED_ALL;
-	}
 
 	// Encountered a read error
-	else if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+	else if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+	{
 		perror("read from CGI pipe failed");
 		throw std::runtime_error("Failed to read CGI output");
 	}

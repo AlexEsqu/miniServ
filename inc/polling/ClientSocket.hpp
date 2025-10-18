@@ -20,11 +20,13 @@ private:
 
 	ServerSocket&		_serv;
 	char				_buffer[BUFFSIZE];
-	std::string			_fullHeader;
+
 	Request*			_request;
+	Response*			_responseObject;
 	std::string			_response;
 
-	size_t				_headerSize;
+	bool				_isReadingFromPipe;
+	int					_readingEndOfCgiPipe;
 
 public:
 
@@ -47,11 +49,15 @@ public:
 	Request*			getRequest();
 	ServerSocket&		getServer();
 	std::string&		getResponse();
+	Response*			getResponseObject();
+	int					getCgiPipeFd();
 
-	bool				hasRequest();
-	bool				hasParsedRequest();
-	bool				hasFilledResponse();
-	bool				hasSentResponse();
+	bool				hasRequest() const;
+	bool				hasParsedRequest() const;
+	bool				hasFilledResponse() const;
+	bool				hasSentResponse() const;
+
+	bool				isReadingFromPipe() const;
 
 	//----------------- MEMBER FUNCTION ------------------//
 
@@ -61,6 +67,10 @@ public:
 	bool 				tryToReadChunkBodyBlock();
 
 	void				readRequest();
+	void				createNewResponse();
+	void				startReadingPipe(int pipeFd);
+	void				stopReadingPipe();
 	void				sendResponse();
+	void				deleteResponse();
 
 };

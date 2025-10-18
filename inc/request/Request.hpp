@@ -58,12 +58,18 @@ private:
 	e_methods			_method;				// type of request parsed as enum
 	std::string			_protocol;				// must be HTTP/1.1
 	std::string			_URI;					// for example "/" or "/home.html"
+	std::map
+		<std::string,
+		std::string>	_requestHeaderMap;		// key=value of all header variables
 
-	std::map<std::string,std::string>	_requestHeaderMap; // key=value of all header variables
 	bool				_isChunked;
 	size_t				_contentLength;			// length of the request body to be expected
+
+	// REQUEST BUFFERS
+
 	std::string			_unparsedHeaderBuffer;	// may store chunks of request header
 	Buffer 				_requestBodyBuffer;		// stores the body of the request
+	int					_readingEndOfCGIPipe;	// if CGI is needed, fd to read the result in
 
 	// CONFIGURATION APPLICABLE TO THE REQUEST
 
@@ -100,6 +106,7 @@ public:
 	void				setRequestLine(std::string& requestLine);
 
 	void				setRoute(const Route* route);
+	void				setCgiPipe(int pipeFd);
 
 	void				addAsHeaderVar(std::string& keyValueString);
 
@@ -128,6 +135,7 @@ public:
 	Response*			getResponse();
 
 	std::string			getBody() const;
+	int					getCgiPipe() const;
 
 	bool				isKeepAlive();
 

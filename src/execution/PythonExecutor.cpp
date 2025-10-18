@@ -55,7 +55,7 @@ std::vector<const char*> PythonExecutor::buildArgv(const char* program, const st
 }
 
 
-void	PythonExecutor::execFileWithFork(Request& request, const std::string& fileToExecPath, int* pipefd)
+void	PythonExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
 	const char*		program = "/usr/bin/python3";
 
@@ -70,8 +70,8 @@ void	PythonExecutor::execFileWithFork(Request& request, const std::string& fileT
 	// unchunk (if needed ?)
 
 	// assemble into an execve approved array of char*, add EOF at end
-	std::vector<const char*> argv(buildArgv(program, fileToExecPath));
-	std::vector<const char*> env(buildEnv(request));
+	std::vector<const char*> argv(buildArgv(program, client->getResponseObject()->getRoutedURL()));
+	std::vector<const char*> env(buildEnv(*client->getRequest()));
 
 	execve(program, (char**)argv.data(), (char**)env.data());
 

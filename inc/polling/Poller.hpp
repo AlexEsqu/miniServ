@@ -7,7 +7,6 @@
 
 #include "Sockette.hpp"
 #include "ServerSocket.hpp"
-#include "ServerConf.hpp"
 
 class Poller
 {
@@ -41,7 +40,9 @@ public:
 
 	void				addSocket(Sockette& socket);
 	void				addServerSocket(ServerSocket& serverSocket);
+	void				addPipe(ClientSocket* client, int pipeFd);
 	void				removeSocket(Sockette* socket);
+	void				removePipe(int pipeFd);
 	void				updateSocketEvent(Sockette* socket);
 	void				launchEpollListenLoop();
 	void				waitForEvents();

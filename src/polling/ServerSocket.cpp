@@ -8,7 +8,7 @@ ServerSocket::ServerSocket(Poller& poller, const ServerConf& conf)
 {
 	setPort(conf.getPort());
 
-	_cf = new ContentFetcher(&poller);
+	_cf = new ContentFetcher();
 	_cf->addExecutor(new PHPExecutor());
 	_cf->addExecutor(new PythonExecutor());
 
@@ -100,44 +100,49 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 	delete clientSocket;
 }
 
-void			ServerSocket::handleExistingConnection(ClientSocket* connecting, epoll_event &event)
+void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event &event)
 {
 	if (socketIsReadyToReceiveData(event))
 	{
 		// reading the request or request chunk into a Request object
 		try
 		{
-			connecting->readRequest();
+			client->readRequest();
 
-			if (connecting->hasParsedRequest())
-				_cf->fillResponse(connecting->getRequest());
+			if (client->hasParsedRequest())
+				_cf->fillResponse(client);
 
-			if (connecting->hasFilledResponse())
-				setPollingMode(WRITING, connecting);
+			if (client->hasFilledResponse())
+				setPollingMode(WRITING, client);
 		}
 
 		// catch system error such as alloc, read, or write fail, and remove faulty sockets
 		catch ( std::exception &e )
 		{
 			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n") << e.what() << "\n";
-			removeConnection(connecting);
+			removeConnection(client);
 		}
 	}
 
 	else if (socketIsReadyToSendData(event))
 	{
-		if (connecting->hasFilledResponse())
+		if (client->isReadingFromPipe())
 		{
-			connecting->sendResponse();
+			_cf->readCGIChunk(client);
+		}
 
-			if (connecting->hasSentResponse())
-				closeConnectionOrCleanAndKeepAlive(connecting);
+		if (client->hasFilledResponse())
+		{
+			client->sendResponse();
+
+			if (client->hasSentResponse())
+				closeConnectionOrCleanAndKeepAlive(client);
 		}
 	}
 
 	else if (socketIsHavingTrouble(event)) {
 		std::cout << "Connection closed or error occurred" << std::endl;
-		removeConnection(connecting);
+		removeConnection(client);
 		return;
 	}
 }

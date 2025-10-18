@@ -25,9 +25,6 @@ Request::Request(const Request &copy)
 
 Request::~Request()
 {
-	if (_response != NULL)
-		delete _response;
-	_response = NULL;
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -94,11 +91,6 @@ const Route*		Request::getRoute() const
 	return (_route);
 }
 
-Response*			Request::getResponse()
-{
-	return (_response);
-}
-
 std::string			Request::getBody() const
 {
 	std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
@@ -116,6 +108,11 @@ std::string			Request::getBody() const
 		std::cout << "Memory content size: " << content.size() << std::endl;
 		return content;
 	}
+}
+
+int			Request::getCgiPipe() const
+{
+	return (_readingEndOfCGIPipe);
 }
 
 bool				Request::isKeepAlive()
@@ -170,11 +167,6 @@ void	Request::setProtocol(std::string &protocol)
 void	Request::setRoute(const Route* route)
 {
 	_route = route;
-}
-
-void	Request::setResponse(Response* response)
-{
-	_response = response;
 }
 
 void	Request::setParsingState(e_requestState requestState)
@@ -237,6 +229,10 @@ void	Request::setStatus(unsigned int statusCode)
 	_status.setStatusCode(statusCode);
 }
 
+void	Request::setCgiPipe(int pipeFd)
+{
+	_readingEndOfCGIPipe = pipeFd;
+}
 
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
