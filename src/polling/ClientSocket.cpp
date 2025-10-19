@@ -44,11 +44,6 @@ void	ClientSocket::resetRequest()
 	_request = NULL;
 }
 
-void	ClientSocket::setResponse(std::string response)
-{
-	_response = response;
-}
-
 //------------------------------ GETTER --------------------------------------//
 
 char*	ClientSocket::getBuffer()
@@ -64,11 +59,6 @@ Request*	ClientSocket::getRequest()
 ServerSocket&	ClientSocket::getServer()
 {
 	return (_serv);
-}
-
-std::string&	ClientSocket::getResponse()
-{
-	return (_response);
 }
 
 Response*	ClientSocket::getResponseObject()
@@ -187,25 +177,27 @@ void	ClientSocket::readRequest()
 
 void	ClientSocket::sendResponse()
 {
-	_response = getResponseObject()->getHTTPResponse();
 
-	size_t totalToSend = _response.length();
+
+	std::string response = getResponseObject()->getHTTPResponse();
+
+	size_t totalToSend = response.length();
 	size_t totalSent = 0;
 
-	std::cout << "Response size: " << _response.size() << " bytes" << std::endl;
-	std::cout << "First 100 chars: [" << _response.substr(0, 100) << "]" << std::endl;
+	std::cout << "Response size: " << response.size() << " bytes" << std::endl;
+	std::cout << "First 100 chars: [" << response.substr(0, 100) << "]" << std::endl;
 
 	while (totalSent < totalToSend)
 	{
 		ssize_t bytesSent = send(getSocketFd(),
-								_response.c_str() + totalSent,
+								response.c_str() + totalSent,
 								totalToSend - totalSent, 0);
 
 		if (bytesSent < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
-				_response = _response.substr(totalSent);
+				response = response.substr(totalSent);
 				return;
 			}
 			perror("send failed");

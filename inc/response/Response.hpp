@@ -50,8 +50,6 @@ public:
 	void			setContent(std::string content);
 	void			setRoutedUrl(std::string url);
 
-	// void			setResponse(std::string response);
-
 	void			setRequest(Request* request);
 	void			setContentType(std::string type);
 	void			setContentLength(int length);

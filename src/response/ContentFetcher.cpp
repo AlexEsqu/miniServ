@@ -100,6 +100,10 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 {
 	std::string		fileURL(client->getResponseObject()->getRoutedURL());
 
+	#ifdef DEBUG
+	std::cout << "serving statit " << fileURL << "\n";
+	#endif
+
 	std::ifstream	input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
@@ -115,6 +119,7 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	input.read(buffer.data(), size);
 	std::string binaryContent(buffer.begin(), buffer.end());
 	client->getResponseObject()->addToContent(binaryContent);
+	client->getRequest()->setParsingState(FILLING_DONE);
 }
 
 void ContentFetcher::getItemFromServer(ClientSocket* client)
@@ -122,7 +127,10 @@ void ContentFetcher::getItemFromServer(ClientSocket* client)
 	for (size_t i = 0; i < _executors.size(); i++)
 	{
 		if(_executors[i]->canExecuteFile(client->getResponseObject()->getRoutedURL()))
+		{
 			_executors[i]->executeFile(client);
+			client->getRequest()->setParsingState(FILLING_ONGOING);
+		}
 		return;
 	}
 
@@ -205,7 +213,7 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 	//	postItemFromServer(client);
 	// else if (request.getMethodCode() == HEAD)
 	//	getItemFromServer(client);
-	request->setParsingState(FILLING_DONE);
+
 
 	// wrap response content / error page with HTTP headers
 	// (needs to be at the end to have Content Size matching content fetched)
@@ -227,7 +235,11 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client) {
 
 	// If there is nothing the read in the buffer, reached the end of the CGI output
 	if (bytesRead == 0)
+	{
+		client->getRequest()->setParsingState(FILLING_DONE);
 		return RECEIVED_ALL;
+	}
+
 
 	// Encountered a read error
 	else if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK)

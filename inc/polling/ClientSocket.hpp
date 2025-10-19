@@ -23,7 +23,6 @@ private:
 
 	Request*			_request;
 	Response*			_responseObject;
-	std::string			_response;
 
 	bool				_isReadingFromPipe;
 	int					_readingEndOfCgiPipe;

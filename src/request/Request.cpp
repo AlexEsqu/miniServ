@@ -189,8 +189,6 @@ void	Request::setRequestLine(std::string &requestLine)
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
 
-
-
 	std::cout << _methodAsString << " " << _URI << " ";
 }
 
