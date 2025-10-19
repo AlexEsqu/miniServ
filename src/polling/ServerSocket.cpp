@@ -127,7 +127,7 @@ void			ServerSocket::sendDataIfComplete(ClientSocket* client)
 	{
 		client->sendResponse();
 
-		if (client->hasSentFullResponse())
+		if (client->hasSentResponse())
 			closeConnectionOrCleanAndKeepAlive(client);
 	}
 }
@@ -172,12 +172,17 @@ void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 // socket is ready to receive data or hanging up (recv 0 byte)
 bool		ServerSocket::socketIsReadyToReceiveData(epoll_event& event)
 {
-	return (event.events & (EPOLLIN | EPOLLHUP));
+	return (event.events & EPOLLIN || socketIsHangingUp(event));
 }
 
 bool		ServerSocket::socketIsReadyToSendData(epoll_event& event)
 {
 	return (event.events & EPOLLOUT);
+}
+
+bool		ServerSocket::socketIsHangingUp(epoll_event& event)
+{
+	return (event.events & EPOLLHUP);
 }
 
 bool		ServerSocket::socketIsHavingTrouble(epoll_event& event)

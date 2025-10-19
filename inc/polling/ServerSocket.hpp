@@ -56,5 +56,6 @@ public:
 	bool				socketIsReadyToReceiveData(epoll_event& event);
 	bool				socketIsReadyToSendData(epoll_event& event);
 	bool				socketIsHavingTrouble(epoll_event& event);
+	bool				socketIsHangingUp(epoll_event& event);
 
 };
