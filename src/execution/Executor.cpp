@@ -122,14 +122,19 @@ void	Executor::executeFile(ClientSocket* client)
 
 	if (pipe(pipefd) != 0)
 		throw std::runtime_error("pipe failed");
+
 	fork_pid = fork();
 	if (fork_pid < 0)
 		throw std::runtime_error("fork failed");
+
 	if (fork_pid == 0)
+	{
 		execFileWithFork(client, pipefd);
+		throw std::runtime_error("execve failed");
+	}
 	else
 	{
-		perror("Failed to fork");
-		throw std::runtime_error("Fork failed");
+		close(pipefd[1]);
+		client->startReadingPipe(pipefd[0]);
 	}
 }

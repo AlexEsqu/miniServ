@@ -11,8 +11,8 @@
 
 enum e_pollingMode
 {
-	WRITING,
 	READING,
+	WRITING,
 	ONLY_ERROR
 };
 class Poller
