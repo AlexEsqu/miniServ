@@ -132,7 +132,13 @@ void	ClientSocket::startReadingPipe(int pipeFd)
 
 void	ClientSocket::stopReadingPipe()
 {
+	#ifdef DEBUG
+	std::cout << "Removing CGI pipe to epoll" << std::endl;
+	#endif
+
 	_isReadingFromPipe = false;
+	getServer().getEpoll().removePipe(this, _readingEndOfCgiPipe);
+	_readingEndOfCgiPipe = -1;
 }
 
 void	ClientSocket::checkForReadError(int valread)

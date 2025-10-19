@@ -124,14 +124,16 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 
 void ContentFetcher::getItemFromServer(ClientSocket* client)
 {
+	std::cout << "Processing GET request to: " << client->getResponse()->getRoutedURL() << std::endl;
+
 	for (size_t i = 0; i < _executors.size(); i++)
 	{
 		if(_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
 		{
 			_executors[i]->executeFile(client);
 			client->getRequest()->setParsingState(FILLING_ONGOING);
+			return;
 		}
-		return;
 	}
 
 	std::cout << CGI_FORMAT(" NO CGI ");
@@ -197,6 +199,8 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 	client->createNewResponse();
 
 	Request*	request = client->getRequest();
+
+	std::cout << "Filling request to: " << client->getResponse()->getRoutedURL() << std::endl;
 
 	// if an error has been caught when parsing, no need to fetch content
 	if (request->hasError())
