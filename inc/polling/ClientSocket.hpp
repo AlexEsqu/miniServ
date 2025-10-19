@@ -22,7 +22,7 @@ private:
 	char				_buffer[BUFFSIZE];
 
 	Request*			_request;
-	Response*			_responseObject;
+	Response*			_response;
 
 	bool				_isReadingFromPipe;
 	int					_readingEndOfCgiPipe;
@@ -39,7 +39,7 @@ public:
 
 	//----------------------- SETTER ---------------------//
 
-	void				setResponse(std::string response);
+	// void				setResponse(std::string response);
 	void				resetRequest();
 
 	//----------------------- GETTER ---------------------//
@@ -47,8 +47,7 @@ public:
 	char*				getBuffer();
 	Request*			getRequest();
 	ServerSocket&		getServer();
-	std::string&		getResponse();
-	Response*			getResponseObject();
+	Response*			getResponse();
 	int					getCgiPipeFd();
 
 	bool				hasRequest() const;

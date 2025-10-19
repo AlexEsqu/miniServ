@@ -56,19 +56,24 @@ void	Poller::addPipe(ClientSocket* client, int pipeFd)
 	}
 }
 
-void	Poller::removePipe(int pipeFd)
+void	Poller::removePipe(ClientSocket* client, int pipeFd)
 {
+	// removing pipe fd from the polled fd
 	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, pipeFd, NULL) == -1) {
 		perror("Failed to remove pipe from epoll");
 		throw failedEpollCtl();
 	}
 	close(pipeFd);
+
+	// setting the socket to writing mode
+	client->getServer().setPollingMode(WRITING, client);
 }
 
 void	Poller::waitForEvents()
 {
 	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);
-	if (_eventsReadyForProcess == -1) {
+	if (_eventsReadyForProcess == -1)
+	{
 		if (errno == EINTR)
 		{
 			std::cout << "epoll_wait interrupted by signal, closing down..." << std::endl;

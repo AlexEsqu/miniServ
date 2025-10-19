@@ -35,19 +35,21 @@ public:
 	//----------------------- GETTER ---------------------//
 
 	int					getEpoll() const;
+	bool				isServerSocket(Sockette* socket);
 
 	//----------------- MEMBER FUNCTION ------------------//
 
 	void				addSocket(Sockette& socket);
 	void				addServerSocket(ServerSocket& serverSocket);
-	void				addPipe(ClientSocket* client, int pipeFd);
 	void				removeSocket(Sockette* socket);
-	void				removePipe(int pipeFd);
-	void				updateSocketEvent(Sockette* socket);
+
+	void				addPipe(ClientSocket* client, int pipeFd);
+	void				removePipe(ClientSocket* client, int pipeFd);
+
 	void				launchEpollListenLoop();
 	void				waitForEvents();
 	void				processEvents();
-	bool				isServerSocket(Sockette* socket);
+	void				updateSocketEvent(Sockette* socket);
 
 	//------------------ EXCEPTIONS ----------------------//
 

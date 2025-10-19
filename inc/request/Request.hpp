@@ -83,10 +83,6 @@ private:
 	Status				_status;				// keeps track of request status code
 	bool				_hasError;				// no need to keep parsing unless to empty socket
 
-	// REQUEST RESULT
-
-	Response*			_response;				// allocated when needed, stores the response content, generates headers
-
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//

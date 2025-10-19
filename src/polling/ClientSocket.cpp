@@ -61,9 +61,9 @@ ServerSocket&	ClientSocket::getServer()
 	return (_serv);
 }
 
-Response*	ClientSocket::getResponseObject()
+Response*	ClientSocket::getResponse()
 {
-	return (_responseObject);
+	return (_response);
 }
 
 int	ClientSocket::getCgiPipeFd()
@@ -109,12 +109,12 @@ bool	ClientSocket::isReadingFromPipe() const
 
 void	ClientSocket::createNewResponse()
 {
-	_responseObject = new Response(getRequest());
+	_response = new Response(getRequest());
 }
 
 void	ClientSocket::deleteResponse()
 {
-	delete _responseObject;
+	delete _response;
 }
 
 // adds pipe to epoll to monitor, and read from the pipe
@@ -177,9 +177,7 @@ void	ClientSocket::readRequest()
 
 void	ClientSocket::sendResponse()
 {
-
-
-	std::string response = getResponseObject()->getHTTPResponse();
+	std::string response = getResponse()->getHTTPResponse();
 
 	size_t totalToSend = response.length();
 	size_t totalSent = 0;
@@ -192,7 +190,6 @@ void	ClientSocket::sendResponse()
 		ssize_t bytesSent = send(getSocketFd(),
 								response.c_str() + totalSent,
 								totalToSend - totalSent, 0);
-
 		if (bytesSent < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -203,10 +200,10 @@ void	ClientSocket::sendResponse()
 			perror("send failed");
 			return;
 		}
-
 		totalSent += bytesSent;
 	}
-	_response.clear();
+	delete _response;
+
 	std::cout << "Successfully sent " << totalSent << " bytes" << std::endl;
 	if (totalSent == totalToSend)
 		_request->setParsingState(SENDING_DONE);

@@ -98,7 +98,7 @@ bool	ContentFetcher::isDirectory(const char *path)
 
 void	ContentFetcher::serveStatic(ClientSocket* client)
 {
-	std::string		fileURL(client->getResponseObject()->getRoutedURL());
+	std::string		fileURL(client->getResponse()->getRoutedURL());
 
 	#ifdef DEBUG
 	std::cout << "serving statit " << fileURL << "\n";
@@ -113,12 +113,12 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 		return;
 	}
 
-	client->getResponseObject()->setContentType(getTypeBasedOnExtension(fileURL));
+	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
 	size_t	size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
 	std::string binaryContent(buffer.begin(), buffer.end());
-	client->getResponseObject()->addToContent(binaryContent);
+	client->getResponse()->addToContent(binaryContent);
 	client->getRequest()->setParsingState(FILLING_DONE);
 }
 
@@ -126,7 +126,7 @@ void ContentFetcher::getItemFromServer(ClientSocket* client)
 {
 	for (size_t i = 0; i < _executors.size(); i++)
 	{
-		if(_executors[i]->canExecuteFile(client->getResponseObject()->getRoutedURL()))
+		if(_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
 		{
 			_executors[i]->executeFile(client);
 			client->getRequest()->setParsingState(FILLING_ONGOING);
@@ -140,7 +140,7 @@ void ContentFetcher::getItemFromServer(ClientSocket* client)
 
 void ContentFetcher::postItemFromServer(ClientSocket* client)
 {
-	std::cout << "Processing POST request to: " << client->getResponseObject()->getRoutedURL() << std::endl;
+	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
 
 	handleFileUpload(client);
 
@@ -164,14 +164,14 @@ void	ContentFetcher::handleFormSubmission(ClientSocket* client)
 		"<p>Data received: " + postData + "</p>"
 		"<a href='/'>Back to home</a></body></html>";
 
-	client->getResponseObject()->setContentType("text/html");
-	client->getResponseObject()->addToContent(responseContent.c_str());
+	client->getResponse()->setContentType("text/html");
+	client->getResponse()->addToContent(responseContent.c_str());
 	client->getRequest()->setStatus(200);
 }
 
 void	ContentFetcher::handleFileUpload(ClientSocket* client)
 {
-	FileHandler	upload(client->getResponseObject()->getRoutedURL());
+	FileHandler	upload(client->getResponse()->getRoutedURL());
 
 	upload.writeToFile(client->getRequest()->getBody());
 
@@ -181,8 +181,8 @@ void	ContentFetcher::handleFileUpload(ClientSocket* client)
 		"<body><h1>File uploaded successfully!</h1>"
 		"<a href='/'>Back to home</a></body></html>";
 
-	client->getResponseObject()->setContentType("text/html");
-	client->getResponseObject()->addToContent(uploadResponse.c_str());
+	client->getResponse()->setContentType("text/html");
+	client->getResponse()->addToContent(uploadResponse.c_str());
 	client->getRequest()->setStatus(201);
 }
 
@@ -196,7 +196,7 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 	// create a response object and attach it to the request
 	client->createNewResponse();
 
-	Request* request = client->getRequest();
+	Request*	request = client->getRequest();
 
 	// if an error has been caught when parsing, no need to fetch content
 	if (request->hasError())
@@ -217,7 +217,7 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 
 	// wrap response content / error page with HTTP headers
 	// (needs to be at the end to have Content Size matching content fetched)
-	client->getResponseObject()->createHTTPHeaders();
+	client->getResponse()->createHTTPHeaders();
 }
 
 e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client) {
@@ -230,7 +230,7 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client) {
 	{
 		std::string	stringBuffer(buffer, bytesRead);
 		std::cout << "read from pipe: " << stringBuffer;
-		client->getResponseObject()->addToContent(stringBuffer);
+		client->getResponse()->addToContent(stringBuffer);
 	}
 
 	// If there is nothing the read in the buffer, reached the end of the CGI output
