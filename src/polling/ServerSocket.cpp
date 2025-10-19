@@ -168,7 +168,7 @@ void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 
 bool		ServerSocket::socketIsReadyToReceiveData(epoll_event& event)
 {
-	return (event.events & EPOLLIN);
+	return (event.events & (EPOLLIN | EPOLLHUP));
 }
 
 bool		ServerSocket::socketIsReadyToSendData(epoll_event& event)
@@ -178,5 +178,5 @@ bool		ServerSocket::socketIsReadyToSendData(epoll_event& event)
 
 bool		ServerSocket::socketIsHavingTrouble(epoll_event& event)
 {
-	return (event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP));
+	return (event.events & (EPOLLERR | EPOLLRDHUP));
 }
