@@ -35,7 +35,8 @@ void	Poller::addServerSocket(ServerSocket& socket)
 }
 
 // necessary when using epoll to avoid a non filled pipe to make the whole server hang
-void	Poller::setPipeToNonBlocking(int pipeFd) {
+void	Poller::setPipeToNonBlocking(int pipeFd)
+{
 	int flags = fcntl(pipeFd, F_GETFL, 0);
 	if (flags == -1 || fcntl(pipeFd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		perror("Failed to set pipe to non-blocking mode");
@@ -57,19 +58,44 @@ void	Poller::addPipe(ClientSocket* client, int pipeFd)
 		perror("Failed to add pipe to epoll");
 		throw failedEpollCtl();
 	}
+
+	// only check the socket fd if an error occurs
+	setPollingMode(ONLY_ERROR, client);
 }
 
 void	Poller::removePipe(ClientSocket* client, int pipeFd)
 {
 	// removing pipe fd from the polled fd
-	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, pipeFd, NULL) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, pipeFd, NULL) == -1)
+	{
 		perror("Failed to remove pipe from epoll");
 		throw failedEpollCtl();
 	}
+
 	close(pipeFd);
 
 	// setting the socket to writing mode
-	client->getServer().setPollingMode(WRITING, client);
+	setPollingMode(WRITING, client);
+}
+
+void Poller::setPollingMode(e_pollingMode mode, ClientSocket* socket)
+{
+	if (mode == WRITING)
+	{
+		std::cout << "Setting EPOLLOUT for socket " << socket->getSocketFd() << std::endl;
+		socket->setEpollEventsMask(EPOLLOUT | EPOLLERR);
+	}
+	else if (mode == READING)
+	{
+		std::cout << "Setting EPOLLIN for socket " << socket->getSocketFd() << std::endl;
+		socket->setEpollEventsMask(EPOLLIN | EPOLLERR);
+	}
+	else
+	{
+		std::cout << "Setting ONLY_ERROR for socket " << socket->getSocketFd() << std::endl;
+		socket->setEpollEventsMask(EPOLLERR);
+	}
+	updateSocketEvent(socket);
 }
 
 void	Poller::waitForEvents()

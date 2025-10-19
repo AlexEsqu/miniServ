@@ -8,6 +8,13 @@
 #include "Sockette.hpp"
 #include "ServerSocket.hpp"
 
+
+enum e_pollingMode
+{
+	WRITING,
+	READING,
+	ONLY_ERROR
+};
 class Poller
 {
 
@@ -51,6 +58,7 @@ public:
 	void				waitForEvents();
 	void				processEvents();
 	void				updateSocketEvent(Sockette* socket);
+	void				setPollingMode(e_pollingMode mode, ClientSocket* socket);
 
 	//------------------ EXCEPTIONS ----------------------//
 

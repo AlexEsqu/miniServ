@@ -107,13 +107,24 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 		// reading the request or request chunk into a Request object
 		try
 		{
-			client->readRequest();
+			if (client->isReadingFromPipe())
+			{
+				_cf->readCGIChunk(client);
+			}
+			else
+			{
+				client->readRequest();
 
-			if (client->hasParsedRequest())
-				_cf->fillResponse(client);
+				if (client->hasParsedRequest())
+					_cf->fillResponse(client);
 
-			if (client->hasFilledResponse())
-				setPollingMode(WRITING, client);
+				if (client->hasFilledResponse())
+				{
+					std::cout << "response is filled\n";
+					_poller.setPollingMode(WRITING, client);
+
+				}
+			}
 		}
 
 		// catch system error such as alloc, read, or write fail, and remove faulty sockets
@@ -126,10 +137,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 
 	else if (socketIsReadyToSendData(event))
 	{
-		if (client->isReadingFromPipe())
-		{
-			_cf->readCGIChunk(client);
-		}
+		std::cout << "socket " << client->getSocketFd() << "is ready to write\n";
 
 		if (client->hasFilledResponse())
 		{
@@ -147,21 +155,12 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 	}
 }
 
-void		ServerSocket::setPollingMode(e_clientSocketMode mode, ClientSocket* socket)
-{
-	if (mode == WRITING)
-		socket->setEpollEventsMask(EPOLLOUT | EPOLLERR);
-	else
-		socket->setEpollEventsMask(EPOLLIN | EPOLLERR);
-	_poller.updateSocketEvent(socket);
-}
-
 void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 {
 	if (socket->getRequest()->isKeepAlive())
 	{
 		socket->resetRequest();
-		setPollingMode(READING, socket);
+		_poller.setPollingMode(READING, socket);
 	}
 	else
 		removeConnection(socket);

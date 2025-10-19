@@ -81,7 +81,7 @@ void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 
 	// clean up
 
-	exit(-1);
+	throw std::runtime_error("exec failed");
 }
 
 bool	PHPExecutor::canExecuteFile(const std::string& filePath) const

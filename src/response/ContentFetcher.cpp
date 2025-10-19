@@ -101,7 +101,7 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	std::string		fileURL(client->getResponse()->getRoutedURL());
 
 	#ifdef DEBUG
-	std::cout << "serving statit " << fileURL << "\n";
+	std::cout << "serving static " << fileURL;
 	#endif
 
 	std::ifstream	input(fileURL.c_str(), std::ios::binary);
@@ -119,7 +119,11 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	input.read(buffer.data(), size);
 	std::string binaryContent(buffer.begin(), buffer.end());
 	client->getResponse()->addToContent(binaryContent);
+	client->getResponse()->createHTTPHeaders();
 	client->getRequest()->setParsingState(FILLING_DONE);
+	#ifdef DEBUG
+	std::cout << "Filling done\n";
+	#endif
 }
 
 void ContentFetcher::getItemFromServer(ClientSocket* client)
@@ -217,11 +221,6 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 	//	postItemFromServer(client);
 	// else if (request.getMethodCode() == HEAD)
 	//	getItemFromServer(client);
-
-
-	// wrap response content / error page with HTTP headers
-	// (needs to be at the end to have Content Size matching content fetched)
-	client->getResponse()->createHTTPHeaders();
 }
 
 e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
@@ -229,25 +228,37 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
 	char buffer[4096];
 	ssize_t bytesRead;
 
+	std::cout << "Reading from pipe\n";
+
 	bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer));
 
 	// If there is nothing the read in the buffer, reached the end of the CGI output
 	if (bytesRead == 0)
 	{
+		client->stopReadingPipe();
+		// wrap response content / error page with HTTP headers
+		client->getResponse()->createHTTPHeaders();
 		client->getRequest()->setParsingState(FILLING_DONE);
 		return RECEIVED_ALL;
 	}
 	// Encountered a read error
-	if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+	if (bytesRead < 0)
 	{
-		perror("read from CGI pipe failed");
-		throw std::runtime_error("Failed to read CGI output");
+		if (errno != EAGAIN && errno != EWOULDBLOCK)
+		{
+			std::cout << "nothing in pipe\n";
+			return WAITING_FOR_MORE;
+		}
+		else
+		{
+			perror("read from CGI pipe failed");
+			throw std::runtime_error("Failed to read CGI output");
+		}
 	}
-	else
-	{
-		std::string	stringBuffer(buffer, bytesRead);
-		std::cout << "read from pipe: " << stringBuffer;
-		client->getResponse()->addToContent(stringBuffer);
-	}
+
+	std::string	stringBuffer(buffer, bytesRead);
+	std::cout << "read from pipe: " << stringBuffer;
+	client->getResponse()->addToContent(stringBuffer);
+
 	return WAITING_FOR_MORE;
 }

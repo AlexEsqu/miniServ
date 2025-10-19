@@ -6,6 +6,7 @@
 ClientSocket::ClientSocket(ServerSocket &server)
 	: _serv(server)
 	, _request(NULL)
+	, _isReadingFromPipe(false)
 {
 // #ifdef DEBUG
 // 	std::cerr << "ClientSocket Constructor called" << std::endl;
@@ -31,8 +32,14 @@ ClientSocket::ClientSocket(ServerSocket &server)
 
 ClientSocket::~ClientSocket()
 {
-	delete _request;
+	if (_request)
+		delete _request;
 	_request = NULL;
+	if (_response)
+		delete _response;
+	_response = NULL;
+	if (_isReadingFromPipe)
+		close(_readingEndOfCgiPipe);
 	close(getSocketFd());
 }
 
@@ -115,6 +122,7 @@ void	ClientSocket::createNewResponse()
 void	ClientSocket::deleteResponse()
 {
 	delete _response;
+	_response = NULL;
 }
 
 // adds pipe to epoll to monitor, and read from the pipe
@@ -208,7 +216,8 @@ void	ClientSocket::sendResponse()
 		}
 		totalSent += bytesSent;
 	}
-	delete _response;
+
+	deleteResponse();
 
 	std::cout << "Successfully sent " << totalSent << " bytes" << std::endl;
 	if (totalSent == totalToSend)
