@@ -50,6 +50,8 @@ public:
 	void				handleExistingConnection(ClientSocket* client, epoll_event &event);
 
 	void				closeConnectionOrCleanAndKeepAlive(ClientSocket* client);
+	void				receiveAndParseData(ClientSocket* client);
+	void				sendDataIfReady(ClientSocket* client);
 
 	bool				socketIsReadyToReceiveData(epoll_event& event);
 	bool				socketIsReadyToSendData(epoll_event& event);
