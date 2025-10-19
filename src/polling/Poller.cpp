@@ -34,15 +34,18 @@ void	Poller::addServerSocket(ServerSocket& socket)
 	_listeningSockets.insert(socket.getSocketFd());
 }
 
-void	Poller::addPipe(ClientSocket* client, int pipeFd)
-{
-	// Set the pipe to non-blocking mode
+// necessary when using epoll to avoid a non filled pipe to make the whole server hang
+void	Poller::setPipeToNonBlocking(int pipeFd) {
 	int flags = fcntl(pipeFd, F_GETFL, 0);
-	if (flags == -1 || fcntl(pipeFd, F_SETFL, flags | O_NONBLOCK) == -1)
-	{
+	if (flags == -1 || fcntl(pipeFd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		perror("Failed to set pipe to non-blocking mode");
 		throw std::runtime_error("Failed to set pipe to non-blocking mode");
 	}
+}
+
+void	Poller::addPipe(ClientSocket* client, int pipeFd)
+{
+	setPipeToNonBlocking(pipeFd);
 
 	// Add the pipe to the epoll instance
 	epoll_event event;

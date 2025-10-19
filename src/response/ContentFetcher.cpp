@@ -224,18 +224,12 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 	client->getResponse()->createHTTPHeaders();
 }
 
-e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client) {
-
+e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
+{
 	char buffer[4096];
 	ssize_t bytesRead;
 
-	// Read from the CGI pipe and put it into the response content
-	while ((bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer))) > 0)
-	{
-		std::string	stringBuffer(buffer, bytesRead);
-		std::cout << "read from pipe: " << stringBuffer;
-		client->getResponse()->addToContent(stringBuffer);
-	}
+	bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer));
 
 	// If there is nothing the read in the buffer, reached the end of the CGI output
 	if (bytesRead == 0)
@@ -243,14 +237,17 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client) {
 		client->getRequest()->setParsingState(FILLING_DONE);
 		return RECEIVED_ALL;
 	}
-
-
 	// Encountered a read error
-	else if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+	if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
 	{
 		perror("read from CGI pipe failed");
 		throw std::runtime_error("Failed to read CGI output");
 	}
-
+	else
+	{
+		std::string	stringBuffer(buffer, bytesRead);
+		std::cout << "read from pipe: " << stringBuffer;
+		client->getResponse()->addToContent(stringBuffer);
+	}
 	return WAITING_FOR_MORE;
 }

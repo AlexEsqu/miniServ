@@ -45,6 +45,7 @@ public:
 
 	void				addPipe(ClientSocket* client, int pipeFd);
 	void				removePipe(ClientSocket* client, int pipeFd);
+	void				setPipeToNonBlocking(int pipeFd);
 
 	void				launchEpollListenLoop();
 	void				waitForEvents();
