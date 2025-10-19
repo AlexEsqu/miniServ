@@ -51,7 +51,7 @@ public:
 
 	void				closeConnectionOrCleanAndKeepAlive(ClientSocket* client);
 	void				receiveAndParseData(ClientSocket* client);
-	void				sendDataIfReady(ClientSocket* client);
+	void				sendDataIfComplete(ClientSocket* client);
 
 	bool				socketIsReadyToReceiveData(epoll_event& event);
 	bool				socketIsReadyToSendData(epoll_event& event);

@@ -53,7 +53,7 @@ public:
 	bool				hasRequest() const;
 	bool				hasParsedRequest() const;
 	bool				hasFilledResponse() const;
-	bool				hasSentResponse() const;
+	bool				hasSentFullResponse() const;
 
 	bool				isReadingFromPipe() const;
 

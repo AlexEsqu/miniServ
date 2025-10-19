@@ -100,10 +100,11 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 	delete clientSocket;
 }
 
+// Client generally receives data from web user to parse into a request
+// but may also read from an internal pipe CGI being executed for a response
 void			ServerSocket::receiveAndParseData(ClientSocket* client)
 {
-	// special case when the CGI is being executed, and epoll is redirecting to the
-	// CGI execution pipe, so reading from there
+	// special case when the CGI is being executed, requires specific functions
 	if (client->isReadingFromPipe())
 		_cf->readCGIChunk(client);
 
@@ -116,20 +117,17 @@ void			ServerSocket::receiveAndParseData(ClientSocket* client)
 			_cf->fillResponse(client);
 
 		if (client->hasFilledResponse())
-		{
-			std::cout << "response is filled\n";
 			_poller.setPollingMode(WRITING, client);
-		}
 	}
 }
 
-void			ServerSocket::sendDataIfReady(ClientSocket* client)
+void			ServerSocket::sendDataIfComplete(ClientSocket* client)
 {
 	if (client->hasFilledResponse())
 	{
 		client->sendResponse();
 
-		if (client->hasSentResponse())
+		if (client->hasSentFullResponse())
 			closeConnectionOrCleanAndKeepAlive(client);
 	}
 }
@@ -144,13 +142,11 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 		}
 		else if (socketIsReadyToSendData(event))
 		{
-			sendDataIfReady(client);
+			sendDataIfComplete(client);
 		}
 		else if (socketIsHavingTrouble(event))
 		{
-			std::cout << "Connection closed or error occurred" << std::endl;
-			removeConnection(client);
-			return;
+			throw std::runtime_error("Connection closed or error occurred");
 		}
 	}
 

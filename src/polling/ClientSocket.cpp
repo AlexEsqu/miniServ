@@ -99,7 +99,7 @@ bool	ClientSocket::hasFilledResponse() const
 	return (_request->getParsingState() == FILLING_DONE);
 }
 
-bool	ClientSocket::hasSentResponse() const
+bool	ClientSocket::hasSentFullResponse() const
 {
 	if (!hasRequest())
 		return false;
