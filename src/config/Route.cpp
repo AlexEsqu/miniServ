@@ -33,7 +33,7 @@ Route&	Route::operator=(const Route &other)
 {
 	if (this != &other)
 	{
-		this->_routedPath		= other._routedPath;
+		this->_rootDirectory		= other._rootDirectory;
 		this->_urlPath			= other._urlPath;
 		this->_defaultFiles		= other._defaultFiles;
 		this->_autoindex		= other._autoindex;
@@ -52,7 +52,7 @@ Route&	Route::operator=(const Route &other)
 
 std::string Route::getRootDirectory() const
 {
-	return (this->_routedPath);
+	return (this->_rootDirectory);
 }
 
 const std::vector<std::string> Route::getDefaultFiles() const
@@ -161,7 +161,7 @@ void	Route::setURLPath(std::string path)
 void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 {
 	if (paramMap.find("root") != paramMap.end())
-		_routedPath = paramMap.at("root");
+		_rootDirectory = paramMap.at("root");
 
 	if (paramMap.find("index") != paramMap.end())
 		_defaultFiles = split(paramMap.at("index"), ' ');
@@ -183,6 +183,16 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 
 	if (paramMap.find("cgi_extension") != paramMap.end())
 		_allowedCGI = split(paramMap.at("cgi_extension"), ' ');
+}
+
+void	Route::setRootDirectory(std::string path)
+{
+	_rootDirectory = path;
+}
+
+void 	Route::setAllowedMethods(std::vector<std::string> methodVector)
+{
+	_allow_methods = methodVector;
 }
 
 void	Route::addNestedRoute(Route& route)

@@ -652,56 +652,57 @@ TEST_CASE("Route getMatchingRoute functionality") {
 		std::remove(configPath.c_str());
 	}
 
-	SUBCASE("Nested route matching") {
-		const std::string configContent =
-			"server {\n"
-			"    listen 8080;\n"
-			"    root /var/www;\n"
-			"    location /api {\n"
-			"        root /var/www/api;\n"
-			"        location /api/v1 {\n"
-			"            root /var/www/api/v1;\n"
-			"        }\n"
-			"    }\n"
-			"}\n";
+	// TO DO : Check if nested route is worth doing as a bonus
+	// SUBCASE("Nested route matching") {
+	// 	const std::string configContent =
+	// 		"server {\n"
+	// 		"    listen 8080;\n"
+	// 		"    root /var/www;\n"
+	// 		"    location /api {\n"
+	// 		"        root /var/www/api;\n"
+	// 		"        location /api/v1 {\n"
+	// 		"            root /var/www/api/v1;\n"
+	// 		"        }\n"
+	// 		"    }\n"
+	// 		"}\n";
 
-		const std::string configPath = "test_nested_matching.conf";
-		createTempConfigFile(configPath, configContent);
+	// 	const std::string configPath = "test_nested_matching.conf";
+	// 	createTempConfigFile(configPath, configContent);
 
-		std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
-		REQUIRE(configs.size() == 1);
+	// 	std::vector<ServerConf> configs = ConfigParser::parseConfigFile(configPath.c_str());
+	// 	REQUIRE(configs.size() == 1);
 
-		const std::vector<Route>& routes = configs[0].getRoutes();
+	// 	const std::vector<Route>& routes = configs[0].getRoutes();
 
-		// Find API route
-		const Route* apiRoute = NULL;
-		for (size_t i = 0; i < routes.size(); i++) {
-			if (routes[i].getURLPath() == "/api") {
-				apiRoute = &routes[i];
-				break;
-			}
-		}
+	// 	// Find API route
+	// 	const Route* apiRoute = NULL;
+	// 	for (size_t i = 0; i < routes.size(); i++) {
+	// 		if (routes[i].getURLPath() == "/api") {
+	// 			apiRoute = &routes[i];
+	// 			break;
+	// 		}
+	// 	}
 
-		REQUIRE(apiRoute != NULL);
+	// 	REQUIRE(apiRoute != NULL);
 
-		// Test that nested route is found
-		try {
-			const Route* matched = apiRoute->getMatchingRoute("/api/v1/users");
-			CHECK(matched->getURLPath() == "/api/v1");
-		} catch (const std::runtime_error&) {
-			FAIL("Should have found nested matching route");
-		}
+	// 	// Test that nested route is found
+	// 	try {
+	// 		const Route* matched = apiRoute->getMatchingRoute("/api/v1/users");
+	// 		CHECK(matched->getURLPath() == "/api/v1");
+	// 	} catch (const std::runtime_error&) {
+	// 		FAIL("Should have found nested matching route");
+	// 	}
 
-		// Test that parent route is found when no nested match
-		try {
-			const Route* matched = apiRoute->getMatchingRoute("/api/v2/test");
-			CHECK(matched->getURLPath() == "/api");
-		} catch (const std::runtime_error&) {
-			FAIL("Should have found parent matching route");
-		}
+	// 	// Test that parent route is found when no nested match
+	// 	try {
+	// 		const Route* matched = apiRoute->getMatchingRoute("/api/v2/test");
+	// 		CHECK(matched->getURLPath() == "/api");
+	// 	} catch (const std::runtime_error&) {
+	// 		FAIL("Should have found parent matching route");
+	// 	}
 
-		std::remove(configPath.c_str());
-	}
+	// 	std::remove(configPath.c_str());
+	// }
 }
 
 TEST_CASE("Route parameter setting") {

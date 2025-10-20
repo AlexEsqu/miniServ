@@ -422,7 +422,7 @@ TEST_CASE("POST Method - Full Integration Test") {
 			"<html><head><title>Success</title></head>"
 			"<body><h1>POST Successful</h1></body></html>";
 		response.addToContent(successContent);
-		response.setStatus(200);
+		response.setStatus(OK);
 
 		// 5. Generate HTTP headers
 		response.createHTTPHeaders();
