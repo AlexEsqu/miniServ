@@ -109,7 +109,7 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
-		client->getRequest()->setError(404);
+		serveErrorPage(client, 404);
 		return;
 	}
 
@@ -126,7 +126,20 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	#endif
 }
 
-void ContentFetcher::getItemFromServer(ClientSocket* client)
+void	ContentFetcher::serveErrorPage(ClientSocket* client, int status)
+{
+	client->getRequest()->setError(status);
+	client->getResponse()->createHTTPHeaders();
+	client->getRequest()->setParsingState(FILLING_DONE);
+}
+
+void	ContentFetcher::serveErrorPageBasedOnExistingStatus(ClientSocket* client)
+{
+	client->getResponse()->createHTTPHeaders();
+	client->getRequest()->setParsingState(FILLING_DONE);
+}
+
+void	ContentFetcher::getItemFromServer(ClientSocket* client)
 {
 	std::cout << "Processing GET request to: " << client->getResponse()->getRoutedURL() << std::endl;
 
@@ -208,7 +221,7 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 
 	// if an error has been caught when parsing, no need to fetch content
 	if (request->hasError())
-		;
+		serveErrorPageBasedOnExistingStatus(client);
 
 	// else use the correct function to execute the requested method
 	else if (request->getMethodCode() == GET)
