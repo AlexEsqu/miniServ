@@ -146,7 +146,7 @@ void	Response::routeToFilePath(std::string& url, const Route* route, std::string
 
 void	Response::routeUrlForPostDel(std::string url)
 {
-	std::cout << "size of Routes : " << _request->getConf().getRoutes().size() << "\n";
+	// std::cout << "size of Routes : " << _request->getConf().getRoutes().size() << "\n";
 
 	_routedPath = url;
 }
@@ -171,8 +171,6 @@ void	Response::routeUrlForGet(std::string url)
 
 void Response::setRoutedUrl(std::string url)
 {
-	std::cout << "routes avaialble : " << _request->getRoute()->getDefaultFiles().size() << "\n";
-
 	if (_request->getMethodCode() == GET or _request->getMethodCode() == HEAD)
 		routeUrlForGet(url);
 	else

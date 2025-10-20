@@ -96,19 +96,19 @@ const Route*		Request::getRoute() const
 
 std::string			Request::getBody() const
 {
-	std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
-	std::cout << "Buffer using file: " << _requestBodyBuffer.isUsingFile() << std::endl;
-	std::cout << "Buffer size: " << _requestBodyBuffer.getBufferSize() << std::endl;
+	// std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
+	// std::cout << "Buffer using file: " << _requestBodyBuffer.isUsingFile() << std::endl;
+	// std::cout << "Buffer size: " << _requestBodyBuffer.getBufferSize() << std::endl;
 
 	if (_requestBodyBuffer.isUsingFile()) {
-		std::cout << "Reading from file buffer..." << std::endl;
+		// std::cout << "Reading from file buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getAllContent();
-		std::cout << "File content size: " << content.size() << std::endl;
+		// std::cout << "File content size: " << content.size() << std::endl;
 		return content;
 	} else {
-		std::cout << "Reading from memory buffer..." << std::endl;
+		// std::cout << "Reading from memory buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getMemoryBuffer();
-		std::cout << "Memory content size: " << content.size() << std::endl;
+		// std::cout << "Memory content size: " << content.size() << std::endl;
 		return content;
 	}
 }
@@ -209,7 +209,7 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 		_requestHeaderMap[key] = value;
 
 		#ifdef DEBUG
-			std::cout << "adding Header var [" << key << "] = [" << value << "]\n";
+			std::cout << "Header: [" << key << "] = [" << value << "]\n";
 		#endif
 	}
 }
@@ -323,6 +323,9 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 		return WAITING_FOR_MORE;
 
 	std::cout << "Received full body of size " << _requestBodyBuffer.getBufferSize() << "\n";
+
+	std::cout << "body is [" << _requestBodyBuffer.getAllContent() << "]\n";
+
 
 	    //parse body here
     //if POST
