@@ -1,39 +1,82 @@
-h1 {
-  color: red;
-  font-size: 70px;
-}
-
-h3 {
-  font-size: 40px;
-}
-
-header {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 body {
-  background-image: url("img/big-yoshi-wallpaper.png");
-  background-size: cover;
-  font-family: "Comic Sans";
+	background-image: url("img/big-yoshi-wallpaper.png");
+	background-size:cover;
+	font-family: "Comic Sans";
+	margin: 0;
+	height: 100%;
+	overflow: hidden;
 }
 
-img {
-  width: 500px;
+.window {
+	margin: 32px;
+	position: absolute;
 }
 
-.presentation p {
-  font-size: 40px;
-  font-weight: 700;
-  color: black;
+#presentation-window
+{
+	width: 40vw;
+	top: 100px;
 }
 
-.presentation {
-  display: flex;
-  flex: auto;
-  flex-direction: row;
-  text-align: center;
-  justify-content: space-around;
+#article-window-1
+{
+	width: 40vw;
+	top: 10%;
+	left: 50%;
+	font-size: 15px;
 }
+
+article img {
+	width: 100%;
+}
+
+.field-row-stacked {
+	width: 200px;
+}
+
+textarea {
+	resize: none;
+}
+form div {
+	padding: 6px 0;
+}
+#form-buttons {
+	justify-content: flex-end;
+	display: none;
+}
+
+.left {
+	width: 45%;
+}
+.right {
+	width: 55%;
+}
+
+.left .window {
+	width: 80%;
+}
+
+footer {
+	z-index: 0;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+footer .title-bar
+{
+	z-index: 0;
+
+}
+#main-footer-tab {
+	border-top-left-radius: 8px;
+	padding: 5px 5px 3px 3px;
+	width: 100px;
+	height: 100%;
+	background-color: green;
+	z-index: 1;
+	margin-left: -4px;
+	color:white;
+	font-size: 18px;
+}
+

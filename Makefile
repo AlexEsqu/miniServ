@@ -22,13 +22,13 @@ DIR_SIG				=	signal
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
-FUNC_ERR			=	HTTPError.cpp
+FUNC_ERR			=	
 FUNC_ENCOD			=	Response.cpp Status.cpp ContentFetcher.cpp
-FUNC_DECOD			=	Request.cpp
+FUNC_DECOD			=	Request.cpp Buffer.cpp
 FUNC_PARS			=	parsing.cpp ConfigParser.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
 FUNC_CONF			=	ServerConf.cpp Route.cpp
-FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp
+FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp Poller.cpp FileHandler.cpp
 FUNC_SIG			=	signal.cpp
 
 FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
@@ -73,6 +73,10 @@ CC					=	c++
 
 FLAGS				=	-Wall -Wextra -Werror -std=c++98
 
+#----- RUNTIME VARIABLES ------------------------------------------------------#
+
+TMP_DIR				=	tmp/
+
 # **************************************************************************** #
 #		Testing variables													   #
 # **************************************************************************** #
@@ -106,17 +110,23 @@ UNIT_TEST_FRAME		=	$(UNIT_TEST_DIR)/doctest/doctest/
 SRC_NO_MAIN			=	$(filter-out $(SRC_DIR)/main.cpp, $(SRC))
 UNIT_TEST_BIN		=	utest_$(NAME)
 
+#------ Valgrind --------------------------------------------------------------#
+
+V_FLAG				= valgrind --leak-check=full --show-leak-kinds=all \
+						--track-origins=yes --track-fds=yes \
+						--trace-children=yes
+
 # **************************************************************************** #
 #		Server																   #
 # **************************************************************************** #
 
 all:				$(NAME)
 
-start:				
+start:
 					make re
 					./$(NAME)
 
-$(NAME):			$(OBJ_DIRS) $(OBJ)
+$(NAME):			$(OBJ_DIRS) $(OBJ) $(TMP_DIR)
 					$(CC) $(FLAGS) $(INC) -o $(NAME) $(OBJ)
 
 $(OBJ_DIR)/%.o:		$(SRC_DIR)/%.cpp $(HEADER)
@@ -124,6 +134,9 @@ $(OBJ_DIR)/%.o:		$(SRC_DIR)/%.cpp $(HEADER)
 
 $(OBJ_DIRS):
 					mkdir -p $(OBJ_DIRS)
+
+$(TMP_DIR):
+					mkdir -p $(TMP_DIR)
 
 # **************************************************************************** #
 #		Testing																   #
@@ -136,7 +149,7 @@ nginx:
 $(CCLIENT_NAME):
 					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
 
-test:
+test:				$(TMP_DIR)
 					$(CC) -g -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
 					./utest_webserv -ni -nv
 
@@ -144,13 +157,17 @@ test:
 #		Debug																   #
 # **************************************************************************** #
 
-debug:
+debug:				$(TMP_DIR)
 					@echo "Compiling with debug flag"
 					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(SRC)
 
-verbose:
+verbose:			$(TMP_DIR)
 					@echo "Compiling with additional logging info"
 					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC)
+
+valgrind:
+					make debug
+					$(V_FLAG) ./webserv confs/basic.conf
 
 # **************************************************************************** #
 #		Clean up															   #

@@ -4,16 +4,16 @@
 
 ConfigParser::ConfigParser()
 {
-	#ifdef DEBUG
-		std::cout << "ConfigParser Constructor called" << std::endl;
-	#endif
+#ifdef DEBUG
+	std::cout << "ConfigParser Constructor called" << std::endl;
+#endif
 }
 
-ConfigParser::ConfigParser(const ConfigParser& copy)
+ConfigParser::ConfigParser(const ConfigParser &copy)
 {
-	#ifdef DEBUG
-		std::cout << "ConfigParser copy Constructor called" << std::endl;
-	#endif
+#ifdef DEBUG
+	std::cout << "ConfigParser copy Constructor called" << std::endl;
+#endif
 	*this = copy;
 }
 
@@ -21,34 +21,32 @@ ConfigParser::ConfigParser(const ConfigParser& copy)
 
 ConfigParser::~ConfigParser()
 {
-	#ifdef DEBUG
-		std::cout << "ConfigParser Destructor called" << std::endl;
-	#endif
+#ifdef DEBUG
+	std::cout << "ConfigParser Destructor called" << std::endl;
+#endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
 
-ConfigParser& ConfigParser::operator=(const ConfigParser&)
+ConfigParser	&ConfigParser::operator=(const ConfigParser &)
 {
 	return (*this);
 }
 
 //---------------------------- GUETTERS -------------------------------------//
 
-
 //---------------------------- SETTERS --------------------------------------//
-
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-bool	ConfigParser::isClosedCurlyBrace(std::string& line)
+bool	ConfigParser::isClosedCurlyBrace(std::string &line)
 {
 	if (trim(line) == "}")
 		return true;
 	return false;
 }
 
-void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string>& paramMap)
+void	ConfigParser::addLineAsServerKeyValue(std::string &line, std::map<std::string, std::string> &paramMap)
 {
 	// removes leading/trailing whitespace
 	line = trim(line);
@@ -59,13 +57,15 @@ void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::stri
 
 	// find the first space or tab (separator between key and value)
 	size_t pos = line.find_first_of(" \t");
-	if (pos != std::string::npos) {
+	if (pos != std::string::npos)
+	{
 		std::string key = line.substr(0, pos);
 		std::string value = line.substr(pos + 1);
 		trim(value);
 
 		// Remove semicolon from value if present
-		if (!value.empty() && value[value.size() - 1] == ';') {
+		if (!value.empty() && value[value.size() - 1] == ';')
+		{
 			value.erase(value.size() - 1);
 			trim(value);
 		}
@@ -74,13 +74,123 @@ void	ConfigParser::addLineAsServerKeyValue(std::string& line, std::map<std::stri
 	}
 }
 
-
-ServerConf*	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
+std::string	ConfigParser::extractLocationPath(const std::string &locationLine)
 {
-	std::map<std::string, std::string>	paramMap;
+	size_t start = locationLine.find("location") + 8;
+	size_t end = locationLine.find('{');
+
+	if (start >= end)
+		throw std::runtime_error("Invalid location directive");
+
+	std::string pathPart = locationLine.substr(start, end - start);
+	trim(pathPart);
+
+	return pathPart;
+}
+
+void	ConfigParser::addLineAsLocationKeyValue(std::string &line, std::map<std::string, std::string> &paramMap)
+{
+	line = trim(line);
+	if (line.empty())
+		return;
+
+	size_t pos = line.find_first_of(" \t");
+	if (pos != std::string::npos)
+	{
+		std::string key = line.substr(0, pos);
+		std::string value = line.substr(pos + 1);
+		trim(value);
+
+		if (!value.empty() && value[value.size() - 1] == ';')
+		{
+			value.erase(value.size() - 1);
+			trim(value);
+		}
+		paramMap[key] = value;
+	}
+}
+
+Route	ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const std::string &locationLine)
+{
+	Route route;
+	std::map<std::string, std::string> paramMap;
+
+	std::string path = extractLocationPath(locationLine);
+	route.setURLPath(path);
+
+	std::string line;
+	while (getline(configFileStream, line) && !ConfigParser::isClosedCurlyBrace(line))
+	{
+		trim(line);
+		std::cout << line << "\n";
+
+		if (line.empty() || ltrim(line)[0] == '#')
+			continue;
+
+		// recurse on nested location blocks
+		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{')
+		{
+			class Route nestedLocation = parseLocationBlock(configFileStream, line);
+			route.addNestedRoute(nestedLocation);
+			continue;
+		}
+
+		addLineAsLocationKeyValue(line, paramMap);
+	}
+
+	if (!isClosedCurlyBrace(line))
+		throw std::runtime_error("Invalid location block - missing closing brace");
+
+	route.setRouteParam(paramMap);
+
+	return route;
+}
+
+// Makes sure the base server has the basic necessary rules such as a root, an index, and methods
+void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
+{
+	Route defaultRoute;
+
+	defaultRoute.setURLPath("/");
+
+	std::map<std::string, std::string> defaultParams;
+
+	if (serverConf.getRoot().empty())
+		defaultParams["root"] = "/var/www/html";
+	else
+		defaultParams["root"] = serverConf.getRoot();
+
+	if (serverConf.getParamMap().find("index") == serverConf.getParamMap().end())
+		defaultParams["index"] = "index.html";
+	else
+		defaultParams["index"] = serverConf.getParamMap().at("index");
+
+	if (serverConf.getParamMap().find("allowed_methods") == serverConf.getParamMap().end()) // if map entry == map.end(), it doesn't exist in the map; HOWEVER map[entry] can return a value and create an entry if none existed
+		defaultParams["allowed_methods"] = "GET HEAD";
+	else
+		defaultParams["allowed_methods"] = serverConf.getParamMap().at("allowed_methods");
+
+	defaultParams["autoindex"] = "off";
+
+	if (serverConf.getParamMap().find("upload") == serverConf.getParamMap().end())
+		defaultParams["upload"] = "pages/upload";
+	else
+		defaultParams["upload"] = serverConf.getParamMap().at("upload");
+
+	// Apply the default parameters to the route
+	defaultRoute.setRouteParam(defaultParams);
+
+	// Add the default route to the server configuration
+	serverConf.addRoute(defaultRoute);
+}
+
+ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
+{
+	std::map<std::string, std::string> paramMap;
+	std::vector<Route> routes;
 
 	// goes through the server config block until the closing bracket
-	std::string	line;
+	std::string line;
 	while (getline(configFileStream, line) && !isClosedCurlyBrace(line))
 	{
 		// Remove whitespace
@@ -90,54 +200,62 @@ ServerConf*	ConfigParser::parseServerBlock(std::ifstream& configFileStream)
 		if (line.empty() || ltrim(line)[0] == '#')
 			continue;
 
-		// Handle nested blocks (like location blocks)
+		// handle nested location blocks
 		if (line.find("location") != std::string::npos && line[line.size() - 1] == '{')
 		{
-			// TO DO : parse location block
-			// for now skipping the block entirely
-			int braceCount = 1;
-			while (getline(configFileStream, line) && braceCount > 0) {
-				if (line.find('{') != std::string::npos) braceCount++;
-				if (line.find('}') != std::string::npos) braceCount--;
-				if (braceCount == 0)
-					break;
-			}
-
-			continue;
+			Route route = parseLocationBlock(configFileStream, line);
+			routes.push_back(route);
 		}
 
 		// adds all lines to a map of key setting and value
-		addLineAsServerKeyValue(line, paramMap);
+		else
+			addLineAsServerKeyValue(line, paramMap);
 	}
 
 	// check the server block is closed
 	if (!isClosedCurlyBrace(line))
-		throw std::runtime_error("Invalid config file");
+		throw std::runtime_error("Invalid config file: no closing curly brace");
 
-	ServerConf* serverConf = new ServerConf;
+	ServerConf serverConf(paramMap);
 
 	if (paramMap.find("listen") != paramMap.end())
-		serverConf->setPort(atoi(paramMap["listen"].c_str()));
+		serverConf.setPort(atoi(paramMap["listen"].c_str()));
 
-	// if (paramMap.find("server_name") != paramMap.end())
-	// 	serverConf.setServerName(paramMap["server_name"]);
+	if (paramMap.find("server_name") != paramMap.end())
+		serverConf.setServerName(paramMap["server_name"]);
 
 	if (paramMap.find("root") != paramMap.end())
-		serverConf->setRoot(paramMap["root"]);
+		serverConf.setRoot(paramMap["root"]);
+
+	#ifdef DEBUG
+	std::cout << "Config block parsed :\n";
+	for (std::map<std::string, std::string>::iterator it = paramMap.begin(); it != paramMap.end(); it++)
+		std::cout << "[" << it->first << "] = [" << it->second << "]\n";
+	#endif
+
+	for (size_t i = 0; i < routes.size(); i++)
+		serverConf.addRoute(routes[i]);
+
+	addDefaultRoute(serverConf);
 
 	return serverConf;
 }
 
-
-std::vector<ServerConf*>	ConfigParser::readConfigs(char* configFilePath)
+std::vector<ServerConf> ConfigParser::parseConfigFile(const char *configFilePath)
 {
-	std::ifstream	configFileStream(configFilePath);
+	std::vector<ServerConf> configs;
+
+	if (!configFilePath)
+	{
+		configs.push_back(ServerConf());
+		return configs;
+	}
+
+	std::ifstream configFileStream(configFilePath);
 	if (!configFileStream)
 		throw std::runtime_error("Failed to read config file");
 
-	std::vector<ServerConf*>	configs;
-
-	std::string	line;
+	std::string line;
 	while (getline(configFileStream, line))
 	{
 		line = trim(line);
@@ -147,7 +265,8 @@ std::vector<ServerConf*>	ConfigParser::readConfigs(char* configFilePath)
 			continue;
 
 		// if a line starts with server and ends with {, initiate parse server block
-		if (line.rfind("server", 0) != std::string::npos && line[line.size() - 1] == '{') {
+		if (line.rfind("server", 0) != std::string::npos && line[line.size() - 1] == '{')
+		{
 			configs.push_back(parseServerBlock(configFileStream));
 		}
 	}

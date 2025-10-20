@@ -28,9 +28,9 @@ PythonExecutor& PythonExecutor::operator=(const PythonExecutor&)
 
 //---------------- MEMBER FUNCTION -------------------//
 
-std::vector<const char*>	PythonExecutor::buildEnv(Response& response)
+std::vector<const char*>	PythonExecutor::buildEnv(Request& request)
 {
-	std::vector<std::string>	envAsStr = generateEnvStrVec(response);
+	std::vector<std::string>	envAsStr = generateEnvStrVec(request);
 
 	std::vector<const char*>	env;
 	env.reserve(envAsStr.size() + 1);
@@ -55,7 +55,7 @@ std::vector<const char*> PythonExecutor::buildArgv(const char* program, const st
 }
 
 
-void	PythonExecutor::execFileWithFork(Response& response, const std::string& fileToExecPath, int* pipefd)
+void	PythonExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
 	const char*		program = "/usr/bin/python3";
 
@@ -70,8 +70,8 @@ void	PythonExecutor::execFileWithFork(Response& response, const std::string& fil
 	// unchunk (if needed ?)
 
 	// assemble into an execve approved array of char*, add EOF at end
-	std::vector<const char*> argv(buildArgv(program, fileToExecPath));
-	std::vector<const char*> env(buildEnv(response));
+	std::vector<const char*> argv(buildArgv(program, client->getResponse()->getRoutedURL()));
+	std::vector<const char*> env(buildEnv(*client->getRequest()));
 
 	execve(program, (char**)argv.data(), (char**)env.data());
 
@@ -83,11 +83,11 @@ void	PythonExecutor::execFileWithFork(Response& response, const std::string& fil
 	exit(-1);
 }
 
-bool	PythonExecutor::canExecuteFile(Response& response)
+bool	PythonExecutor::canExecuteFile(const std::string& filePath) const
 {
 	const char*	allowedExtension = ".py";
 
-	std::size_t pos = response.getRoutedURL().find(allowedExtension);
+	std::size_t pos = filePath.find(allowedExtension);
 	if (pos == std::string::npos)
 		return false;
 	else

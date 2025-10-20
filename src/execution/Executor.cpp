@@ -32,7 +32,7 @@ Executor::~Executor()
 
 //---------------- MEMBER FUNCTION -------------------//
 
-void	Executor::readResultIntoContent(Response& response, int fd)
+void	Executor::addResultToContent(Response &response, int fd)
 {
 	std::string	s = "";
 
@@ -42,22 +42,22 @@ void	Executor::readResultIntoContent(Response& response, int fd)
 		if (buff != 0)
 			s.push_back(buff);
 	}
-	#ifdef DEBUG
-		std::cout << "Pipe read was : [" << s << "]\n";
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Pipe read was : [" << s << "]\n";
+	// #endif
 
-	response.setContent(s);
+	response.addToContent(s);
 }
 
-std::vector<std::string>	Executor::generateEnvStrVec(Response& response)
+std::vector<std::string>	Executor::generateEnvStrVec(Request& request)
 {
 	std::vector<std::string>	envAsStrVec;
 
-	addCGIEnvironment(envAsStrVec, response.getRequest());
+	addCGIEnvironment(envAsStrVec, request);
 
 	std::map<std::string, std::string>::const_iterator item;
-	for (item = response.getRequest().getAdditionalHeaderInfo().begin();
-		item != response.getRequest().getAdditionalHeaderInfo().end(); item++)
+	for (item = request.getAdditionalHeaderInfo().begin();
+		item != request.getAdditionalHeaderInfo().end(); item++)
 	{
 		envAsStrVec.push_back(formatAsHTTPVariable(item->first, item->second));
 	}
@@ -78,11 +78,20 @@ std::string	Executor::formatAsHTTPVariable(const std::string& key, const std::st
 	}
 	strToUpper(formattedKey);
 
+	std::string	formattedValue = value;
+	for (size_t i = 0; i < value.length(); ++i) {
+		if (value[i] == '-' || value[i] == ' ') {
+			formattedValue[i] = '_';
+		}
+		// TO DO : add encoding for non variable compliant characters such as ", ', % ....
+	}
+	strToUpper(formattedValue);
+
 	// Convert HTTP headers to CGI format: HTTP_HEADER_NAME
 	if (formattedKey == "CONTENT_TYPE" || formattedKey == "CONTENT_LENGTH")
-		formattedEnvKeyValue = formattedKey + "=" + value;
+		formattedEnvKeyValue = formattedKey + "=" + formattedValue;
 	else
-		formattedEnvKeyValue = "HTTP_" + formattedKey + "=" + value;
+		formattedEnvKeyValue = "HTTP_" + formattedKey + "=" + formattedValue;
 
 	return (formattedEnvKeyValue);
 }
@@ -96,36 +105,36 @@ std::string	Executor::formatKeyValueIntoSingleString(const std::string& key, con
 void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request)
 {
 	// Standard CGI variables
-	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethod()));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethodAsString()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_URI", request.getRequestedURL()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PROTOCOL", request.getProtocol()));
+	// TO DO : add query string (but CGI is unchunking on his own)
 
 	// Server information
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", "localhost"));		// or from config
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
 }
 
-void	Executor::executeFile(Response& response)
+void	Executor::executeFile(ClientSocket* client)
 {
 	int	fork_pid;
 	int	pipefd[2];
-	int	exit_code = 0;
 
 	if (pipe(pipefd) != 0)
-		return;
+		throw std::runtime_error("pipe failed");
+
 	fork_pid = fork();
-	if (fork_pid == -1)
-		return;
+	if (fork_pid < 0)
+		throw std::runtime_error("fork failed");
 
 	if (fork_pid == 0)
-		execFileWithFork(response, response.getRoutedURL(), pipefd);
-
-	else {
-		close(pipefd[WRITE]);
-		readResultIntoContent(response, pipefd[READ]);
-		close(pipefd[READ]);
+	{
+		execFileWithFork(client, pipefd);
+		throw std::runtime_error("execve failed");
 	}
-
-	waitpid(fork_pid, &exit_code, 0);
-	exit_code = WEXITSTATUS(exit_code);
+	else
+	{
+		close(pipefd[1]);
+		client->startReadingPipe(pipefd[0]);
+	}
 }

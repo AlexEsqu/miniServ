@@ -4,11 +4,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <cstdio> // for perror
+#include <cstdio>
 
 #include "Response.hpp"
 #include "Request.hpp"
 #include "parsing.hpp"
+#include "ClientSocket.hpp"
 
 enum e_pipe_fd
 {
@@ -42,22 +43,23 @@ public:
 
 	// create a fork to execute file into a pipe
 
-	void			executeFile(Response& response);
+	void				executeFile(ClientSocket* client);
 
 	// create custom env using CGI to be used when executing the file
 
-	std::string	formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
-	std::string	formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
-	void		addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
-	std::vector<std::string>	generateEnvStrVec(Response& response);
+	std::string			formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
+	std::string			formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
+	void				addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
+	std::vector
+		<std::string>	generateEnvStrVec(Request& request);
 
 	// read result from other end of pipe, put it into response content
 
-	void		readResultIntoContent(Response& response, int fd);
+	void				addResultToContent(Response &response, int fd);
 
 	//-------------- ABSTRACT FUNCTIONS --------------------//
 
-	virtual void	execFileWithFork(Response& response, const std::string& filePath, int* pipefd) = 0;
-	virtual bool	canExecuteFile(Response& response) = 0;
+	virtual void		execFileWithFork(ClientSocket* client, int* pipefd) = 0;
+	virtual bool		canExecuteFile(const std::string& filePath) const = 0;
 
 };

@@ -5,6 +5,10 @@
 
 #include "Response.hpp"
 #include "Executor.hpp"
+#include "ServerSocket.hpp"
+#include "ClientSocket.hpp"
+
+class Poller;
 
 class ContentFetcher
 {
@@ -13,16 +17,15 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	std::vector<Executor*>	executors;
+	std::vector<Executor*>	_executors;
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	bool			isDirectory(const char *path);
 	bool			isExisting(const char *path);
 	bool			isAllowed(const char *path);
-
-	void			executeIfCGI(Response& response);
-	void			serveStatic(Response& response);
+	size_t			getSizeOfFile(const std::string& filename);
+	std::string		getTypeBasedOnExtension(const std::string& filePath);
 
 public:
 
@@ -41,7 +44,31 @@ public:
 
 	//--------------- MEMBER FUNCTION --------------------//
 
+	void			fillResponse(ClientSocket* client);
+	void			serveErrorPage(ClientSocket* client, e_status status);
+	void			serveErrorPageBasedOnExistingStatus(ClientSocket* client);
+
+	// GET method
+
+	void			getItemFromServer(ClientSocket* client);
+	void			serveStatic(ClientSocket* client);
+
+	// POST method
+
+	void			postItemFromServer(ClientSocket* client);
+	void			handleFormSubmission(ClientSocket* client);
+	void			handleFileUpload(ClientSocket* client);
+	void	parseBody(ClientSocket* client);
+	void			parseUrlEncodedBody(ClientSocket* client);
+	void			parseMultiPartBody(ClientSocket* client);
+
+	// DELETE method
+
+	void			deleteItemFromServer(ClientSocket* client);
+
+	// Execution
+
 	void			addExecutor(Executor* executor);
-	void			fillContent(Response& response);
+	e_dataProgress	readCGIChunk(ClientSocket* client);
 
 };

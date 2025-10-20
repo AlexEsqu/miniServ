@@ -20,5 +20,9 @@
 
 # define CGI_FORMAT(msg) MAGENTA msg STOP_COLOR
 
+# define VALID_FORMAT(msg) GREEN msg STOP_COLOR
+
+# define CONNEX_FORMAT(msg) CYAN msg STOP_COLOR
+
 
 #endif

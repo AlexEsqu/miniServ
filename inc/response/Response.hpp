@@ -4,70 +4,75 @@
 
 #include "Request.hpp"
 #include "Status.hpp"
-#include "ServerConf.hpp"
+#include "Route.hpp"
+#include "Buffer.hpp"
 
-
-enum e_methods
-{
-	GET,
-	POST,
-	DELETE,
-	UNSUPPOTRTED
-};
+class Request;
 
 class Response
 {
 private:
-
 	//------------------ ATTRIBUTES ----------------------//
 
-	int				_statusNum;
-	std::string			_method;			// enum for GET,POST,DELETE...
-	std::string		_contentType;
-	unsigned int	_contentLength;
-	std::string		_content;
-	std::string		_response;
-	std::string		_requestedFileName;
-	std::string		_HTTPResponse;
-	int				_CGI;
-	Request			_request;
+	Request*			_request;
+	Status&				_status;
+
+	std::string			_routedPath;
+
+	std::string			_contentType;
+	size_t				_contentLength;
+	std::string			_HTTPHeaders;
+
+	Buffer				_responsePage;
+	size_t				_byteSent;
+
+	std::string		createErrorPageContent(const Status &num); // in private jail to forbid Alex from using it by mistake
 
 public:
-	// Response();
-
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Response(Request& req);
-	Response(Request& req, int status);
-	Response(const Response& copy);
-
-	//----------------- DESTRUCTOR -----------------------//
-
-	virtual	~Response();
-
-	//-------------------- SETTER ------------------------//
-
-	void			setHTTPResponse();
-	void			setStatusNum(int number);
-	void			setMethod(std::string method);
-	void			setContentType(std::string type);
-	void			setContentLength(int length);
-	void			setContent(std::string content);
-	void			setUrl(std::string url);
-	void			setResponse(std::string response);
-
-	//-------------------- GETTERS -----------------------//
-
-	std::string		getHTTPResponse() const ;
-	Request&		getRequest();
-	std::string		getRoutedURL() const;
+	Response(Request *req);
+	Response(const Response &copy);
 
 	//------------------- OPERATORS ----------------------//
 
-	Response		&operator=(const Response& other);
+	Response		&operator=(const Response &other);
+
+	//----------------- DESTRUCTOR -----------------------//
+
+	virtual			~Response();
+
+	//-------------------- SETTER ------------------------//
+
+	void			createHTTPHeaders();
+
+	void			setStatus(e_status number);
+	void			setError(e_status number);
+
+	void			setContent(std::string content);
+	void			setRoutedUrl(std::string url);
+
+	void			setRequest(Request* request);
+	void			setContentType(std::string type);
+	void			setContentLength(int length);
+
+	//-------------------- GETTERS -----------------------//
+
+	Request*		getRequest();
+	Status&			getStatus();
+
+	std::string		getHTTPHeaders() const;
+	std::string		getRoutedURL() const;
+
+	std::string		getHTTPResponse();
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	std::string		createErrorPageContent(const Status& num);
-	void			testFilename();
+	std::string		fetchErrorPageContent(const Status &num);
+	void			addToContent(std::string contentChunk);
+
+	void			routeToDefaultFiles(std::string& url, const Route* route, std::string& root);
+	void			routeToFilePath(std::string& url, const Route* route, std::string& root);
+	void			routeUrlForGet(std::string url);
+	void			routeUrlForPostDel(std::string url);
 };

@@ -4,60 +4,15 @@
 
 Route::Route()
 {
-	setRootDirectory("./pages/");
-
-	std::vector<std::string> defaultFiles;
-	defaultFiles.push_back("index.html");
-	defaultFiles.push_back("index.php");
-	setDefaultFiles(defaultFiles);
-
-
-	std::vector<std::string> allowedCGI;
-	allowedCGI.push_back(".php");
-	allowedCGI.push_back(".py");
-	setAllowedCGI(allowedCGI);
-
-	setUploadDirectory("/pages/upload/");
-	std::vector<std::string> allowedMethods;
-	allowedMethods.push_back("GET");
-	allowedMethods.push_back("POST");
-	allowedMethods.push_back("DELETE");
-
 	#ifdef DEBUG
-		std::cout << "Route Constructor called" << std::endl;
-	#endif
-}
-
-Route::Route(std::string root)
-{
-	setRootDirectory(root);
-	std::vector<std::string> defaultFiles;
-	defaultFiles.push_back("index.html");
-	defaultFiles.push_back("index.php");
-	setDefaultFiles(defaultFiles);
-
-
-	std::vector<std::string> allowedCGI;
-	allowedCGI.push_back(".php");
-	allowedCGI.push_back(".py");
-	setAllowedCGI(allowedCGI);
-
-	setUploadDirectory("/pages/upload/");
-	
-	#ifdef DEBUG
-		std::cout << "Route Constructor called" << std::endl;
+		std::cout << "Route Generic Constructor called" << std::endl;
 	#endif
 }
 
 Route::Route(const Route &copy)
 {
+	*this = copy;
 
-	this->_rootDirectory = copy._rootDirectory;
-	this->_defaultFiles = copy._defaultFiles;
-	this->_directoryListing = copy._directoryListing;
-	this->_allowedCGI = copy._allowedCGI;
-	this->_uploadDirectory = copy._uploadDirectory;
-	
 	#ifdef DEBUG
 		std::cout << "Route copy Constructor called" << std::endl;
 	#endif
@@ -74,10 +29,22 @@ Route::~Route()
 
 //---------------------------- OPERATORS ------------------------------------//
 
-Route &Route::operator=(const Route &other)
+Route&	Route::operator=(const Route &other)
 {
-	// code
-	(void)other;
+	if (this != &other)
+	{
+		this->_rootDirectory		= other._rootDirectory;
+		this->_urlPath			= other._urlPath;
+		this->_defaultFiles		= other._defaultFiles;
+		this->_autoindex		= other._autoindex;
+		this->_allowedCGI		= other._allowedCGI;
+		this->_uploadDirectory	= other._uploadDirectory;
+		this->_allow_methods	= other._allow_methods;
+
+		_nestedRoutes.clear();
+		for (size_t i = 0; i < other._nestedRoutes.size(); i++)
+			this->_nestedRoutes.push_back(other._nestedRoutes[i]);
+	}
 	return (*this);
 }
 
@@ -88,14 +55,14 @@ std::string Route::getRootDirectory() const
 	return (this->_rootDirectory);
 }
 
-std::vector<std::string> Route::getDefaultFiles() const
+const std::vector<std::string> Route::getDefaultFiles() const
 {
 	return (this->_defaultFiles);
 }
 
-bool Route::getDirectoryListing() const
+bool Route::isAutoIndex() const
 {
-	return (this->_directoryListing);
+	return (this->_autoindex);
 }
 
 std::vector<std::string> Route::getAllowedCGI() const
@@ -108,32 +75,139 @@ std::string Route::getUploadDirectory() const
 	return (this->_uploadDirectory);
 }
 
+std::string Route::getURLPath() const
+{
+	return (this->_urlPath);
+}
+
+const std::vector<Route>&	Route::getRoutes() const
+{
+	return _nestedRoutes;
+}
+
+const std::vector<std::string>	Route::getAllowedMethods() const
+{
+	return _allow_methods;
+}
+
+bool	Route::isAllowedMethod(const std::string& methodAsString) const
+{
+	if (_allow_methods.empty())
+		return false;
+	return (std::find(_allow_methods.begin(), _allow_methods.end(), methodAsString) != _allow_methods.end());
+}
+
+bool	Route::isPathMatch(const std::string& requestPath) const
+{
+	// std::cout << "Checking if " << requestPath << " matches " << _urlPath << std::endl;
+
+	if (_urlPath == "/")
+		return true;
+
+	// Check if request path starts with route path
+	if (requestPath.find(_urlPath) == 0)
+	{
+		// Exact match
+		if (requestPath.length() == _urlPath.length())
+			return true;
+
+		// Path continues with / (proper prefix)
+		if (requestPath.length() > _urlPath.length() &&
+			requestPath[_urlPath.length()] == '/')
+			return true;
+	}
+
+	return false;
+}
+
+bool	Route::matchesRegex(const std::string& path, const std::string& pattern) const
+{
+	if (pattern == ".*") return true;
+	if (pattern.find(".*") != std::string::npos)
+	{
+		std::string prefix = pattern.substr(0, pattern.find(".*"));
+		return (path.find(prefix) == 0);
+	}
+	return (path == pattern);
+}
+
+const Route*	Route::getMatchingRoute(std::string requestPath) const
+{
+	if (isPathMatch(requestPath))
+	{
+		for (size_t i = 0; i < _nestedRoutes.size(); i++)
+		{
+			try
+			{
+				return _nestedRoutes[i].getMatchingRoute(requestPath);
+			}
+			catch (const std::runtime_error&)
+			{
+				continue;
+			}
+		}
+		return this;
+	}
+	return NULL;
+}
 
 //---------------------------- SETTERS --------------------------------------//
 
-void Route::setRootDirectory(std::string rootDirectory)
+void	Route::setURLPath(std::string path)
 {
-	this->_rootDirectory = rootDirectory;
+	_urlPath = path;
 }
 
-void Route::setDefaultFiles(std::vector<std::string> &defaultFiles)
+void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 {
-	this->_defaultFiles = defaultFiles;
+	if (paramMap.find("root") != paramMap.end())
+		_rootDirectory = paramMap.at("root");
+
+	if (paramMap.find("index") != paramMap.end())
+		_defaultFiles = split(paramMap.at("index"), ' ');
+	else
+		_defaultFiles.push_back("index.html");
+
+	if (paramMap.find("autoindex") != paramMap.end())
+		_autoindex = (paramMap.at("autoindex") == "on");
+	else
+		_autoindex = true;
+
+	if (paramMap.find("allowed_methods") != paramMap.end())
+		_allow_methods = split(paramMap.at("allowed_methods"), ' ');
+	else
+	{
+		_allow_methods.push_back("GET");
+		_allow_methods.push_back("HEAD");
+	}
+
+	if (paramMap.find("upload") != paramMap.end())
+		_uploadDirectory = paramMap.at("upload");
+	else
+		_uploadDirectory = "pages/upload";
+
+	if (paramMap.find("cgi_extension") != paramMap.end())
+		_allowedCGI = split(paramMap.at("cgi_extension"), ' ');
 }
 
-void Route::setDirectoryListing(bool directoryListing)
+void	Route::setRootDirectory(std::string path)
 {
-	this->_directoryListing = directoryListing;
+	_rootDirectory = path;
 }
 
-void Route::setAllowedCGI(std::vector<std::string> &allowedCGI)
+void	Route::setUploadDirectory(std::string path)
 {
-	this->_allowedCGI = allowedCGI;
+	_uploadDirectory = path;
 }
 
-void Route::setUploadDirectory(std::string uploadDirectory)
+void 	Route::setAllowedMethods(std::vector<std::string> methodVector)
 {
-	this->_uploadDirectory = uploadDirectory;
+	_allow_methods = methodVector;
+}
+
+void	Route::addNestedRoute(Route& route)
+{
+	_nestedRoutes.push_back(route);
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//

@@ -1,4 +1,5 @@
 #include "Sockette.hpp"
+#include <sys/epoll.h>
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
@@ -7,28 +8,17 @@ Sockette::Sockette()
 	, _socketAddrLen(sizeof(_socketAddress))
 	,  _port(8080)
 {
-	#ifdef DEBUG
-		std::cout << "Sockette generic Constructor called" << std::endl;
-	#endif
 }
 
 Sockette::Sockette(const Sockette &other)
 {
 	*this = other;
-
-	#ifdef DEBUG
-		std::cout << "Sockette copy Constructor called" << std::endl;
-	#endif
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 Sockette::~Sockette()
 {
-	#ifdef DEBUG
-		std::cout << "Sockette Destructor called" << std::endl;
-	#endif
-
 	if (_socketFd >= 0)
 		close(_socketFd);
 }
@@ -69,9 +59,14 @@ int					Sockette::getSocketAddrLen() const
 	return _socketAddrLen;
 }
 
-int				Sockette::getPort() const
+int					Sockette::getPort() const
 {
 	return _port;
+}
+
+struct epoll_event&	Sockette::getEpollEventsMask()
+{
+	return (_epollEvent);
 }
 
 //---------------------------- SETTERS --------------------------------------//
@@ -107,6 +102,13 @@ void			Sockette::setListenMode(int maxQueue)
 		perror("listen() failed");
 		throw failedSocketListen();
 	}
+}
+
+void			Sockette::setEpollEventsMask(uint32_t epollEventMask)
+{
+	_epollEvent.events = epollEventMask;
+	// adding new socket pointer as context in the event itself
+	_epollEvent.data.ptr = this;
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
@@ -174,4 +176,9 @@ const char*		Sockette::failedSocketRead::what() const throw()
 const char*		Sockette::failedFcntl::what() const throw()
 {
 	return "ERROR: Failed to modify socket flags in call to fcntl()";
+}
+
+const char*		Sockette::endSocket::what() const throw()
+{
+	return "LOG: Socket read() returned 0, closing socket";
 }

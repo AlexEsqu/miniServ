@@ -1,74 +1,66 @@
 #include "server.hpp"
 
+volatile sig_atomic_t g_running = 1;
 
-void listeningLoop(std::vector<ServerSocket*>& servers)
+void listeningLoop(Poller &poller)
 {
-	ContentFetcher	cf;
-	cf.addExecutor(new PHPExecutor());
-	cf.addExecutor(new PythonExecutor());
-
-	while (1)
+	while (g_running)
 	{
-		std::cout << "\n\n+++++++ Waiting for new request +++++++\n\n";
-
-		// create a socket to receive incoming communication
-		ClientSocket AnsweringSocket(*servers[0]);
-
-		try {
-			// reading the request into the Sockette buffer
-			AnsweringSocket.readRequest();
-
-			// decoding the buffer into a Request object
-			Request decodedRequest(servers[0]->getConf(), AnsweringSocket.getRequest());
-
-			// creating a Response handling request according to configured routes
-			Response response(decodedRequest);
-
-
-			// if CGI needed
-			// 	response.setContent(execPHPwithFork(decodedRequest, requestedURL));
-			cf.fillContent(response);
-
-			write(AnsweringSocket.getSocketFd(), response.getHTTPResponse().c_str(), response.getHTTPResponse().size());
-
-			std::cout << "\n\n+++++++ Answer has been sent +++++++ \n\n";
-		}
-
-		catch ( HTTPError &e )
-		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ HTTP Error Page +++++++ \n\n");
-			std::cout << "response is [" << e.getErrorPage() << "\n";
-			write(AnsweringSocket.getSocketFd(), e.getErrorPage().c_str(), e.getErrorPage().size());
-			std::cerr << e.what() << "\n";
-		}
-
-		catch ( std::exception &e )
-		{
-			std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n\n");
-			std::cerr << e.what() << "\n";
-		}
+		poller.launchEpollListenLoop();
 	}
 }
 
-int main(int argc, char** argv)
+void	checkConfigExist(int argc, char **argv)
 {
-	// reading config and setting up routes
-	std::vector<ServerConf*>	serversConfs;
-	if (argc > 1)
-		serversConfs = ConfigParser::readConfigs(argv[1]);
-	else
-		serversConfs.push_back(new ServerConf());
+	if (argc != 2)
+	{
+		std::cout << "Usage: ./webserv configuration_file" << std::endl;
+		exit(1);
+	}
 
-	// constructing servers matching the configs
-	std::vector<ServerSocket*>	servers;
+	std::ifstream configFile(argv[1]);
+	if (!configFile.is_open())
+	{
+		std::cout << "The configuration file is not valid" << std::endl;
+		exit(1);
+	}
+	configFile.close();
+}
+
+int main(int argc, char **argv)
+{
+	// SERVER CONFIGURATION
+
+	// check the config file exists
+	checkConfigExist(argc, argv);
+
+	// parsing config file to create config objects with routes, ports, setup...
+	std::vector<ServerConf> serversConfs;
+	serversConfs = ConfigParser::parseConfigFile(static_cast<const char *>(argv[1]));
+
+	// constructing epoll instance to poll (i.e. watch) the server and client sockets
+	Poller poller;
+
+	// opening sockets listening on the configured ports, acting as servers
+	std::vector<ServerSocket *> serverSockets;
 	for (size_t i = 0; i < serversConfs.size(); i++)
-		servers.push_back(new ServerSocket(*serversConfs[i]));
+		serverSockets.push_back(new ServerSocket(poller, serversConfs[i]));
 
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
 
-	listeningLoop(servers);
+
+	// SERVER RUNNING LOOP
+
+	// using the poller to watch for any socket ready to write or read, and act accordingly
+	listeningLoop(poller);
+
+
+	// CLEAN UP
+
+	// deleting the allocated info contained in the server sockets
+	for (size_t i = 0; i < serverSockets.size(); i++)
+		delete serverSockets[i];
 
 	return 0;
 }
-
