@@ -334,7 +334,7 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 		}
 	}
 
-	std::string stringBuffer(buffer, bytesRead);
+	std::string	stringBuffer(buffer, bytesRead);
 	client->getResponse()->addToContent(stringBuffer);
 
 	return WAITING_FOR_MORE;

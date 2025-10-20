@@ -352,6 +352,9 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 
 	std::cout << "Received full body of size " << _requestBodyBuffer.getBufferSize() << "\n";
 
+	std::cout << "body is [" << _requestBodyBuffer.getAllContent() << "]\n";
+
+
 	    //parse body here
     //if POST
     // check content type
