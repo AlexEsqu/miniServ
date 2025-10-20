@@ -119,7 +119,7 @@ public:
 		std::string>&	getAdditionalHeaderInfo();
 
 	const ServerConf&	getConf() const;
-	const Status&		getStatus() const;
+	Status&				getStatus();
 	int					getParsingState() const;
 	bool				hasError() const;
 

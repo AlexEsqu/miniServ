@@ -6,18 +6,16 @@
 ///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
-Response::Response()
-{
-}
-
 Response::Response(Request *req)
 	: _request(req)
+	, _status(req->getStatus())
 {
 	setRoutedUrl(_request->getRequestedURL());
 }
 
 Response::Response(const Response &copy)
 	: _request(copy._request)
+	, _status(copy._status)
 	, _routedPath(copy._routedPath)
 	, _contentType(copy._contentType)
 	, _responsePage(copy._responsePage)
@@ -44,8 +42,9 @@ Response &Response::operator=(const Response &other)
 	if (this == &other)
 		return (*this);
 
-	_routedPath			= other._routedPath;
 	_request			= other._request;
+	_status				= other._status;
+	_routedPath			= other._routedPath;
 	_contentType		= other._contentType;
 	_contentLength		= other._contentLength;
 	_responsePage		= other._responsePage;

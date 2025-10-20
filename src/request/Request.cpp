@@ -79,7 +79,7 @@ const ServerConf&	Request::getConf() const
 	return _conf;
 }
 
-const Status&		Request::getStatus() const
+Status&		Request::getStatus()
 {
 	return _status;
 }

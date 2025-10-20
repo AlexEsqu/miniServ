@@ -15,6 +15,7 @@ private:
 	//------------------ ATTRIBUTES ----------------------//
 
 	Request*			_request;
+	Status&				_status;
 
 	std::string			_routedPath;
 
@@ -28,7 +29,6 @@ private:
 public:
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Response();
 	Response(Request *req);
 	Response(const Response &copy);
 
