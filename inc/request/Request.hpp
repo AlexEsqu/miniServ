@@ -147,7 +147,8 @@ public:
 	e_dataProgress		parseHeaderLine(std::string& chunk);
 
 	e_dataProgress		parseRequestBody(std::string& chunk);
-
+	void				parseUrlEncodedBody();
+	void				parseMultiPartBody();
 
 	e_dataProgress		assembleBody(std::string& chunk);
 	e_dataProgress		assembleChunkedBody(std::string& chunk);
