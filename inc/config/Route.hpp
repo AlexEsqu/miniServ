@@ -11,7 +11,7 @@ class Route
 private:
 
 	std::string					_urlPath;
-	std::string					_routedPath;
+	std::string					_rootDirectory;
 	std::string					_uploadDirectory;
 	bool						_autoindex;
 	std::vector<std::string>	_defaultFiles;
@@ -40,6 +40,8 @@ public:
 
 	void						setRouteParam(std::map<std::string, std::string> paramMap);
 	void						setURLPath(std::string path);
+	void						setRootDirectory(std::string path);
+	void						setAllowedMethods(std::vector<std::string>);
 	void						addNestedRoute(Route& route);
 	bool						isPathMatch(const std::string& requestPath) const;
 
