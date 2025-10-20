@@ -160,7 +160,7 @@ void	ContentFetcher::getItemFromServer(ClientSocket* client)
 void ContentFetcher::postItemFromServer(ClientSocket* client)
 {
 	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
-
+	parseBody(client);
 	handleFileUpload(client);
 
 	// if (request.getResponse()->getRoutedURL().find("upload") != std::string::npos) {
@@ -215,22 +215,23 @@ void	ContentFetcher::parseBody(ClientSocket* client)
 void	ContentFetcher::parseUrlEncodedBody(ClientSocket* client)
 {
 	std::string body = client->getRequest()->getBody();
-	std::string key = body.substr(0, body.find("=") - 1);
-	std::string value = body.substr(key.size(), body.find("&") );
-	std::cout << key << " = " << value << std::endl;
-	// size_t offset = body.find("=");
-	// while()
-	// {
+	std::string key = body.substr(0, body.find("="));
+	std::string value = body.substr(key.size() + 1, body.find("&"));
+	std::cout << GREEN  << key << " = " << value << STOP_COLOR << std::endl;
 
-	// }
+	while(1)
+	{
+		key = body.substr(0, body.find("="));
+		value = body.substr(key.size() + 1, body.find("&"));
+	}
 
 }
 
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
 // store boundary and read each section until boundary and store data
-void	ContentFetcher::parseMultiPartBody(ClientSocket* client)
+void	ContentFetcher::parseMultiPartBody(ClientSocket* )
 {
-
+ 
 }
 
 void	ContentFetcher::handleFileUpload(ClientSocket* client)
