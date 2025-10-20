@@ -79,6 +79,11 @@ void				Request::setContentType(std::string string)
 	_contentType = string;
 }
 
+std::string Request::getContentType() const
+{
+	return(_contentType);
+}
+
 const ServerConf&	Request::getConf() const
 {
 	return _conf;
