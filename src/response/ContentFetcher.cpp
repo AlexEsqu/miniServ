@@ -217,7 +217,9 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 
 	Request*	request = client->getRequest();
 
+	#ifdef DEBUG
 	std::cout << "Filling request to: " << client->getResponse()->getRoutedURL() << std::endl;
+	#endif
 
 	// if an error has been caught when parsing, no need to fetch content
 	if (request->hasError())
@@ -240,8 +242,6 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
 {
 	char buffer[4096];
 	ssize_t bytesRead;
-
-	std::cout << "Reading from pipe\n";
 
 	bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer));
 
@@ -270,7 +270,6 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
 	}
 
 	std::string	stringBuffer(buffer, bytesRead);
-	std::cout << "read from pipe: " << stringBuffer;
 	client->getResponse()->addToContent(stringBuffer);
 
 	return WAITING_FOR_MORE;
