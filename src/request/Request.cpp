@@ -74,6 +74,11 @@ std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
 	return _requestHeaderMap;
 }
 
+void				Request::setContentType(std::string string)
+{
+	_contentType = string;
+}
+
 const ServerConf&	Request::getConf() const
 {
 	return _conf;
@@ -208,6 +213,9 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 		strToLower(value);
 		_requestHeaderMap[key] = value;
 
+		if (key == "content-type")
+			setContentType(value);
+
 		#ifdef DEBUG
 			std::cout << "Header: [" << key << "] = [" << value << "]\n";
 		#endif
@@ -326,18 +334,33 @@ e_dataProgress	Request::parseRequestBody(std::string& chunk)
 
 	std::cout << "body is [" << _requestBodyBuffer.getAllContent() << "]\n";
 
-
-	    //parse body here
-    //if POST
-    // check content type
-    // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
-        // store boundary and read each section until boundary and store data
-    // if Content-Type: application/x-www-form-urlencoded
-        //read key=value&key=value and store data
-
+	if (_contentType.find("application/x-www-form-urlencoded") != std::string::npos)
+	{
+		parseUrlEncodedBody();
+	}
+	else if (_contentType.find("multipart/form-data") != std::string::npos)
+	{
+		parseMultiPartBody();
+	}
+	else
+		setError(UNSUPPORTED_MEDIA_TYPE);
 
 	_requestState = PARSING_DONE;
 	return RECEIVED_ALL;
+}
+
+// if Content-Type: application/x-www-form-urlencoded
+//read key=value&key=value and store data
+void	Request::parseUrlEncodedBody()
+{
+
+}
+
+// if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
+// store boundary and read each section until boundary and store data
+void	Request::parseMultiPartBody()
+{
+
 }
 
 // For every chunk of data added to the request, parsing continues from last state
@@ -409,8 +432,16 @@ const Route*	Request::findMatchingRoute()
 void				Request::setIfParsingBody()
 {
 	// for certain methods and if an error is found in the headers, no need to parse body
-	if (_method == HEAD || _method == GET || _hasError)
+	if (_method == HEAD || _method == GET || _method == DELETE || _hasError)
 		_requestState = PARSING_DONE;
+
+	// we do not allow POST or PUT without content type
+	if (_contentType.empty())
+	{
+		setError(UNSUPPORTED_MEDIA_TYPE);
+		_requestState = PARSING_DONE;
+	}
+
 	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
 		&& _requestHeaderMap["transfer-encoding"] == "chunked")
 	{

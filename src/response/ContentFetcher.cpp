@@ -190,7 +190,15 @@ void	ContentFetcher::handleFormSubmission(ClientSocket* client)
 
 void	ContentFetcher::handleFileUpload(ClientSocket* client)
 {
-	FileHandler	upload(client->getResponse()->getRoutedURL());
+	std::cout << "upload directory: [" << client->getRequest()->getRoute()->getUploadDirectory() << "]\n";
+	std::cout << "request URL: [" << client->getRequest()->getRequestedURL() << "]\n";
+
+	std::string	uploadPath = client->getRequest()->getRoute()->getUploadDirectory();
+	uploadPath.append(client->getRequest()->getRequestedURL());
+
+	std::cout << uploadPath << "\n";
+
+	FileHandler	upload(uploadPath);
 
 	upload.writeToFile(client->getRequest()->getBody());
 
@@ -199,10 +207,11 @@ void	ContentFetcher::handleFileUpload(ClientSocket* client)
 		"<html><head><title>Upload Complete</title></head>"
 		"<body><h1>File uploaded successfully!</h1>"
 		"<a href='/'>Back to home</a></body></html>";
-
 	client->getResponse()->setContentType("text/html");
 	client->getResponse()->addToContent(uploadResponse.c_str());
 	client->getRequest()->setStatus(CREATED);
+	client->getResponse()->createHTTPHeaders();
+	client->setClientState(CLIENT_HAS_FILLED);
 }
 
 void	ContentFetcher::deleteItemFromServer(ClientSocket*  )

@@ -181,6 +181,11 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 		_allow_methods.push_back("HEAD");
 	}
 
+	if (paramMap.find("upload") != paramMap.end())
+		_uploadDirectory = paramMap.at("upload");
+	else
+		_uploadDirectory = "pages/upload";
+
 	if (paramMap.find("cgi_extension") != paramMap.end())
 		_allowedCGI = split(paramMap.at("cgi_extension"), ' ');
 }
@@ -188,6 +193,11 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 void	Route::setRootDirectory(std::string path)
 {
 	_rootDirectory = path;
+}
+
+void	Route::setUploadDirectory(std::string path)
+{
+	_uploadDirectory = path;
 }
 
 void 	Route::setAllowedMethods(std::vector<std::string> methodVector)

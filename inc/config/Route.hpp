@@ -42,11 +42,13 @@ public:
 	void						setURLPath(std::string path);
 	void						setRootDirectory(std::string path);
 	void						setAllowedMethods(std::vector<std::string>);
+	void						setUploadDirectory(std::string path);
 	void						addNestedRoute(Route& route);
 	bool						isPathMatch(const std::string& requestPath) const;
 
 	const Route*					getMatchingRoute(std::string path) const;
 	std::string						getURLPath() const;
+	std::string						getUploadDirectory() const;
 	std::string						getRootDirectory() const;
 	const std::vector<std::string>	getDefaultFiles() const;
 	const std::vector<std::string>	getAllowedMethods() const;
@@ -54,6 +56,5 @@ public:
 	bool							isAutoIndex() const;
 	bool							isAllowedMethod(const std::string& methodAsString) const;
 	std::vector<std::string>		getAllowedCGI() const;
-	std::string						getUploadDirectory() const;
 
 };

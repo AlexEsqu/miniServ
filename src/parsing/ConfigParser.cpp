@@ -172,6 +172,11 @@ void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 
 	defaultParams["autoindex"] = "off";
 
+	if (serverConf.getParamMap().find("upload") == serverConf.getParamMap().end())
+		defaultParams["upload"] = "pages/upload";
+	else
+		defaultParams["upload"] = serverConf.getParamMap().at("upload");
+
 	// Apply the default parameters to the route
 	defaultRoute.setRouteParam(defaultParams);
 
