@@ -26,6 +26,8 @@ private:
 	Buffer				_responsePage;
 	size_t				_byteSent;
 
+	std::string		createErrorPageContent(const Status &num); // in private jail to forbid Alex from using it by mistake
+
 public:
 	//----------------- CONSTRUCTORS ---------------------//
 
@@ -66,7 +68,6 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	std::string		createErrorPageContent(const Status &num);
 	std::string		fetchErrorPageContent(const Status &num);
 	void			addToContent(std::string contentChunk);
 

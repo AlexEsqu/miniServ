@@ -60,6 +60,7 @@ private:
 
 	bool				_isChunked;
 	size_t				_contentLength;			// length of the request body to be expected
+	std::string			_contentType;
 
 	// REQUEST BUFFERS
 
@@ -101,6 +102,7 @@ public:
 	void				setCgiPipe(int pipeFd);
 
 	void				addAsHeaderVar(std::string& keyValueString);
+	void				setContentType(std::string string);
 
 	void				setIfParsingBody();
 	void				setParsingState(e_requestState requestState);
@@ -117,6 +119,7 @@ public:
 	std::map
 		<std::string,
 		std::string>&	getAdditionalHeaderInfo();
+	std::string			getContentType() const;
 
 	const ServerConf&	getConf() const;
 	Status&				getStatus();
@@ -144,7 +147,8 @@ public:
 	e_dataProgress		parseHeaderLine(std::string& chunk);
 
 	e_dataProgress		parseRequestBody(std::string& chunk);
-
+	void				parseUrlEncodedBody();
+	void				parseMultiPartBody();
 
 	e_dataProgress		assembleBody(std::string& chunk);
 	e_dataProgress		assembleChunkedBody(std::string& chunk);
