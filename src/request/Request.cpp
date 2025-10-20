@@ -345,44 +345,6 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 	return RECEIVED_ALL;
 }
 
-e_dataProgress	Request::parseRequestBody(std::string& chunk)
-{
-	if (assembleBody(chunk) != RECEIVED_ALL)
-		return WAITING_FOR_MORE;
-
-	std::cout << "Received full body of size " << _requestBodyBuffer.getBufferSize() << "\n";
-
-	std::cout << "body is [" << _requestBodyBuffer.getAllContent() << "]\n";
-
-	if (_contentType.find("application/x-www-form-urlencoded") != std::string::npos)
-	{
-		parseUrlEncodedBody();
-	}
-	else if (_contentType.find("multipart/form-data") != std::string::npos)
-	{
-		parseMultiPartBody();
-	}
-	else
-		setError(UNSUPPORTED_MEDIA_TYPE);
-
-	_requestState = PARSING_DONE;
-	return RECEIVED_ALL;
-}
-
-// if Content-Type: application/x-www-form-urlencoded
-//read key=value&key=value and store data
-void	Request::parseUrlEncodedBody()
-{
-
-}
-
-// if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
-// store boundary and read each section until boundary and store data
-void	Request::parseMultiPartBody()
-{
-
-}
-
 // For every chunk of data added to the request, parsing continues from last state
 // and returns if the current parsed item (header, body...) is not finished
 void	Request::addRequestChunk(std::string chunk)
@@ -449,11 +411,14 @@ const Route*	Request::findMatchingRoute()
 // It is not necessary to parse a body if the request is a GET or HEAD
 // even when a body should be parsed, it is only up to content length
 // unless the request is specifically marked as chunked by transfer encoding
-void				Request::setIfParsingBody()
+void				Request::setIfAssemblingBody()
 {
 	// for certain methods and if an error is found in the headers, no need to parse body
 	if (_method == HEAD || _method == GET || _method == DELETE || _hasError)
+	{
 		_requestState = PARSING_DONE;
+		return;
+	}
 
 	// we do not allow POST or PUT without content type
 	if (_contentType.empty())
@@ -541,5 +506,8 @@ e_dataProgress Request::assembleUnChunkedBody(std::string& chunk)
 	if (_requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
 	else
+	{
+		_requestState = PARSING_DONE;
 		return RECEIVED_ALL;
+	}
 }
