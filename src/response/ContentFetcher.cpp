@@ -223,6 +223,8 @@ void	ContentFetcher::parseUrlEncodedBody(ClientSocket* client)
 	{
 		key = body.substr(0, body.find("="));
 		value = body.substr(key.size() + 1, body.find("&"));
+		//unifinished sorry scared to work without u UwU
+		return;
 	}
 
 }
