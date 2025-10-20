@@ -77,13 +77,13 @@ void Response::setRequest(Request *request)
 }
 
 // sets status code but does not raise error flag in request
-void Response::setStatus(unsigned int status)
+void Response::setStatus(e_status status)
 {
 	_request->setStatus(status);
 }
 
 // sets status code and raises error flag in request
-void	Response::setError(unsigned int status)
+void	Response::setError(e_status status)
 {
 	_request->setError(status);
 }
@@ -156,7 +156,7 @@ void	Response::routeUrlForGet(std::string url)
 	const Route*	route = _request->getRoute();
 	if (route == NULL)
 	{
-		setError(404);
+		setError(NOT_FOUND);
 		return;
 	}
 
@@ -183,19 +183,19 @@ void Response::setRoutedUrl(std::string url)
 ///                    GETTERS 			                         //
 ///////////////////////////////////////////////////////////////////
 
-Request *Response::getRequest()
+Request		*Response::getRequest()
 {
 	return (_request);
 }
 
-std::string Response::getRoutedURL() const
+std::string	Response::getRoutedURL() const
 {
 	return (_routedPath);
 }
 
-int			Response::getStatus() const
+Status&		Response::getStatus()
 {
-	return (_request->getStatus().getStatusCode());
+	return (_request->getStatus());
 }
 
 std::string	Response::getHTTPHeaders() const
@@ -203,7 +203,7 @@ std::string	Response::getHTTPHeaders() const
 	return (_HTTPHeaders);
 }
 
-std::string Response::getHTTPResponse()
+std::string	Response::getHTTPResponse()
 {
 	std::string result;
 
@@ -222,7 +222,7 @@ std::string Response::getHTTPResponse()
 
 void Response::createHTTPHeaders()
 {
-	if (getStatus() >= 400) // if its an error
+	if (getStatus().getStatusCode() >= 400) // if its an error
 		setContent(fetchErrorPageContent(getStatus()));
 
 	this->_contentLength = _responsePage.getBufferSize();

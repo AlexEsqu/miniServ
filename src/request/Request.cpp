@@ -185,7 +185,7 @@ void	Request::setRequestLine(std::string &requestLine)
 	if (splitRequestLine.size() != 3)
 	{
 		std::cout << "Invalid line format";
-		setError(400);
+		setError(BAD_REQUEST);
 		return;
 	}
 	setMethod(trim(splitRequestLine[0]));
@@ -215,7 +215,7 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 }
 
 // sets the Status object to error code and raises the error flag
-void	Request::setError(unsigned int statusCode)
+void	Request::setError(e_status statusCode)
 {
 	_status.setStatusCode(statusCode);
 	_hasError = true;
@@ -225,7 +225,7 @@ void	Request::setError(unsigned int statusCode)
 }
 
 // sets the Status object to error code WITHOUT raising the error flag
-void	Request::setStatus(unsigned int statusCode)
+void	Request::setStatus(e_status statusCode)
 {
 	_status.setStatusCode(statusCode);
 }
@@ -249,10 +249,10 @@ void			Request::checkMethodIsAllowed()
 		return;
 
 	if (_methodAsString.empty() || _method == UNSUPPORTED)
-		setError(405);
+		setError(METHOD_NOT_ALLOWED);
 
 	if (!_route->isAllowedMethod(_methodAsString))
-		setError(405);
+		setError(METHOD_NOT_ALLOWED);
 }
 
 void			Request::validateRequestLine()
@@ -454,7 +454,7 @@ const Route*	Request::findMatchingRoute()
 	if (result == NULL)
 	{
 		std::cout << RED << "404: No route for: " + requestPath << STOP_COLOR;
-		setError(404);
+		setError(NOT_FOUND);
 		return NULL;
 	}
 	return result;

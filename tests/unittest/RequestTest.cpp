@@ -4,6 +4,7 @@
 TEST_CASE("Request constructor extracts correct values") {
 
 	ServerConf	config;
+	Status		stat;
 
 	SUBCASE("Valid GET root request") {
 
@@ -12,7 +13,7 @@ TEST_CASE("Request constructor extracts correct values") {
 		"Host: localhost:8080\r\n"
 		"\r\n";
 
-		Request	request(config, HTTPRequest);
+		Request	request(config, stat, HTTPRequest);
 		CHECK(request.getMethodAsString() == "GET");
 		CHECK(request.getRequestedURL() == "/");
 		CHECK(request.getProtocol() == "HTTP/1.1");
@@ -25,7 +26,7 @@ TEST_CASE("Request constructor extracts correct values") {
 		"GET / HTTP/1.1\r\n"
 		"\r\n";
 
-		Request	request(config, HTTPRequest);
+		Request	request(config, stat, HTTPRequest);
 		CHECK(request.getMethodAsString() == "GET");
 		CHECK(request.getRequestedURL() == "/");
 		CHECK(request.getProtocol() == "HTTP/1.1");
@@ -39,55 +40,60 @@ TEST_CASE("Request constructor extracts correct values") {
 		"\r\n"
 		"Body: Hello world\r\n";
 
-		Request	request(config, HTTPRequest);
+		Request	request(config, stat, HTTPRequest);
 		CHECK(request.getMethodAsString() == "GET");
 		CHECK(request.getRequestedURL() == "/pages/error.html");
 		CHECK(request.getProtocol() == "HTTP/1.1");
 		CHECK(request.getAdditionalHeaderInfo()["Host"] == "localhost:8080");
 	}
 
-	// SUBCASE("Invalid Protocol Request") {
+	SUBCASE("Invalid Protocol Request") {
 
-	// 	const char* HTTPRequest =
-	// 	"GET / HTTP/1.3\r\n"
-	// 	"Host: localhost:8080\r\n"
-	// 	"\r\n";
+		const char* HTTPRequest =
+		"GET / HTTP/1.3\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
 
-	// 	CHECK_THROWS_AS(Request request(config, HTTPRequest), badProtocol);
-	// }
+		Request request(config, stat, HTTPRequest);
+		CHECK(request.getStatus().getStatusCode() == HTTP_VERSION_NOT_SUPPORTED);
+	}
 
 }
 
 
-// TEST_CASE("Request constructor use config to check method") {
+TEST_CASE("Request constructor use config to check method") {
 
-// 	ServerConf	config;
+	ServerConf	config;
+	Status		stat;
 
-// 	SUBCASE("Unknown Method Request") {
+	SUBCASE("Unknown Method Request") {
 
-// 		const char* HTTPRequest =
-// 		"LAUNCH / HTTP/1.1\r\n"
-// 		"Host: localhost:8080\r\n"
-// 		"\r\n";
+		const char* HTTPRequest =
+		"LAUNCH / HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
 
-// 		CHECK_THROWS_AS(Request request(config, HTTPRequest), forbiddenMethod);
-// 	}
+		Request request(config, stat, HTTPRequest);
+		CHECK(request.getStatus().getStatusCode() == METHOD_NOT_ALLOWED);
+	}
 
-// 	SUBCASE("Unsupported Method Request") {
+	SUBCASE("Unsupported Method Request") {
 
-// 		const char* HTTPRequest =
-// 		"UPDATE / HTTP/1.1\r\n"
-// 		"Host: localhost:8080\r\n"
-// 		"\r\n";
+		const char* HTTPRequest =
+		"UPDATE / HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
 
-// 		CHECK_THROWS_AS(Request request(config, HTTPRequest), forbiddenMethod);
-// 	}
+		Request request(config, stat, HTTPRequest);
+		CHECK(request.getStatus().getStatusCode() == METHOD_NOT_ALLOWED);
+	}
 
-// }
+}
 
 TEST_CASE("Incremental parsing of normal HTTP request") {
 	ServerConf config;
-	Request req(config, "");
+	Status		stat;
+	Request req(config, stat, "");
 
 	// Simulate receiving the request line in two chunks
 	req.addRequestChunk("GET /index.html HTTP/1.1\r\nHo");
@@ -105,7 +111,8 @@ TEST_CASE("Incremental parsing of normal HTTP request") {
 
 TEST_CASE("Incremental parsing of chunked HTTP request") {
 	ServerConf config;
-	Request req(config, "");
+	Status		stat;
+	Request req(config, stat, "");
 
 	// Simulate receiving request line and headers in chunks
 	req.addRequestChunk("POST /upload HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n");
@@ -122,7 +129,8 @@ TEST_CASE("Incremental parsing of chunked HTTP request") {
 
 TEST_CASE("Parsing request with headers arriving one line at a time") {
 	ServerConf config;
-	Request req(config, "");
+	Status		stat;
+	Request req(config, stat, "");
 
 	req.addRequestChunk("GET / HTTP/1.1\r\n");
 	CHECK(req.getParsingState() == PARSING_HEADERS);
@@ -139,7 +147,8 @@ TEST_CASE("Parsing request with headers arriving one line at a time") {
 
 TEST_CASE("Parsing request with no body") {
 	ServerConf config;
-	Request req(config, "");
+	Status		stat;
+	Request req(config, stat, "");
 
 	req.addRequestChunk("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n");
 	CHECK(req.getParsingState() == PARSING_DONE);
@@ -151,7 +160,8 @@ TEST_CASE("Parsing request with no body") {
 
 TEST_CASE("Parsing HTTP request with delimiter in body") {
 	ServerConf config;
-	Request req(config, "");
+	Status		stat;
+	Request req(config, stat, "");
 
 	req.addRequestChunk(
 		"POST /upload HTTP/1.1\r\n"

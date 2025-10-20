@@ -45,7 +45,7 @@ public:
 	//--------------- MEMBER FUNCTION --------------------//
 
 	void			fillResponse(ClientSocket* client);
-	void			serveErrorPage(ClientSocket* client, int status);
+	void			serveErrorPage(ClientSocket* client, e_status status);
 	void			serveErrorPageBasedOnExistingStatus(ClientSocket* client);
 
 	// GET method

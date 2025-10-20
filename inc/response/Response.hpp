@@ -44,8 +44,8 @@ public:
 
 	void			createHTTPHeaders();
 
-	void			setStatus(unsigned int number);
-	void			setError(unsigned int number);
+	void			setStatus(e_status number);
+	void			setError(e_status number);
 
 	void			setContent(std::string content);
 	void			setRoutedUrl(std::string url);
@@ -57,7 +57,8 @@ public:
 	//-------------------- GETTERS -----------------------//
 
 	Request*		getRequest();
-	int				getStatus() const;
+	Status&			getStatus();
+
 	std::string		getHTTPHeaders() const;
 	std::string		getRoutedURL() const;
 

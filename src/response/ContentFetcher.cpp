@@ -109,7 +109,7 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
-		serveErrorPage(client, 404);
+		serveErrorPage(client, NOT_FOUND);
 		return;
 	}
 
@@ -126,7 +126,7 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	#endif
 }
 
-void	ContentFetcher::serveErrorPage(ClientSocket* client, int status)
+void	ContentFetcher::serveErrorPage(ClientSocket* client, e_status status)
 {
 	client->getRequest()->setError(status);
 	client->getResponse()->createHTTPHeaders();
@@ -185,7 +185,7 @@ void	ContentFetcher::handleFormSubmission(ClientSocket* client)
 
 	client->getResponse()->setContentType("text/html");
 	client->getResponse()->addToContent(responseContent.c_str());
-	client->getRequest()->setStatus(200);
+	client->getRequest()->setStatus(OK);
 }
 
 void	ContentFetcher::handleFileUpload(ClientSocket* client)
@@ -202,7 +202,7 @@ void	ContentFetcher::handleFileUpload(ClientSocket* client)
 
 	client->getResponse()->setContentType("text/html");
 	client->getResponse()->addToContent(uploadResponse.c_str());
-	client->getRequest()->setStatus(201);
+	client->getRequest()->setStatus(CREATED);
 }
 
 void	ContentFetcher::deleteItemFromServer(ClientSocket*  )

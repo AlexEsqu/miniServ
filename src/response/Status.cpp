@@ -7,11 +7,11 @@
 // create a HTTP status code objects initialized at 200
 Status::Status()
 {
-	setStatusCode(200);
+	setStatusCode(OK);
 }
 
 // create a HTTP status code objects initialized at the given int
-Status::Status(unsigned int num)
+Status::Status(e_status num)
 {
 	Status::setStatusCode(num);
 }
@@ -45,7 +45,7 @@ std::ostream&	operator<<(std::ostream &o, Status &status)
 ///                    GETTERS | SETTERS                         //
 ///////////////////////////////////////////////////////////////////
 
-unsigned int	Status::getStatusCode() const
+e_status	Status::getStatusCode() const
 {
 	return(this->_statusCode);
 }
@@ -67,7 +67,7 @@ bool			Status::hasError() const
 	return _hasError;
 }
 
-void			Status::setStatusCode(unsigned int num)
+void			Status::setStatusCode(e_status num)
 {
 	this->_statusCode = num;
 	try
@@ -94,7 +94,7 @@ void			Status::setStatusMessage(std::string message)
 		{
 			if (_statusMessages[i] == message)
 			{
-				this->_statusCode = i;
+				this->_statusCode = static_cast<e_status>(i);
 				return;
 			}
 			i++;
