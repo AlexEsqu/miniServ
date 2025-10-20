@@ -166,7 +166,7 @@ void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 		defaultParams["index"] = serverConf.getParamMap().at("index");
 
 	if (serverConf.getParamMap().find("allowed_methods") == serverConf.getParamMap().end()) // if map entry == map.end(), it doesn't exist in the map; HOWEVER map[entry] can return a value and create an entry if none existed
-		defaultParams["allowed_methods"] = "GET POST DELETE";
+		defaultParams["allowed_methods"] = "GET HEAD";
 	else
 		defaultParams["allowed_methods"] = serverConf.getParamMap().at("allowed_methods");
 

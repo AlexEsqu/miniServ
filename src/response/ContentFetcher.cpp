@@ -188,6 +188,51 @@ void	ContentFetcher::handleFormSubmission(ClientSocket* client)
 	client->getRequest()->setStatus(OK);
 }
 
+void	ContentFetcher::parseBody(ClientSocket* client)
+{
+
+	std::cout << "body is [" << client->getRequest()->getBody() << "]\n";
+
+	if (client->getRequest()->getContentType().find("application/x-www-form-urlencoded") != std::string::npos)
+	{
+		parseUrlEncodedBody(client);
+	}
+	else if (client->getRequest()->getContentType().find("multipart/form-data") != std::string::npos)
+	{
+		parseMultiPartBody(client);
+	}
+	else
+		client->getRequest()->setError(UNSUPPORTED_MEDIA_TYPE);
+
+	// client->getRequest()->
+
+	// _requestState = PARSING_DONE;
+	// return RECEIVED_ALL;
+}
+
+// if Content-Type: application/x-www-form-urlencoded
+//read key=value&key=value and store data
+void	ContentFetcher::parseUrlEncodedBody(ClientSocket* client)
+{
+	std::string body = client->getRequest()->getBody();
+	std::string key = body.substr(0, body.find("=") - 1);
+	std::string value = body.substr(key.size(), body.find("&") );
+	std::cout << key << " = " << value << std::endl;
+	// size_t offset = body.find("=");
+	// while()
+	// {
+
+	// }
+
+}
+
+// if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
+// store boundary and read each section until boundary and store data
+void	ContentFetcher::parseMultiPartBody(ClientSocket* client)
+{
+
+}
+
 void	ContentFetcher::handleFileUpload(ClientSocket* client)
 {
 	std::cout << "upload directory: [" << client->getRequest()->getRoute()->getUploadDirectory() << "]\n";
