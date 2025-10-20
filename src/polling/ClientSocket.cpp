@@ -7,6 +7,7 @@ ClientSocket::ClientSocket(ServerSocket &server)
 	: _serv(server)
 	, _request(NULL)
 	, _isReadingFromPipe(false)
+	, _clientState(CLIENT_CONNECTED)
 {
 // #ifdef DEBUG
 // 	std::cerr << "ClientSocket Constructor called" << std::endl;
@@ -51,6 +52,11 @@ void	ClientSocket::resetRequest()
 	_request = NULL;
 }
 
+void	ClientSocket::setClientState(e_clientState state)
+{
+	_clientState = state;
+}
+
 //------------------------------ GETTER --------------------------------------//
 
 char*	ClientSocket::getBuffer()
@@ -78,17 +84,26 @@ int	ClientSocket::getCgiPipeFd()
 	return (_readingEndOfCgiPipe);
 }
 
+e_clientState ClientSocket::getClientState() const
+{
+	return _clientState;
+}
+
 bool	ClientSocket::hasRequest() const
 {
 	return (_request != NULL);
 }
 
-bool	ClientSocket::hasParsedRequest() const
+// also sets as parsed if request has finished, ugly, TO DO should rewrite
+bool	ClientSocket::hasParsedRequest()
 {
 	if (!hasRequest())
 		return false;
 
-	return (_request->getParsingState() == PARSING_DONE);
+	if (_request->getParsingState() == PARSING_DONE)
+		setClientState(CLIENT_HAS_PARSED);
+
+	return (getClientState() == CLIENT_HAS_PARSED);
 }
 
 bool	ClientSocket::hasFilledResponse() const
@@ -96,7 +111,7 @@ bool	ClientSocket::hasFilledResponse() const
 	if (!hasRequest())
 		return false;
 
-	return (_request->getParsingState() == FILLING_DONE);
+	return (getClientState() == CLIENT_HAS_FILLED);
 }
 
 bool	ClientSocket::hasSentResponse() const
@@ -104,7 +119,7 @@ bool	ClientSocket::hasSentResponse() const
 	if (!hasRequest())
 		return false;
 
-	return (_request->getParsingState() == SENDING_DONE);
+	return (getClientState() == CLIENT_HAS_SENT);
 }
 
 bool	ClientSocket::isReadingFromPipe() const
@@ -221,7 +236,7 @@ void	ClientSocket::sendResponse()
 
 	std::cout << "Successfully sent " << totalSent << " bytes" << std::endl;
 	if (totalSent == totalToSend)
-		_request->setParsingState(SENDING_DONE);
+		setClientState(CLIENT_HAS_SENT);
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 }

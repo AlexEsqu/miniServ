@@ -120,7 +120,7 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	std::string binaryContent(buffer.begin(), buffer.end());
 	client->getResponse()->addToContent(binaryContent);
 	client->getResponse()->createHTTPHeaders();
-	client->getRequest()->setParsingState(FILLING_DONE);
+	client->setClientState(CLIENT_HAS_FILLED);
 	#ifdef DEBUG
 	std::cout << "Filling done\n";
 	#endif
@@ -130,13 +130,13 @@ void	ContentFetcher::serveErrorPage(ClientSocket* client, int status)
 {
 	client->getRequest()->setError(status);
 	client->getResponse()->createHTTPHeaders();
-	client->getRequest()->setParsingState(FILLING_DONE);
+	client->setClientState(CLIENT_HAS_FILLED);
 }
 
 void	ContentFetcher::serveErrorPageBasedOnExistingStatus(ClientSocket* client)
 {
 	client->getResponse()->createHTTPHeaders();
-	client->getRequest()->setParsingState(FILLING_DONE);
+	client->setClientState(CLIENT_HAS_FILLED);
 }
 
 void	ContentFetcher::getItemFromServer(ClientSocket* client)
@@ -148,7 +148,7 @@ void	ContentFetcher::getItemFromServer(ClientSocket* client)
 		if(_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
 		{
 			_executors[i]->executeFile(client);
-			client->getRequest()->setParsingState(FILLING_ONGOING);
+			client->setClientState(CLIENT_FILLING);
 			return;
 		}
 	}
@@ -251,7 +251,7 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
 		client->stopReadingPipe();
 		// wrap response content / error page with HTTP headers
 		client->getResponse()->createHTTPHeaders();
-		client->getRequest()->setParsingState(FILLING_DONE);
+		client->setClientState(CLIENT_HAS_FILLED);
 		return RECEIVED_ALL;
 	}
 	// Encountered a read error
