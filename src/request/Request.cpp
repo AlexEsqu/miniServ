@@ -34,7 +34,7 @@ Request::~Request()
 Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
-		_unparsedHeaderBuffer	= other._unparsedHeaderBuffer;
+		_unparsedBuffer	= other._unparsedBuffer;
 		_methodAsString			= other._methodAsString;
 		_protocol				= other._protocol;
 		_URI					= other._URI;
@@ -268,17 +268,17 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	size_t lineEnd = chunk.find("\r\n");
 	if (lineEnd == std::string::npos)
 	{
-		_unparsedHeaderBuffer.append(chunk);
+		_unparsedBuffer.append(chunk);
 		return WAITING_FOR_MORE;
 	}
 
 	// create request line out of chunk and possible unparsed leftover
-	std::string requestLine = _unparsedHeaderBuffer + chunk.substr(0, lineEnd);
+	std::string requestLine = _unparsedBuffer + chunk.substr(0, lineEnd);
 	setRequestLine(requestLine);
 	validateRequestLine();
 
 	// erase data used from the buffer, from the chunk, and the uneeded \r\n
-	_unparsedHeaderBuffer.clear();
+	_unparsedBuffer.clear();
 	chunk.erase(0, lineEnd + 2);
 
 	// set parsing state to the next step
@@ -295,13 +295,13 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 	size_t lineEnd = chunk.find("\r\n");
 	if (lineEnd == std::string::npos)
 	{
-		_unparsedHeaderBuffer.append(chunk);
+		_unparsedBuffer.append(chunk);
 		return WAITING_FOR_MORE;
 	}
 
 	// create request line out of chunk and possible unparsed leftover
-	std::string headerLine =_unparsedHeaderBuffer + chunk.substr(0, lineEnd);
-	_unparsedHeaderBuffer.clear();
+	std::string headerLine =_unparsedBuffer + chunk.substr(0, lineEnd);
+	_unparsedBuffer.clear();
 
 	// either add the header line as variable to the header map of variable
 	if (!headerLine.empty())
@@ -319,57 +319,22 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 
 e_dataProgress	Request::parseRequestBody(std::string& chunk)
 {
-	// copy all leftover from the parsing into the buffer
-	_requestBodyBuffer.writeToBuffer(_unparsedHeaderBuffer + chunk);
-	_unparsedHeaderBuffer.clear();
-	chunk.clear();
-
-	if (_isChunked)
-		return parseChunkedBody();
-
-	else if (_requestBodyBuffer.getBufferSize() < _contentLength)
+	if (assembleBody(chunk) != RECEIVED_ALL)
 		return WAITING_FOR_MORE;
 
+	std::cout << "Received full body of size " << _requestBodyBuffer.getBufferSize() << "\n";
+
+	    //parse body here
+    //if POST
+    // check content type
+    // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
+        // store boundary and read each section until boundary and store data
+    // if Content-Type: application/x-www-form-urlencoded
+        //read key=value&key=value and store data
+
+
 	_requestState = PARSING_DONE;
-
 	return RECEIVED_ALL;
-}
-
-e_dataProgress Request::parseChunkedBody()
-{
-	size_t offset = 0;
-	while (true) {
-		size_t sizeEnd = _unparsedHeaderBuffer.find("\r\n", offset);
-		if (sizeEnd == std::string::npos)
-			return WAITING_FOR_MORE;
-
-		std::string sizeLine = _unparsedHeaderBuffer.substr(offset, sizeEnd - offset);
-		size_t chunkSize = 0;
-		std::istringstream iss(sizeLine);
-		iss >> std::hex >> chunkSize;
-
-		offset = sizeEnd + 2;
-
-		// if chunk size is zero, end of chunked request
-		if (chunkSize == 0) {
-			if (_unparsedHeaderBuffer.size() < offset + 2)
-				return WAITING_FOR_MORE;
-			offset += 2; // skips final CRLF
-			_requestState = PARSING_DONE;
-			return RECEIVED_ALL;
-		}
-
-		if (_unparsedHeaderBuffer.size() < offset + chunkSize + 2)
-			return WAITING_FOR_MORE;
-
-		std::string chunkData = _unparsedHeaderBuffer.substr(offset, chunkSize);
-		_requestBodyBuffer.writeToBuffer(chunkData);
-
-		offset += chunkSize + 2;
-
-		if (offset >= _unparsedHeaderBuffer.size())
-			return WAITING_FOR_MORE;
-	}
 }
 
 // For every chunk of data added to the request, parsing continues from last state
@@ -404,6 +369,37 @@ void	Request::addRequestChunk(std::string chunk)
 	}
 }
 
+// Matching route is required at the parsing stage to know if a request is using a valid method
+const Route*	Request::findMatchingRoute()
+{
+	const Route* result = NULL;
+	size_t lenMatch = 0;
+
+	std::string requestPath = getRequestedURL();
+
+	for (size_t i = 0; i < getConf().getRoutes().size(); i++)
+	{
+		const Route& route = getConf().getRoutes()[i];
+
+		if (route.isPathMatch(requestPath))
+		{
+			std::string routePath = route.getURLPath();
+			if (routePath.size() > lenMatch)
+			{
+				lenMatch = routePath.size();
+				result = &route;
+			}
+		}
+	}
+	if (result == NULL)
+	{
+		std::cout << RED << "404: No route for: " + requestPath << STOP_COLOR;
+		setError(NOT_FOUND);
+		return NULL;
+	}
+	return result;
+}
+
 // It is not necessary to parse a body if the request is a GET or HEAD
 // even when a body should be parsed, it is only up to content length
 // unless the request is specifically marked as chunked by transfer encoding
@@ -428,38 +424,68 @@ void				Request::setIfParsingBody()
 		_requestState = PARSING_DONE;
 }
 
-// Matching route is required at the parsing stage to know if a request is using a valid method
-const Route*	Request::findMatchingRoute()
+// Making sure the body has been received in full, whether chunked or with Content-Length
+e_dataProgress	Request::assembleBody(std::string& chunk)
 {
-	const Route* result = NULL;
-	size_t lenMatch = 0;
-
-	std::string requestPath = getRequestedURL();
-
-	for (size_t i = 0; i < getConf().getRoutes().size(); i++)
-	{
-		const Route& route = getConf().getRoutes()[i];
-
-		if (route.isPathMatch(requestPath))
-		{
-			std::string routePath = route.getURLPath();
-			if (routePath.size() > lenMatch)
-			{
-				lenMatch = routePath.size();
-				result = &route;
-			}
-		}
-	}
-
-	if (result == NULL)
-	{
-		std::cout << RED << "404: No route for: " + requestPath << STOP_COLOR;
-		setError(NOT_FOUND);
-		return NULL;
-	}
-	return result;
+	if (_isChunked)
+		return assembleChunkedBody(chunk);
+	else
+		return assembleUnChunkedBody(chunk);
 }
 
+// made for many small chunks which need to be parsed, so using the unparsedbuffer
+// for string manipulation before writing to the Buffer object
+e_dataProgress Request::assembleChunkedBody(std::string& chunk)
+{
+	// append to chunked body any possible leftover from the header parsing
+	_unparsedBuffer.append(chunk);
 
+	size_t offset = 0;
+	while (true) {
+		size_t sizeEnd = _unparsedBuffer.find("\r\n", offset);
+		if (sizeEnd == std::string::npos)
+			return WAITING_FOR_MORE;
 
+		std::string sizeLine = _unparsedBuffer.substr(offset, sizeEnd - offset);
+		size_t chunkSize = 0;
+		std::istringstream iss(sizeLine);
+		iss >> std::hex >> chunkSize;
 
+		offset = sizeEnd + 2;
+
+		// if chunk size is zero, end of chunked request
+		if (chunkSize == 0) {
+			if (_unparsedBuffer.size() < offset + 2)
+				return WAITING_FOR_MORE;
+			offset += 2; // skips final CRLF
+			_requestState = PARSING_DONE;
+			return RECEIVED_ALL;
+		}
+
+		if (_unparsedBuffer.size() < offset + chunkSize + 2)
+			return WAITING_FOR_MORE;
+
+		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
+		_requestBodyBuffer.writeToBuffer(chunkData);
+
+		offset += chunkSize + 2;
+
+		if (offset >= _unparsedBuffer.size())
+			return WAITING_FOR_MORE;
+	}
+}
+
+// Made for large single request, so making use of the temporary file buffer object
+e_dataProgress Request::assembleUnChunkedBody(std::string& chunk)
+{
+	// copy all leftover from the parsing into the buffer
+	_requestBodyBuffer.writeToBuffer(_unparsedBuffer + chunk);
+	_unparsedBuffer.clear();
+	chunk.clear();
+
+	// check received content is correct length or wait for more
+	if (_requestBodyBuffer.getBufferSize() < _contentLength)
+		return WAITING_FOR_MORE;
+	else
+		return RECEIVED_ALL;
+}
