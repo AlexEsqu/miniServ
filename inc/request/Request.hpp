@@ -63,7 +63,7 @@ private:
 
 	// REQUEST BUFFERS
 
-	std::string			_unparsedHeaderBuffer;	// may store chunks of request header
+	std::string			_unparsedBuffer;	// may store chunks of request header
 	Buffer 				_requestBodyBuffer;		// stores the body of the request
 	int					_readingEndOfCGIPipe;	// if CGI is needed, fd to read the result in
 
@@ -142,8 +142,14 @@ public:
 	void				addRequestChunk(std::string chunk);
 	e_dataProgress		parseRequestLine(std::string& chunk);
 	e_dataProgress		parseHeaderLine(std::string& chunk);
+
 	e_dataProgress		parseRequestBody(std::string& chunk);
-	e_dataProgress		parseChunkedBody();
+
+
+	e_dataProgress		assembleBody(std::string& chunk);
+	e_dataProgress		assembleChunkedBody(std::string& chunk);
+	e_dataProgress		assembleUnChunkedBody(std::string& chunk);
+
 
 	const Route*		findMatchingRoute();
 };
