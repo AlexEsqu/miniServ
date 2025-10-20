@@ -104,7 +104,7 @@ public:
 	void				addAsHeaderVar(std::string& keyValueString);
 	void				setContentType(std::string string);
 
-	void				setIfParsingBody();
+	void				setIfAssemblingBody();
 	void				setParsingState(e_requestState requestState);
 	void				setError(e_status statusCode);
 	void				setStatus(e_status statusCode);
@@ -145,10 +145,6 @@ public:
 	void				addRequestChunk(std::string chunk);
 	e_dataProgress		parseRequestLine(std::string& chunk);
 	e_dataProgress		parseHeaderLine(std::string& chunk);
-
-	e_dataProgress		parseRequestBody(std::string& chunk);
-	void				parseUrlEncodedBody();
-	void				parseMultiPartBody();
 
 	e_dataProgress		assembleBody(std::string& chunk);
 	e_dataProgress		assembleChunkedBody(std::string& chunk);

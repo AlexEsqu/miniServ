@@ -58,6 +58,9 @@ public:
 	void			postItemFromServer(ClientSocket* client);
 	void			handleFormSubmission(ClientSocket* client);
 	void			handleFileUpload(ClientSocket* client);
+	void	parseBody(ClientSocket* client);
+	void			parseUrlEncodedBody(ClientSocket* client);
+	void			parseMultiPartBody(ClientSocket* client);
 
 	// DELETE method
 
