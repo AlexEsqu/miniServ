@@ -76,14 +76,14 @@ private:
 	// REQUEST CURRENT STATE
 
 	e_requestState		_requestState;			// current state of the request (parsing, fufilling, sending)
-	Status				_status;				// keeps track of request status code
+	Status&				_status;				// keeps track of request status code
 	bool				_hasError;				// no need to keep parsing unless to empty socket
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Request(const ServerConf& conf, std::string requestChunk);
+	Request(const ServerConf& conf, Status& status, std::string requestChunk);
 	Request(const Request &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -101,8 +101,6 @@ public:
 	void				setCgiPipe(int pipeFd);
 
 	void				addAsHeaderVar(std::string& keyValueString);
-
-	void				setResponse(Response* response);
 
 	void				setIfParsingBody();
 	void				setParsingState(e_requestState requestState);
@@ -124,7 +122,6 @@ public:
 	const Status&		getStatus() const;
 	int					getParsingState() const;
 	bool				hasError() const;
-	Response*			getResponse();
 
 	std::string			getBody() const;
 	int					getCgiPipe() const;

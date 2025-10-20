@@ -69,9 +69,6 @@ public:
 	//----------------- MEMBER FUNCTION ------------------//
 
 	void				checkForReadError(int valread);
-	bool				tryToReadHeaderBlock();
-	bool				tryToReadBodyBlock();
-	bool 				tryToReadChunkBodyBlock();
 
 	void				readRequest();
 	void				createNewResponse();

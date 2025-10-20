@@ -8,15 +8,17 @@
 // initializes a new request with a first chunk of request content
 // the object starts parsing as it receives information
 // the status is initialized empty, so set at 200 / SUCCESS
-Request::Request(const ServerConf& conf, std::string requestChunk)
+Request::Request(const ServerConf& conf, Status& status, std::string requestChunk)
 	: _conf(conf)
 	, _requestState(PARSING_REQUEST_LINE)
+	, _status(status)
 {
 	addRequestChunk(requestChunk);
 }
 
 Request::Request(const Request &copy)
 	: _conf(copy._conf)
+	, _status(copy._status)
 {
 	*this = copy;
 }
@@ -39,6 +41,7 @@ Request &Request::operator=(const Request &other)
 		_requestHeaderMap		= other._requestHeaderMap;
 		_route					= other._route;
 		_requestBodyBuffer		= other._requestBodyBuffer;
+		_status					= other._status;
 	}
 
 	return *this;
