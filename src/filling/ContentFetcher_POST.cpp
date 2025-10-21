@@ -62,24 +62,91 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 	}
 }
 
+void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string, std::string>	multiPartHeaderMap)
+{
+	std::string	line;
+	while (std::getline(bodyReader, line) && !line.empty())
+	{
+		size_t colonPos = line.find(":");
+		if (colonPos != std::string::npos) {
+			std::string headerName = line.substr(0, colonPos);
+			std::string headerValue = line.substr(colonPos + 1, line.size() - 1); // removing larst \r
+			multiPartHeaderMap[headerName] = headerValue;
+		}
+	}
+}
+
+
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
 // store boundary and read each section until boundary and store data
 void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 {
 	client->getResponse()->setBoundary();
 
+	std::string		boundary = client->getResponse()->getBoundary();
 	std::istream&	bodyReader = client->getRequest()->getStreamFromBodyBuffer();
 
-	std::string line;
-	while (std::getline(bodyReader, line)) {
-		std::cout << "Read line: " << line << std::endl;
+	std::string		line;
+	e_mutipartState	parsingState = MP_STARTING_LINE;
+	while (std::getline(bodyReader, line))
+	{
+		// the first line must contain the boundary
+		if (parsingState == MP_STARTING_LINE)
+		{
+			// wrong syntax if first line of a block has no boundary
+			if (line.find(boundary) == std::string::npos)
+			{
+				client->getResponse()->setError(BAD_REQUEST);
+				return;
+			}
+			// if line has boundary + "--" it's the end of multipart body
+			if (line == boundary + "--")
+				return;
+
+			//switching to next step
+			parsingState = MP_HEADERS;
+			continue;
+		}
+
+		// there can be multiple headers, to be parsed into a header map
+		if (parsingState == MP_HEADERS)
+		{
+			std::map<std::string, std::string>	multiPartHeaderMap; // not stored past loop for now, bad idea ?
+			extractMultiPartHeaderBlock(bodyReader, multiPartHeaderMap);
+
+			// trying to find a name for the posted result
+			std::string disposition = multiPartHeaderMap["Content-Disposition"];
+			std::cout << "dispostition is [" << disposition << "]\n";
+			std::string uploadFilePath = client->getRequest()->getRoute()->getUploadDirectory();
+			size_t filenamePos = disposition.find("filename=\"");
+			if (filenamePos != std::string::npos)
+			{
+				size_t filenameEnd = disposition.find("\"", filenamePos + 10);
+				uploadFilePath.append(disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10)));
+			}
+			else
+				uploadFilePath.append("beep"); // TO DO: generate random name
+
+			// create the file
+			FileHandler	multiPartBlock(uploadFilePath);
+
+			// read the damn file
+			while (std::getline(bodyReader, line))
+			{
+				// Stop reading if we encounter the next boundary
+				if (line == boundary || line == boundary + "--")
+					break;
+
+				multiPartBlock.writeToFile(line);
+			}
+		}
 	}
 
-	/*
-	------------------------6d965394600a1b0d
-	--------------------------6d965394600a1b0d
-	--------------------------6d965394600a1b0d--
-	*/
+	// the last line should contain the boundary
+	if (line == client->getResponse()->getBoundary() + "--")
+	{
+		client->getResponse()->setError(BAD_REQUEST);
+	}
 }
 
 void ContentFetcher::createPostResponsePage(ClientSocket *client)

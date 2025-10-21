@@ -10,6 +10,15 @@
 
 class Poller;
 
+enum	e_mutipartState
+{
+	MP_STARTING_LINE,
+	MP_HEADERS,
+	MP_CONTENT,
+	MP_FINAL_BOUNDARY
+};
+
+
 class ContentFetcher
 {
 
