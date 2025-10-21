@@ -185,7 +185,7 @@ TEST_CASE("Parsing request with no body") {
 }
 
 TEST_CASE("Parsing HTTP request with delimiter in body") {
-	ServerConf config;
+	ServerConf config = generateDefaultConfig();
 	Status		stat;
 	Request req(config, stat, "");
 
