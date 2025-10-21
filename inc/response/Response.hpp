@@ -66,6 +66,8 @@ public:
 
 	std::string		getHTTPResponse();
 
+	bool			hasError() const;
+
 	//--------------- MEMBER FUNCTIONS -------------------//
 
 	std::string		fetchErrorPageContent(const Status &num);

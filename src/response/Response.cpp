@@ -214,6 +214,11 @@ std::string	Response::getHTTPResponse()
 	return result;
 }
 
+bool		Response::hasError() const
+{
+	return (_status.hasError());
+}
+
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////
