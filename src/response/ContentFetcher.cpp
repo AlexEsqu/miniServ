@@ -188,7 +188,7 @@ void ContentFetcher::handleFormSubmission(ClientSocket *client)
 void ContentFetcher::parseBody(ClientSocket *client)
 {
 
-	std::cout << "body is [" << client->getRequest()->getBody() << "]\n";
+	std::cout << "body is [\n" << client->getRequest()->getBody() << "]\n";
 
 	if (client->getRequest()->getContentType().find("application/x-www-form-urlencoded") != std::string::npos)
 	{
@@ -241,9 +241,15 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
 // store boundary and read each section until boundary and store data
-void ContentFetcher::parseMultiPartBody(ClientSocket *)
+void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 {
+	client->getResponse()->setBoundary();
 	
+	/*
+	------------------------6d965394600a1b0d
+	--------------------------6d965394600a1b0d
+	--------------------------6d965394600a1b0d--
+	*/
 }
 
 void ContentFetcher::createPostResponsePage(ClientSocket *client)

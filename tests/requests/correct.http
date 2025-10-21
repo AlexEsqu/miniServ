@@ -30,7 +30,7 @@ content-type: plain/text
 
 ###
 
-POST http://localhost:8080/long/long/path-1/with/number
+POST http://localhost:8080/upload/beep.txt
 content-type: text/html
 
 {
