@@ -158,7 +158,6 @@ void	Request::setMethod(std::string &method)
 		_method = POST;
 	else
 	{
-	{
 		_method = UNSUPPORTED;
 		setError(METHOD_NOT_ALLOWED);
 	}
@@ -298,12 +297,10 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 
 	// create request line out of chunk and possible unparsed leftover
 	std::string requestLine = _unparsedBuffer + chunk.substr(0, lineEnd);
-	std::string requestLine = _unparsedBuffer + chunk.substr(0, lineEnd);
 	setRequestLine(requestLine);
 	validateRequestLine();
 
 	// erase data used from the buffer, from the chunk, and the uneeded \r\n
-	_unparsedBuffer.clear();
 	_unparsedBuffer.clear();
 	chunk.erase(0, lineEnd + 2);
 
@@ -322,13 +319,10 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 	if (lineEnd == std::string::npos)
 	{
 		_unparsedBuffer.append(chunk);
-		_unparsedBuffer.append(chunk);
 		return WAITING_FOR_MORE;
 	}
 
 	// create request line out of chunk and possible unparsed leftover
-	std::string headerLine =_unparsedBuffer + chunk.substr(0, lineEnd);
-	_unparsedBuffer.clear();
 	std::string headerLine =_unparsedBuffer + chunk.substr(0, lineEnd);
 	_unparsedBuffer.clear();
 
@@ -461,9 +455,6 @@ e_dataProgress Request::assembleChunkedBody(std::string& chunk)
 	_unparsedBuffer.append(chunk);
 	chunk.clear();
 	size_t offset = 0;
-	while (true)
-	{
-		// identify a chunk in what has been received, else wait for a full chunk
 	while (true)
 	{
 		// identify a chunk in what has been received, else wait for a full chunk
