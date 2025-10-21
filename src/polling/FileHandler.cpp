@@ -21,6 +21,7 @@ FileHandler::FileHandler(const std::string& filePath)
 	, _isReading(false)
 	, _isPermanent(true)
 {
+	createFile(_filePath);
 }
 
 
@@ -115,6 +116,7 @@ void	FileHandler::createFile()
 
 void	FileHandler::createFile(std::string& filePath)
 {
+	std::cout << "Create file: " << filePath << std::endl;
 	if (_isInitialized)
 		clearFile();
 
@@ -122,7 +124,11 @@ void	FileHandler::createFile(std::string& filePath)
 
 	_writeStream.open(_filePath.c_str(), std::ios::binary | std::ios::trunc);
 	if (!_writeStream.is_open())
+	{
+		perror("Open");
 		throw std::runtime_error("Failed to open file for writing");
+
+	}
 	_isInitialized = true;
 	_isWriting = true;
 	_totalSize = 0;
