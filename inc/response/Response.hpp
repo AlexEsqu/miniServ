@@ -21,6 +21,7 @@ private:
 
 	std::string			_contentType;
 	size_t				_contentLength;
+	std::string			_boundary;			//possible delimiter if POST form
 	std::string			_HTTPHeaders;
 
 	Buffer				_responsePage;

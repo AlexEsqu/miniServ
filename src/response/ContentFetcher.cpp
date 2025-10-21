@@ -233,7 +233,6 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 		// create file with the name key, put value in it
 		std::string	pathToUploadFile = pathToUploadDirectory + "/" + key;
 		FileHandler file(pathToUploadFile);
-		std::cout << pathToUploadFile << std::endl;
 		file.writeToFile(value);
 		if (i > body.length())
 			break;
@@ -244,6 +243,7 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 // store boundary and read each section until boundary and store data
 void ContentFetcher::parseMultiPartBody(ClientSocket *)
 {
+	
 }
 
 void ContentFetcher::createPostResponsePage(ClientSocket *client)
