@@ -458,6 +458,7 @@ e_dataProgress Request::assembleChunkedBody(std::string& chunk)
 {
 	// append to chunked body any possible leftover from the header parsing
 	_unparsedBuffer.append(chunk);
+	chunk.clear();
 	size_t offset = 0;
 	while (true)
 	{
@@ -502,11 +503,16 @@ e_dataProgress Request::assembleChunkedBody(std::string& chunk)
 e_dataProgress Request::assembleUnChunkedBody(std::string& chunk)
 {
 	// copy all leftover from the parsing into the buffer
-	_requestBodyBuffer.writeToBuffer(_unparsedBuffer + chunk);
-	_unparsedBuffer.clear();
+	if (!_unparsedBuffer.empty())
+	{
+		_requestBodyBuffer.writeToBuffer(_unparsedBuffer);
+		_unparsedBuffer.clear();
+	}
+	_requestBodyBuffer.writeToBuffer(chunk);
 	chunk.clear();
 
 	// check received content is correct length or wait for more
+	std::cout << "buffer size is [" << _requestBodyBuffer.getBufferSize() << "]\n";
 	if (_requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
 	else
