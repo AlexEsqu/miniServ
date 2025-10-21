@@ -51,7 +51,7 @@ TEST_CASE("POST Method - Basic Form Data Parsing") {
 			"POST /upload HTTP/1.1\r\n"
 			"Host: localhost:8080\r\n"
 			"Content-Type: application/x-www-form-urlencoded\r\n"
-			"Content-Length: 27\r\n"
+			"Content-Length: 29\r\n"
 			"\r\n"
 			"name=John&email=john@test.com";
 
@@ -66,12 +66,12 @@ TEST_CASE("POST Method - Basic Form Data Parsing") {
 		// Verify body content
 		std::string body = request.getBody();
 		CHECK(body == "name=John&email=john@test.com");
-		CHECK(body.length() == 27);
+		CHECK(body.length() == 29);
 
 		// Verify headers
 		std::map<std::string, std::string> headers = request.getAdditionalHeaderInfo();
 		CHECK(headers["content-type"] == "application/x-www-form-urlencoded");
-		CHECK(headers["content-length"] == "27");
+		CHECK(headers["content-length"] == "29");
 		CHECK(headers["host"] == "localhost:8080");
 	}
 
@@ -147,6 +147,7 @@ TEST_CASE("POST Method - ContentFetcher Response Generation") {
 		Request request(config, status, fileUploadRequest);
 
 		CHECK(request.getMethodAsString() == "POST");
+		CHECK(request.getMethodCode() == POST);
 		CHECK(request.getParsingState() == PARSING_DONE);
 		CHECK(!request.hasError());
 
