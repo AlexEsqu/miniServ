@@ -156,7 +156,10 @@ void	Request::setMethod(std::string &method)
 	else if (_methodAsString == "POST")
 		_method = POST;
 	else
+	{
 		_method = UNSUPPORTED;
+		setError(METHOD_NOT_ALLOWED);
+	}
 }
 
 // extracts the ?key=value CGI param from the URI, storing them in another string
@@ -175,6 +178,8 @@ void	Request::setURI(std::string &URI)
 void	Request::setProtocol(std::string &protocol)
 {
 	_protocol = protocol;
+	if (_protocol != "HTTP/1.1")
+		setError(HTTP_VERSION_NOT_SUPPORTED);
 }
 
 void	Request::setRoute(const Route* route)
@@ -230,8 +235,11 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 // sets the Status object to error code and raises the error flag
 void	Request::setError(e_status statusCode)
 {
-	_status.setStatusCode(statusCode);
-	_hasError = true;
+	if (!_hasError)
+	{
+		_status.setStatusCode(statusCode);
+		_hasError = true;
+	}
 	#ifdef DEBUG
 		std::cerr << "Setting error at " << statusCode << "\n";
 	#endif
@@ -443,37 +451,41 @@ e_dataProgress Request::assembleChunkedBody(std::string& chunk)
 {
 	// append to chunked body any possible leftover from the header parsing
 	_unparsedBuffer.append(chunk);
-
 	size_t offset = 0;
-	while (true) {
+	while (true)
+	{
+		// identify a chunk in what has been received, else wait for a full chunk
 		size_t sizeEnd = _unparsedBuffer.find("\r\n", offset);
 		if (sizeEnd == std::string::npos)
 			return WAITING_FOR_MORE;
 
+		// get the size of the identified chunk
 		std::string sizeLine = _unparsedBuffer.substr(offset, sizeEnd - offset);
 		size_t chunkSize = 0;
 		std::istringstream iss(sizeLine);
 		iss >> std::hex >> chunkSize;
+		std::cout << "chunksize is [" << chunkSize << "]\n";
 
 		offset = sizeEnd + 2;
 
 		// if chunk size is zero, end of chunked request
-		if (chunkSize == 0) {
-			if (_unparsedBuffer.size() < offset + 2)
-				return WAITING_FOR_MORE;
-			offset += 2; // skips final CRLF
+		if (chunkSize == 0)
+		{
 			_requestState = PARSING_DONE;
 			return RECEIVED_ALL;
 		}
 
-		if (_unparsedBuffer.size() < offset + chunkSize + 2)
+		// the identified chunk has not been received in full yet
+		if (_unparsedBuffer.size() < offset + chunkSize)
 			return WAITING_FOR_MORE;
 
-		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize);
+		// extracting a chunk into the Buffer
+		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize - 2);
+		std::cout << "chunk data [" << chunkData << "]\n";
 		_requestBodyBuffer.writeToBuffer(chunkData);
 
+		// move on the the next chunk which may be in the same buffer
 		offset += chunkSize + 2;
-
 		if (offset >= _unparsedBuffer.size())
 			return WAITING_FOR_MORE;
 	}
