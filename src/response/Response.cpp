@@ -177,6 +177,26 @@ void Response::setRoutedUrl(std::string url)
 		routeUrlForPostDel(url);
 }
 
+void Response::setBoundary()
+{
+	if (_request->getContentType().empty())
+	{	
+		setError(BAD_REQUEST);
+		return;
+	}
+
+	std::string boundary = _request->getAdditionalHeaderInfo().find("content-type")->second;
+	boundary.erase(0, boundary.find("=") + 1);
+
+	if (boundary.empty())
+	{
+		setError(BAD_REQUEST);
+		return;
+	}
+
+	_boundary = boundary;
+}
+
 ///////////////////////////////////////////////////////////////////
 ///                    GETTERS 			                         //
 ///////////////////////////////////////////////////////////////////
@@ -217,6 +237,11 @@ std::string	Response::getHTTPResponse()
 bool		Response::hasError() const
 {
 	return (_status.hasError());
+}
+
+std::string Response::getBoundary()
+{
+	return(_boundary);
 }
 
 ///////////////////////////////////////////////////////////////////
