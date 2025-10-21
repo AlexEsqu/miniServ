@@ -4,33 +4,13 @@ void ContentFetcher::postItemFromServer(ClientSocket *client)
 {
 	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
 
-	parseBody(client);
+	parseBodyDataAndUpload(client);
 
 	createPostResponsePage(client);
 }
 
-void ContentFetcher::handleFormSubmission(ClientSocket *client)
+void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 {
-	std::string postData = client->getRequest()->getBody();
-
-	std::cout << "POST data received: " << postData << std::endl;
-
-	std::string responseContent =
-		"<!DOCTYPE html>"
-		"<html><head><title>Form Submitted</title></head>"
-		"<body><h1>Form submitted successfully!</h1>"
-		"<p>Data received: " +
-		postData + "</p>"
-				   "<a href='/'>Back to home</a></body></html>";
-
-	client->getResponse()->setContentType("text/html");
-	client->getResponse()->addToContent(responseContent.c_str());
-	client->getRequest()->setStatus(OK);
-}
-
-void ContentFetcher::parseBody(ClientSocket *client)
-{
-
 	std::cout << "body is [\n" << client->getRequest()->getBody() << "]\n";
 
 	if (client->getRequest()->getContentType().find("application/x-www-form-urlencoded") != std::string::npos)
@@ -87,6 +67,13 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 {
 	client->getResponse()->setBoundary();
+
+	std::istream&	bodyReader = client->getRequest()->getStreamFromBodyBuffer();
+
+	std::string line;
+	while (std::getline(bodyReader, line)) {
+		std::cout << "Read line: " << line << std::endl;
+	}
 
 	/*
 	------------------------6d965394600a1b0d

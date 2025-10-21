@@ -126,6 +126,7 @@ public:
 	bool				hasError() const;
 
 	std::string			getBody() const;
+	std::istream&		getStreamFromBodyBuffer();
 	int					getCgiPipe() const;
 
 	bool				isKeepAlive();

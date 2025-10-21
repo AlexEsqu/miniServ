@@ -137,39 +137,4 @@ void		ContentFetcher::fillResponse(ClientSocket *client)
 	//	getItemFromServer(client);
 }
 
-e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket *client)
-{
-	char buffer[4096];
-	ssize_t bytesRead;
 
-	bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer));
-
-	// If there is nothing the read in the buffer, reached the end of the CGI output
-	if (bytesRead == 0)
-	{
-		client->stopReadingPipe();
-		// wrap response content / error page with HTTP headers
-		client->getResponse()->createHTTPHeaders();
-		client->setClientState(CLIENT_HAS_FILLED);
-		return RECEIVED_ALL;
-	}
-	// Encountered a read error
-	if (bytesRead < 0)
-	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
-		{
-			std::cout << "nothing in pipe\n";
-			return WAITING_FOR_MORE;
-		}
-		else
-		{
-			perror("read from CGI pipe failed");
-			throw std::runtime_error("Failed to read CGI output");
-		}
-	}
-
-	std::string stringBuffer(buffer, bytesRead);
-	client->getResponse()->addToContent(stringBuffer);
-
-	return WAITING_FOR_MORE;
-}

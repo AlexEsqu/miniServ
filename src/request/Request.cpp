@@ -128,6 +128,11 @@ int			Request::getCgiPipe() const
 	return (_readingEndOfCGIPipe);
 }
 
+std::istream&	Request::getStreamFromBodyBuffer()
+{
+	return (_requestBodyBuffer.getStream());
+}
+
 bool				Request::isKeepAlive()
 {
 	if (_requestHeaderMap.find("connection") != _requestHeaderMap.end())
