@@ -22,7 +22,7 @@ DIR_SIG				=	signal
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
-FUNC_ERR			=	
+FUNC_ERR			=
 FUNC_ENCOD			=	Response.cpp Status.cpp ContentFetcher.cpp
 FUNC_DECOD			=	Request.cpp Buffer.cpp
 FUNC_PARS			=	parsing.cpp ConfigParser.cpp
@@ -82,6 +82,7 @@ TMP_DIR				=	tmp/
 # **************************************************************************** #
 
 TEST_DIR			=	tests
+DEBUG_FLAG			=	-g -fno-limit-debug-info # for full string view on clang
 
 #------- NGINX Docker ---------------------------------------------------------#
 
@@ -159,11 +160,11 @@ test:				$(TMP_DIR)
 
 debug:				$(TMP_DIR)
 					@echo "Compiling with debug flag"
-					$(CC) $(FLAGS) -g $(INC) -o $(NAME) $(SRC)
+					$(CC) $(FLAGS) $(DEBUG_FLAG)  $(INC) -o $(NAME) $(SRC)
 
 verbose:			$(TMP_DIR)
 					@echo "Compiling with additional logging info"
-					$(CC) $(FLAGS) -D DEBUG -g $(INC) -o $(NAME) $(SRC)
+					$(CC) $(FLAGS) -D DEBUG $(DEBUG_FLAG) $(INC) -o $(NAME) $(SRC)
 
 valgrind:
 					make debug
