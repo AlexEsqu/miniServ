@@ -57,10 +57,11 @@ public:
 
 	void			postItemFromServer(ClientSocket* client);
 	void			handleFormSubmission(ClientSocket* client);
-	void			handleFileUpload(ClientSocket* client);
-	void	parseBody(ClientSocket* client);
+	std::string		findUploadFilepath(const Route *route, const std::string &uri);
+	void			parseBody(ClientSocket* client);
 	void			parseUrlEncodedBody(ClientSocket* client);
 	void			parseMultiPartBody(ClientSocket* client);
+	void			createPostResponsePage(ClientSocket* client);
 
 	// DELETE method
 

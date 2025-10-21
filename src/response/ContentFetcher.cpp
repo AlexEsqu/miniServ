@@ -160,14 +160,10 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 void ContentFetcher::postItemFromServer(ClientSocket *client)
 {
 	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
-	parseBody(client);
-	handleFileUpload(client);
 
-	// if (request.getResponse()->getRoutedURL().find("upload") != std::string::npos) {
-	// 	handleFileUpload(request);
-	// } else {
-	// 	handleFormSubmission(request);
-	// }
+	parseBody(client);
+
+	createPostResponsePage(client);
 }
 
 void ContentFetcher::handleFormSubmission(ClientSocket *client)
@@ -206,10 +202,10 @@ void ContentFetcher::parseBody(ClientSocket *client)
 		client->getRequest()->setError(UNSUPPORTED_MEDIA_TYPE);
 }
 
-std::string findUploadFilepath(const Route *route, const std::string &uri)
+std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::string &uri)
 {
 	std::string uploadFilepath = uri;
-	std::string uploadDirectory = route->getUploadDirectory() + "/";
+	std::string uploadDirectory = route->getUploadDirectory();
 	std::string routeDirectory = route->getURLPath();
 	uploadFilepath = uploadFilepath.replace(0, routeDirectory.size(), uploadDirectory);
 	std::cout << "upload path: " << uploadFilepath << std::endl;
@@ -219,23 +215,25 @@ std::string findUploadFilepath(const Route *route, const std::string &uri)
 
 // if Content-Type: application/x-www-form-urlencoded
 // read key=value&key=value and store data
-void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
+void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 {
 	size_t i = 0;
-	std::string pathToUploadedFile = findUploadFilepath(client->getRequest()->getRoute(), client->getRequest()->getRequestedURL());
+	std::string pathToUploadDirectory = findUploadFilepath(client->getRequest()->getRoute(), client->getRequest()->getRequestedURL());
 	std::string body = client->getRequest()->getBody();
 
 	while (1)
 	{
-		std::string key = body.substr(i, body.find("="));
+		std::cout << "finding = : " << body.find("=", i) << "\n";
+		std::string key = body.substr(i, body.find("=", i) - i);
 		i += key.size() + 1;
 		std::string value = body.substr(i, body.find("&") - i);
 		i += value.size() + 1;
 		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
 		// create file with the name key, put value in it
-		FileHandler file(pathToUploadedFile + key);
-		std::cout << pathToUploadedFile + key << std::endl;
+		std::string	pathToUploadFile = pathToUploadDirectory + "/" + key;
+		FileHandler file(pathToUploadFile);
+		std::cout << pathToUploadFile << std::endl;
 		file.writeToFile(value);
 		if (i > body.length())
 			break;
@@ -248,27 +246,16 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *)
 {
 }
 
-void ContentFetcher::handleFileUpload(ClientSocket *client)
+void ContentFetcher::createPostResponsePage(ClientSocket *client)
 {
-	std::cout << "upload directory: [" << client->getRequest()->getRoute()->getUploadDirectory() << "]\n";
-	std::cout << "request URL: [" << client->getRequest()->getRequestedURL() << "]\n";
-
-	std::string uploadPath = client->getRequest()->getRoute()->getUploadDirectory();
-	uploadPath.append(client->getRequest()->getRequestedURL());
-
-	std::cout << uploadPath << "\n";
-
-	FileHandler upload(uploadPath);
-
-	upload.writeToFile(client->getRequest()->getBody());
-
 	std::string uploadResponse =
 		"<!DOCTYPE html>"
 		"<html><head><title>Upload Complete</title></head>"
 		"<body><h1>File uploaded successfully!</h1>"
 		"<a href='/'>Back to home</a></body></html>";
+
 	client->getResponse()->setContentType("text/html");
-	client->getResponse()->addToContent(uploadResponse.c_str());
+	//client->getResponse()->addToContent(uploadResponse.c_str());
 	client->getRequest()->setStatus(CREATED);
 	client->getResponse()->createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
