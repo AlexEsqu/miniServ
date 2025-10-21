@@ -158,6 +158,7 @@ void	Request::setMethod(std::string &method)
 		_method = POST;
 	else
 	{
+	{
 		_method = UNSUPPORTED;
 		setError(METHOD_NOT_ALLOWED);
 	}
@@ -458,8 +459,10 @@ e_dataProgress Request::assembleChunkedBody(std::string& chunk)
 {
 	// append to chunked body any possible leftover from the header parsing
 	_unparsedBuffer.append(chunk);
-	chunk.clear();
 	size_t offset = 0;
+	while (true)
+	{
+		// identify a chunk in what has been received, else wait for a full chunk
 	while (true)
 	{
 		// identify a chunk in what has been received, else wait for a full chunk
