@@ -34,7 +34,7 @@ ContentFetcher::~ContentFetcher()
 
 //----------------- INTERNAL ---------------------//
 
-void	ContentFetcher::addExecutor(Executor* executor)
+void ContentFetcher::addExecutor(Executor *executor)
 {
 	_executors.push_back(executor);
 }
@@ -88,7 +88,7 @@ size_t ContentFetcher::getSizeOfFile(const std::string &filename)
 	return st.st_size;
 }
 
-bool	ContentFetcher::isDirectory(const char *path)
+bool ContentFetcher::isDirectory(const char *path)
 {
 	struct stat path_stat;
 	if (stat(path, &path_stat) != 0)
@@ -96,15 +96,15 @@ bool	ContentFetcher::isDirectory(const char *path)
 	return S_ISDIR(path_stat.st_mode);
 }
 
-void	ContentFetcher::serveStatic(ClientSocket* client)
+void ContentFetcher::serveStatic(ClientSocket *client)
 {
-	std::string		fileURL(client->getResponse()->getRoutedURL());
+	std::string fileURL(client->getResponse()->getRoutedURL());
 
-	#ifdef DEBUG
+#ifdef DEBUG
 	std::cout << "serving static " << fileURL;
-	#endif
+#endif
 
-	std::ifstream	input(fileURL.c_str(), std::ios::binary);
+	std::ifstream input(fileURL.c_str(), std::ios::binary);
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
@@ -114,38 +114,38 @@ void	ContentFetcher::serveStatic(ClientSocket* client)
 	}
 
 	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
-	size_t	size = getSizeOfFile(fileURL);
+	size_t size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
 	std::string binaryContent(buffer.begin(), buffer.end());
 	client->getResponse()->addToContent(binaryContent);
 	client->getResponse()->createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
-	#ifdef DEBUG
+#ifdef DEBUG
 	std::cout << "Filling done\n";
-	#endif
+#endif
 }
 
-void	ContentFetcher::serveErrorPage(ClientSocket* client, e_status status)
+void ContentFetcher::serveErrorPage(ClientSocket *client, e_status status)
 {
 	client->getRequest()->setError(status);
 	client->getResponse()->createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
 }
 
-void	ContentFetcher::serveErrorPageBasedOnExistingStatus(ClientSocket* client)
+void ContentFetcher::serveErrorPageBasedOnExistingStatus(ClientSocket *client)
 {
 	client->getResponse()->createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
 }
 
-void	ContentFetcher::getItemFromServer(ClientSocket* client)
+void ContentFetcher::getItemFromServer(ClientSocket *client)
 {
 	std::cout << "Processing GET request to: " << client->getResponse()->getRoutedURL() << std::endl;
 
 	for (size_t i = 0; i < _executors.size(); i++)
 	{
-		if(_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
+		if (_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
 		{
 			_executors[i]->executeFile(client);
 			client->setClientState(CLIENT_FILLING);
@@ -157,7 +157,7 @@ void	ContentFetcher::getItemFromServer(ClientSocket* client)
 	serveStatic(client);
 }
 
-void ContentFetcher::postItemFromServer(ClientSocket* client)
+void ContentFetcher::postItemFromServer(ClientSocket *client)
 {
 	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
 	parseBody(client);
@@ -170,7 +170,7 @@ void ContentFetcher::postItemFromServer(ClientSocket* client)
 	// }
 }
 
-void	ContentFetcher::handleFormSubmission(ClientSocket* client)
+void ContentFetcher::handleFormSubmission(ClientSocket *client)
 {
 	std::string postData = client->getRequest()->getBody();
 
@@ -180,15 +180,16 @@ void	ContentFetcher::handleFormSubmission(ClientSocket* client)
 		"<!DOCTYPE html>"
 		"<html><head><title>Form Submitted</title></head>"
 		"<body><h1>Form submitted successfully!</h1>"
-		"<p>Data received: " + postData + "</p>"
-		"<a href='/'>Back to home</a></body></html>";
+		"<p>Data received: " +
+		postData + "</p>"
+				   "<a href='/'>Back to home</a></body></html>";
 
 	client->getResponse()->setContentType("text/html");
 	client->getResponse()->addToContent(responseContent.c_str());
 	client->getRequest()->setStatus(OK);
 }
 
-void	ContentFetcher::parseBody(ClientSocket* client)
+void ContentFetcher::parseBody(ClientSocket *client)
 {
 
 	std::cout << "body is [" << client->getRequest()->getBody() << "]\n";
@@ -211,42 +212,49 @@ void	ContentFetcher::parseBody(ClientSocket* client)
 }
 
 // if Content-Type: application/x-www-form-urlencoded
-//read key=value&key=value and store data
-void	ContentFetcher::parseUrlEncodedBody(ClientSocket* client)
+// read key=value&key=value and store data
+void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 {
+	size_t i = 0;
 	std::string body = client->getRequest()->getBody();
-	std::string key = body.substr(0, body.find("="));
-	std::string value = body.substr(key.size() + 1, body.find("&"));
-	std::cout << GREEN  << key << " = " << value << STOP_COLOR << std::endl;
-
-	while(1)
+	std::string key;
+	std::string value;
+	std::string uploadPath = client->getRequest()->getRequestedURL() + "/";
+	while (1)
 	{
-		key = body.substr(0, body.find("="));
-		value = body.substr(key.size() + 1, body.find("&"));
-		//unifinished sorry scared to work without u UwU
-		return;
-	}
+		key = body.substr(i, body.find("="));
+		i += key.size() + 1;
+		std::cout << "& position =" << body.find("&") << std::endl;
+		value = body.substr(i, body.find("&") - i);
+		i += value.size() + 1;
+		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
+		// create file with the name key, put value in it
+		FileHandler file(uploadPath + key);
+		std::cout << uploadPath + key << std::endl;
+		file.writeToFile(value);
+		if (i > body.length())
+			break;
+	}
 }
 
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
 // store boundary and read each section until boundary and store data
-void	ContentFetcher::parseMultiPartBody(ClientSocket* )
+void ContentFetcher::parseMultiPartBody(ClientSocket *)
 {
- 
 }
 
-void	ContentFetcher::handleFileUpload(ClientSocket* client)
+void ContentFetcher::handleFileUpload(ClientSocket *client)
 {
 	std::cout << "upload directory: [" << client->getRequest()->getRoute()->getUploadDirectory() << "]\n";
 	std::cout << "request URL: [" << client->getRequest()->getRequestedURL() << "]\n";
 
-	std::string	uploadPath = client->getRequest()->getRoute()->getUploadDirectory();
+	std::string uploadPath = client->getRequest()->getRoute()->getUploadDirectory();
 	uploadPath.append(client->getRequest()->getRequestedURL());
 
 	std::cout << uploadPath << "\n";
 
-	FileHandler	upload(uploadPath);
+	FileHandler upload(uploadPath);
 
 	upload.writeToFile(client->getRequest()->getBody());
 
@@ -262,21 +270,21 @@ void	ContentFetcher::handleFileUpload(ClientSocket* client)
 	client->setClientState(CLIENT_HAS_FILLED);
 }
 
-void	ContentFetcher::deleteItemFromServer(ClientSocket*  )
+void ContentFetcher::deleteItemFromServer(ClientSocket *)
 {
 	std::cout << "DELETE is not yet implemented\n";
 }
 
-void	ContentFetcher::fillResponse(ClientSocket* client)
+void ContentFetcher::fillResponse(ClientSocket *client)
 {
 	// create a response object and attach it to the request
 	client->createNewResponse();
 
-	Request*	request = client->getRequest();
+	Request *request = client->getRequest();
 
-	#ifdef DEBUG
+#ifdef DEBUG
 	std::cout << "Filling request to: " << client->getResponse()->getRoutedURL() << std::endl;
-	#endif
+#endif
 
 	// if an error has been caught when parsing, no need to fetch content
 	if (request->hasError())
@@ -295,7 +303,7 @@ void	ContentFetcher::fillResponse(ClientSocket* client)
 	//	getItemFromServer(client);
 }
 
-e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
+e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 {
 	char buffer[4096];
 	ssize_t bytesRead;
@@ -326,7 +334,7 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket* client)
 		}
 	}
 
-	std::string	stringBuffer(buffer, bytesRead);
+	std::string stringBuffer(buffer, bytesRead);
 	client->getResponse()->addToContent(stringBuffer);
 
 	return WAITING_FOR_MORE;
