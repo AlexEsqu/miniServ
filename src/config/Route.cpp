@@ -210,4 +210,14 @@ void	Route::addNestedRoute(Route& route)
 	_nestedRoutes.push_back(route);
 }
 
+void	Route::setDefaultFiles(std::vector<std::string> defaultFilesVector)
+{
+	_defaultFiles = defaultFilesVector;
+}
+
+void	Route::setAllowedCGI(std::vector<std::string> allowedCGIVector)
+{
+	_allowedCGI = allowedCGIVector;
+}
+
 //------------------------ MEMBER FUNCTIONS ---------------------------------//

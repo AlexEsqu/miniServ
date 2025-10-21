@@ -45,6 +45,8 @@ public:
 	void						setUploadDirectory(std::string path);
 	void						addNestedRoute(Route& route);
 	bool						isPathMatch(const std::string& requestPath) const;
+	void						setDefaultFiles(std::vector<std::string> defaultFilesVector);
+	void						setAllowedCGI(std::vector<std::string> allowedCGIVector);
 
 	const Route*					getMatchingRoute(std::string path) const;
 	std::string						getURLPath() const;
