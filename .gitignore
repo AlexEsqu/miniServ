@@ -10,3 +10,4 @@ utest_webserv
 tmp/
 *.tmp
 *.tmp
+pages/upload/*
