@@ -459,6 +459,7 @@ e_dataProgress Request::assembleChunkedBody(std::string& chunk)
 {
 	// append to chunked body any possible leftover from the header parsing
 	_unparsedBuffer.append(chunk);
+	chunk.clear();
 	size_t offset = 0;
 	while (true)
 	{
