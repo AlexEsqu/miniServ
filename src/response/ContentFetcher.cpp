@@ -240,7 +240,7 @@ void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
 // store boundary and read each section until boundary and store data
-void	ContentFetcher::parseMultiPartBody(ClientSocket* )
+void ContentFetcher::parseMultiPartBody(ClientSocket *)
 {
 }
 
@@ -334,7 +334,7 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 		}
 	}
 
-	std::string	stringBuffer(buffer, bytesRead);
+	std::string stringBuffer(buffer, bytesRead);
 	client->getResponse()->addToContent(stringBuffer);
 
 	return WAITING_FOR_MORE;
