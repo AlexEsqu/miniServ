@@ -204,19 +204,14 @@ void ContentFetcher::parseBody(ClientSocket *client)
 	}
 	else
 		client->getRequest()->setError(UNSUPPORTED_MEDIA_TYPE);
-
-	// client->getRequest()->
-
-	// _requestState = PARSING_DONE;
-	// return RECEIVED_ALL;
 }
 
 std::string findUploadFilepath(const Route *route, const std::string &uri)
 {
 	std::string uploadFilepath = uri;
-	std::string uploadDirectory = route->getUploadDirectory();
-	std::string rootDirectory = route->getRootDirectory();
-	uploadFilepath = uploadFilepath.replace(0, rootDirectory.size(), uploadDirectory);
+	std::string uploadDirectory = route->getUploadDirectory() + "/";
+	std::string routeDirectory = route->getURLPath();
+	uploadFilepath = uploadFilepath.replace(0, routeDirectory.size(), uploadDirectory);
 	std::cout << "upload path: " << uploadFilepath << std::endl;
 
 	return (uploadFilepath);
@@ -229,20 +224,18 @@ void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 	size_t i = 0;
 	std::string pathToUploadedFile = findUploadFilepath(client->getRequest()->getRoute(), client->getRequest()->getRequestedURL());
 	std::string body = client->getRequest()->getBody();
-	std::string key;
-	std::string value;
-	std::string uploadPath = client->getRequest()->getRequestedURL() + "/";
+
 	while (1)
 	{
-		key = body.substr(i, body.find("="));
+		std::string key = body.substr(i, body.find("="));
 		i += key.size() + 1;
-		value = body.substr(i, body.find("&") - i);
+		std::string value = body.substr(i, body.find("&") - i);
 		i += value.size() + 1;
 		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
 		// create file with the name key, put value in it
-		FileHandler file(uploadPath + key);
-		std::cout << uploadPath + key << std::endl;
+		FileHandler file(pathToUploadedFile + key);
+		std::cout << pathToUploadedFile + key << std::endl;
 		file.writeToFile(value);
 		if (i > body.length())
 			break;
