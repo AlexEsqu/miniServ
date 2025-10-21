@@ -11,7 +11,7 @@ WEB_DIR				=	pages
 
 #----- SOURCE FILE FOLDERS ----------------------------------------------------#
 
-DIR_ERR				=	error
+DIR_FILL			=	filling
 DIR_ENCOD			=	response
 DIR_DECOD			=	request
 DIR_PARS			=	parsing
@@ -19,19 +19,22 @@ DIR_EXEC			=	execution
 DIR_POLL			=	polling
 DIR_CONF			=	config
 DIR_SIG				=	signal
+DIR_BUFF			=	buffer
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
-FUNC_ERR			=
-FUNC_ENCOD			=	Response.cpp Status.cpp ContentFetcher.cpp
-FUNC_DECOD			=	Request.cpp Buffer.cpp
+FUNC_FILL			=	ContentFetcher.cpp ContentFetcher_POST.cpp \
+						ContentFetcher_DELETE.cpp ContentFetcher_GET.cpp
+FUNC_ENCOD			=	Response.cpp Status.cpp
+FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp ConfigParser.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp
 FUNC_CONF			=	ServerConf.cpp Route.cpp
-FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp Poller.cpp FileHandler.cpp
+FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp Poller.cpp
 FUNC_SIG			=	signal.cpp
+FUNC_BUFF			=	Buffer.cpp FileHandler.cpp
 
-FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
+FUNC				=	$(addprefix $(DIR_FILL)/, $(FUNC_FILL)) \
 						$(addprefix $(DIR_ENCOD)/, $(FUNC_ENCOD)) \
 						$(addprefix $(DIR_DECOD)/, $(FUNC_DECOD)) \
 						$(addprefix $(DIR_PARS)/, $(FUNC_PARS)) \
@@ -39,10 +42,11 @@ FUNC				=	$(addprefix $(DIR_ERR)/, $(FUNC_ERR)) \
 						$(addprefix $(DIR_POLL)/, $(FUNC_POLL)) \
 						$(addprefix $(DIR_SIG)/, $(FUNC_SIG)) \
 						$(addprefix $(DIR_CONF)/, $(FUNC_CONF)) \
+						$(addprefix $(DIR_BUFF)/, $(FUNC_BUFF)) \
 						main.cpp
 
-DIRS				=	$(DIR_ERR) $(DIR_ENCOD) $(DIR_DECOD) $(DIR_PARS) \
-						$(DIR_EXEC) $(DIR_POLL) $(DIR_SIG) $(DIR_CONF)
+DIRS				=	$(DIR_FILL) $(DIR_ENCOD) $(DIR_DECOD) $(DIR_PARS) \
+						$(DIR_EXEC) $(DIR_POLL) $(DIR_SIG) $(DIR_CONF) $(DIR_BUFF)
 
 SRC					=	$(addprefix $(SRC_DIR)/, $(FUNC))
 
@@ -57,13 +61,14 @@ INC					=	$(addprefix -I, $(HEAD_DIR)) -I$(INC_DIR)
 OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_ENCOD) \
 						$(OBJ_DIR)/$(DIR_DECOD) \
-						$(OBJ_DIR)/$(DIR_ERR) \
+						$(OBJ_DIR)/$(DIR_FILL) \
 						$(OBJ_DIR)/$(DIR_EXEC) \
 						$(OBJ_DIR)/$(DIR_PARS) \
 						$(OBJ_DIR)/$(DIR_POLL) \
 						$(OBJ_DIR)/$(DIR_SIG) \
 						$(OBJ_DIR)/$(DIR_HAND) \
-						$(OBJ_DIR)/$(DIR_CONF)
+						$(OBJ_DIR)/$(DIR_CONF) \
+						$(OBJ_DIR)/$(DIR_BUFF)
 
 OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
