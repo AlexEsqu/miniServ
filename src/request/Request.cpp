@@ -235,11 +235,7 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 // sets the Status object to error code and raises the error flag
 void	Request::setError(e_status statusCode)
 {
-	if (!_hasError)
-	{
-		_status.setStatusCode(statusCode);
-		_hasError = true;
-	}
+	_status.setStatusCode(statusCode);
 	#ifdef DEBUG
 		std::cerr << "Setting error at " << statusCode << "\n";
 	#endif
@@ -266,7 +262,7 @@ void	Request::setCgiPipe(int pipeFd)
 
 void			Request::checkMethodIsAllowed()
 {
-	if (_hasError)
+	if (hasError())
 		return;
 
 	if (_methodAsString.empty() || _method == UNSUPPORTED)
@@ -407,7 +403,7 @@ const Route*	Request::findMatchingRoute()
 void				Request::setIfAssemblingBody()
 {
 	// for certain methods and if an error is found in the headers, no need to parse body
-	if (_method == HEAD || _method == GET || _method == DELETE || _hasError)
+	if (_method == HEAD || _method == GET || _method == DELETE || hasError())
 	{
 		_requestState = PARSING_DONE;
 		return;

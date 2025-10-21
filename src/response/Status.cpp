@@ -67,13 +67,18 @@ bool			Status::hasError() const
 	return _hasError;
 }
 
-void			Status::setStatusCode(e_status num)
+void			Status::setError(bool value)
 {
-	this->_statusCode = num;
+	_hasError = value;
+}
+
+void			Status::setStatusCode(e_status statusCode)
+{
+	this->_statusCode = statusCode;
 	try
 	{
-		if (num <= 511 && *_statusMessages[num] != '\0') //add macro for readability
-			this->_statusMessage = _statusMessages[num];
+		if (statusCode <= 511 && *_statusMessages[statusCode] != '\0') //add macro for readability
+			this->_statusMessage = _statusMessages[statusCode];
 		else
 			throw Status::UnknownStatusException();
 	}
@@ -82,6 +87,8 @@ void			Status::setStatusCode(e_status num)
 		std::cerr << RED << e.what() << STOP_COLOR << '\n';
 	}
 
+	if (statusCode >= BAD_REQUEST)
+		_hasError = true;
 }
 
 void			Status::setStatusMessage(std::string message)

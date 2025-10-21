@@ -78,7 +78,6 @@ private:
 
 	e_requestState		_requestState;			// current state of the request (parsing, fufilling, sending)
 	Status&				_status;				// keeps track of request status code
-	bool				_hasError;				// no need to keep parsing unless to empty socket
 
 public:
 

@@ -83,9 +83,9 @@ class Status
 
 private:
 	std::string		_statusMessage;
-	e_status		_statusCode;
+	e_status		  _statusCode;
 	std::string		_errorPage;
-	bool			_hasError;
+	bool			    _hasError;
 
 public:
 
@@ -115,6 +115,7 @@ public:
 
 	void			setStatusCode(e_status num);
 	void			setStatusMessage(std::string message);
+  void      setError(bool value);
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
