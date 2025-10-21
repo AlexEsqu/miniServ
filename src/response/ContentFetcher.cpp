@@ -211,11 +211,23 @@ void ContentFetcher::parseBody(ClientSocket *client)
 	// return RECEIVED_ALL;
 }
 
+std::string findUploadFilepath(const Route *route, const std::string &uri)
+{
+	std::string uploadFilepath = uri;
+	std::string uploadDirectory = route->getUploadDirectory();
+	std::string rootDirectory = route->getRootDirectory();
+	uploadFilepath = uploadFilepath.replace(0, rootDirectory.size(), uploadDirectory);
+	std::cout << "upload path: " << uploadFilepath << std::endl;
+
+	return (uploadFilepath);
+}
+
 // if Content-Type: application/x-www-form-urlencoded
 // read key=value&key=value and store data
 void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 {
 	size_t i = 0;
+	std::string pathToUploadedFile = findUploadFilepath(client->getRequest()->getRoute(), client->getRequest()->getRequestedURL());
 	std::string body = client->getRequest()->getBody();
 	std::string key;
 	std::string value;
@@ -224,7 +236,6 @@ void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 	{
 		key = body.substr(i, body.find("="));
 		i += key.size() + 1;
-		std::cout << "& position =" << body.find("&") << std::endl;
 		value = body.substr(i, body.find("&") - i);
 		i += value.size() + 1;
 		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
