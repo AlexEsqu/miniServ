@@ -394,6 +394,8 @@ const Route*	Request::findMatchingRoute()
 		setError(NOT_FOUND);
 		return NULL;
 	}
+
+	std::cout << GREEN << "Route selected: " + result->getURLPath() << "\n" << STOP_COLOR;
 	return result;
 }
 
