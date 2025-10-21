@@ -51,6 +51,8 @@ public:
 	void			setError(e_status number);
 
 	void			setContent(std::string content);
+	void			setBoundary();
+
 	void			setRoutedUrl(std::string url);
 
 	void			setRequest(Request* request);
@@ -66,6 +68,7 @@ public:
 	std::string		getRoutedURL() const;
 
 	std::string		getHTTPResponse();
+	std::string		getBoundary();
 
 	bool			hasError() const;
 
