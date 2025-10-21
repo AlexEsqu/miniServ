@@ -1,6 +1,25 @@
 # include "doctest.h"
 # include "server.hpp"
 
+static Route createDefaultRoute() {
+	Route defaultRoute;
+	defaultRoute.setURLPath("/");
+	defaultRoute.setAllowedMethods({"GET", "POST", "PUT", "DELETE"});
+	defaultRoute.setRootDirectory("pages");
+	defaultRoute.setDefaultFiles({"index.html"});
+	defaultRoute.setAllowedCGI({".php", ".py"});
+	defaultRoute.setUploadDirectory("uploads");
+	return defaultRoute;
+}
+
+static ServerConf generateDefaultConfig() {
+	ServerConf config;
+	config.setPort(8080);
+	config.setRoot("pages");
+	config.addRoute(createDefaultRoute());
+	return config;
+}
+
 TEST_CASE("Request constructor extracts correct values") {
 
 	ServerConf	config;
@@ -17,7 +36,7 @@ TEST_CASE("Request constructor extracts correct values") {
 		CHECK(request.getMethodAsString() == "GET");
 		CHECK(request.getRequestedURL() == "/");
 		CHECK(request.getProtocol() == "HTTP/1.1");
-		CHECK(request.getAdditionalHeaderInfo()["Host"] == "localhost:8080");
+		CHECK(request.getAdditionalHeaderInfo()["host"] == "localhost:8080");
 	}
 
 	SUBCASE("Valid minimalist GET root request") {
@@ -28,6 +47,7 @@ TEST_CASE("Request constructor extracts correct values") {
 
 		Request	request(config, stat, HTTPRequest);
 		CHECK(request.getMethodAsString() == "GET");
+		CHECK(request.getMethodCode() == GET);
 		CHECK(request.getRequestedURL() == "/");
 		CHECK(request.getProtocol() == "HTTP/1.1");
 	}
@@ -42,9 +62,10 @@ TEST_CASE("Request constructor extracts correct values") {
 
 		Request	request(config, stat, HTTPRequest);
 		CHECK(request.getMethodAsString() == "GET");
+		CHECK(request.getMethodCode() == GET);
 		CHECK(request.getRequestedURL() == "/pages/error.html");
 		CHECK(request.getProtocol() == "HTTP/1.1");
-		CHECK(request.getAdditionalHeaderInfo()["Host"] == "localhost:8080");
+		CHECK(request.getAdditionalHeaderInfo()["host"] == "localhost:8080");
 	}
 
 	SUBCASE("Invalid Protocol Request") {
@@ -74,6 +95,8 @@ TEST_CASE("Request constructor use config to check method") {
 		"\r\n";
 
 		Request request(config, stat, HTTPRequest);
+		CHECK(request.getMethodAsString() == "LAUNCH");
+		CHECK(request.getMethodCode() == UNSUPPORTED);
 		CHECK(request.getStatus().getStatusCode() == METHOD_NOT_ALLOWED);
 	}
 
@@ -85,6 +108,8 @@ TEST_CASE("Request constructor use config to check method") {
 		"\r\n";
 
 		Request request(config, stat, HTTPRequest);
+		CHECK(request.getMethodAsString() == "UPDATE");
+		CHECK(request.getMethodCode() == UNSUPPORTED);
 		CHECK(request.getStatus().getStatusCode() == METHOD_NOT_ALLOWED);
 	}
 
@@ -104,13 +129,13 @@ TEST_CASE("Incremental parsing of normal HTTP request") {
 
 	// Simulate receiving the rest of the headers and body
 	req.addRequestChunk("st: localhost\r\nContent-Length: 5\r\n\r\nHello");
-	CHECK(req.getAdditionalHeaderInfo()["Host"] == "localhost");
-	CHECK(req.getAdditionalHeaderInfo()["Content-Length"] == "5");
+	CHECK(req.getAdditionalHeaderInfo()["host"] == "localhost");
+	CHECK(req.getAdditionalHeaderInfo()["content-length"] == "5");
 	CHECK(req.getParsingState() == PARSING_DONE);
 }
 
 TEST_CASE("Incremental parsing of chunked HTTP request") {
-	ServerConf config;
+	ServerConf config = generateDefaultConfig();
 	Status		stat;
 	Request req(config, stat, "");
 
@@ -136,10 +161,10 @@ TEST_CASE("Parsing request with headers arriving one line at a time") {
 	CHECK(req.getParsingState() == PARSING_HEADERS);
 
 	req.addRequestChunk("Host: localhost\r\n");
-	CHECK(req.getAdditionalHeaderInfo()["Host"] == "localhost");
+	CHECK(req.getAdditionalHeaderInfo()["host"] == "localhost");
 
 	req.addRequestChunk("Content-Length: 4\r\n");
-	CHECK(req.getAdditionalHeaderInfo()["Content-Length"] == "4");
+	CHECK(req.getAdditionalHeaderInfo()["content-length"] == "4");
 
 	req.addRequestChunk("\r\nTest");
 	CHECK(req.getParsingState() == PARSING_DONE);
@@ -153,9 +178,10 @@ TEST_CASE("Parsing request with no body") {
 	req.addRequestChunk("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n");
 	CHECK(req.getParsingState() == PARSING_DONE);
 	CHECK(req.getMethodAsString() == "GET");
+	CHECK(req.getMethodCode() == GET);
 	CHECK(req.getRequestedURL() == "/");
 	CHECK(req.getProtocol() == "HTTP/1.1");
-	CHECK(req.getAdditionalHeaderInfo()["Host"] == "localhost");
+	CHECK(req.getAdditionalHeaderInfo()["host"] == "localhost");
 }
 
 TEST_CASE("Parsing HTTP request with delimiter in body") {
@@ -170,6 +196,8 @@ TEST_CASE("Parsing HTTP request with delimiter in body") {
 		"Content-Length: 70\r\n"
 		"\r\n"
 	);
+	CHECK(req.getMethodAsString() == "POST");
+	CHECK(req.getMethodCode() == POST);
 	CHECK(req.getParsingState() == PARSING_BODY);
 
 	req.addRequestChunk(
