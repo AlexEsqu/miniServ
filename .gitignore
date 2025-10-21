@@ -8,3 +8,5 @@ obj
 /client
 utest_webserv
 tmp/
+*.tmp
+*.tmp
