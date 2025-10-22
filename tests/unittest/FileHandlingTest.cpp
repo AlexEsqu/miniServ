@@ -1,5 +1,5 @@
 #include "doctest.h"
-#include "polling/FileHandler.hpp"
+#include "FileHandler.hpp"
 #include <cstring>
 
 TEST_CASE("FileHandler creates and writes to temp file") {

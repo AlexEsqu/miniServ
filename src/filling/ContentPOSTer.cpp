@@ -38,6 +38,7 @@ std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::st
 
 // if Content-Type: application/x-www-form-urlencoded
 // read key=value&key=value and store data
+// putting body in memroy since assuming urlencoded are short key values
 void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 {
 	size_t i = 0;
@@ -79,6 +80,7 @@ void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string,
 
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
 // store boundary and read each section until boundary and store data
+// trying to read from buffer file since multipart may contain images or heavy files
 void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 {
 	client->getResponse()->setBoundary();
