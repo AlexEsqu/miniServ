@@ -68,17 +68,19 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 	}
 }
 
-void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string, std::string>	multiPartHeaderMap)
+void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string, std::string>& multiPartHeaderMap, std::string& line)
 {
-	std::string	line;
-	while (std::getline(bodyReader, line) && !line.empty())
+	while (1)
 	{
+		if (line.empty() || line == "\r")
+			break;
 		size_t colonPos = line.find(":");
 		if (colonPos != std::string::npos) {
 			std::string headerName = line.substr(0, colonPos);
 			std::string headerValue = line.substr(colonPos + 1, line.size() - 1); // removing larst \r
 			multiPartHeaderMap[headerName] = headerValue;
 		}
+		std::getline(bodyReader, line);
 	}
 }
 
@@ -98,12 +100,17 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 
 	// if the boundary has not been extracted, should trigger here
 	if (client->getRequest()->hasError())
+	{
+		client->getRequest()->setError(BAD_REQUEST);
 		return;
+	}
 
 	std::string		line;
 	e_mutipartState	parsingState = MP_STARTING_LINE;
 	while (std::getline(bodyReader, line))
 	{
+		trim(line);
+
 		// the first line must contain the boundary
 		if (parsingState == MP_STARTING_LINE)
 		{
@@ -126,20 +133,29 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 		if (parsingState == MP_HEADERS)
 		{
 			std::map<std::string, std::string>	multiPartHeaderMap; // not stored past loop for now, bad idea ?
-			extractMultiPartHeaderBlock(bodyReader, multiPartHeaderMap);
+			extractMultiPartHeaderBlock(bodyReader, multiPartHeaderMap, line);
 
 			// trying to find a name for the posted result
 			std::string disposition = multiPartHeaderMap["Content-Disposition"];
 			std::cout << "dispostition is [" << disposition << "]\n";
-			std::string uploadFilePath = client->getRequest()->getRoute()->getUploadDirectory();
+			std::string uploadFilePath = client->getRequest()->getRoute()->getUploadDirectory() + "/";
 			size_t filenamePos = disposition.find("filename=\"");
 			if (filenamePos != std::string::npos)
 			{
 				size_t filenameEnd = disposition.find("\"", filenamePos + 10);
 				uploadFilePath.append(disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10)));
 			}
+			else if (disposition.find("name=\""))
+			{
+				filenamePos = disposition.find("name=\"");
+				size_t filenameEnd = disposition.find("\"", filenamePos + 6);
+				uploadFilePath.append(disposition.substr(filenamePos + 6, filenameEnd - (filenamePos + 6)));
+			}
 			else
-				uploadFilePath.append("beep"); // TO DO: generate random name
+			{
+				client->getResponse()->setError(BAD_REQUEST);
+				return;
+			}
 
 			// create the file
 			FileHandler	multiPartBlock(uploadFilePath);
@@ -148,9 +164,13 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			while (std::getline(bodyReader, line))
 			{
 				// Stop reading if we encounter the next boundary
-				if (line == boundary || line == boundary + "--")
+				if (line.find(boundary))
+				{
+					if (line == boundary + "--\r")
+						return;
 					break;
-
+				}
+				
 				multiPartBlock.writeToFile(line);
 			}
 		}
