@@ -36,26 +36,9 @@ std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::st
 	return (uploadFilepath);
 }
 
-std::string	ContentFetcher::extractBoundary(Request* request)
+std::string	ContentFetcher::extractBoundary(std::string contentType)
 {
-	std::string boundary;
-
-	if (request->getContentType().empty())
-	{
-		request->setError(BAD_REQUEST);
-		return boundary;
-	}
-
-	boundary = request->getAdditionalHeaderInfo().find("content-type")->second;
-	boundary.erase(0, boundary.find("=") + 1);
-
-	if (boundary.empty())
-	{
-		request->setError(BAD_REQUEST);
-		return boundary;
-	}
-
-	return boundary;
+	return (contentType.substr(contentType.find("=") + 1, contentType.size()));
 }
 
 // if Content-Type: application/x-www-form-urlencoded
@@ -104,7 +87,13 @@ void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string,
 // trying to read from buffer file since multipart may contain images or heavy files
 void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 {
-	std::string		boundary = extractBoundary(client->getRequest());
+	if (client->getRequest()->getContentType().empty())
+	{
+		client->getRequest()->setError(BAD_REQUEST);
+		return;
+	}
+
+	std::string		boundary = extractBoundary(client->getRequest()->getContentType());
 	std::istream&	bodyReader = client->getRequest()->getStreamFromBodyBuffer();
 
 	// if the boundary has not been extracted, should trigger here

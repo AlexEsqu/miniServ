@@ -71,7 +71,8 @@ public:
 	void			parseUrlEncodedBody(ClientSocket* client);
 	void			parseMultiPartBody(ClientSocket* client);
 	void			createPostResponsePage(ClientSocket* client);
-	std::string		extractBoundary(Request* request);
+
+	std::string		extractBoundary(std::string contentType);
 
 	// DELETE method
 
