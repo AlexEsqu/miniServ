@@ -23,8 +23,8 @@ DIR_BUFF			=	buffer
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
-FUNC_FILL			=	ContentFetcher.cpp ContentFetcher_POST.cpp \
-						ContentFetcher_DELETE.cpp ContentFetcher_GET.cpp
+FUNC_FILL			=	ContentFetcher.cpp ContentPOSTer.cpp \
+						ContentDELETEr.cpp ContentGETter.cpp
 FUNC_ENCOD			=	Response.cpp Status.cpp
 FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp ConfigParser.cpp
