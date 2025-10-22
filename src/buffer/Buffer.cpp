@@ -51,13 +51,13 @@ bool Buffer::isUsingFile() const
 }
 
 // Reads from the memory held buffer string for quicker access
-std::string Buffer::getMemoryBuffer() const
+std::string		Buffer::getMemoryBuffer() const
 {
 	return _memBuffer;
 }
 
 // Read from file buffer for less memory use
-size_t Buffer::readFile(char *buffer, size_t size)
+size_t			Buffer::readFile(char *buffer, size_t size)
 {
 	if (_usingFile)
 		return _fileBuffer.readFromFile(buffer, size);
@@ -65,7 +65,7 @@ size_t Buffer::readFile(char *buffer, size_t size)
 }
 
 // Creates a new stream pointer out of the buffer, be it string or file
-std::istream &Buffer::getStream()
+std::istream&	Buffer::getStream()
 {
 	if (_usingFile)
 	{
@@ -83,12 +83,12 @@ std::istream &Buffer::getStream()
 
 //------------------------- MEMBER FUNCTIONS ---------------------------------//
 
-void Buffer::writeToBuffer(const std::string &data)
+void			Buffer::writeToBuffer(const std::string &data)
 {
 	writeToBuffer(data.c_str(), data.size());
 }
 
-void Buffer::writeToBuffer(const char *data, size_t size)
+void			Buffer::writeToBuffer(const char *data, size_t size)
 {
 	if (!_usingFile && (_memBuffer.size() + size > _threshold))
 	{
@@ -107,7 +107,7 @@ void Buffer::writeToBuffer(const char *data, size_t size)
 	}
 }
 
-void Buffer::clearBuffer()
+void			Buffer::clearBuffer()
 {
 	if (_usingFile)
 	{
@@ -117,7 +117,7 @@ void Buffer::clearBuffer()
 	_memBuffer.clear();
 }
 
-size_t Buffer::readFromBuffer(char *buffer, size_t size)
+size_t			Buffer::readFromBuffer(char *buffer, size_t size)
 {
 	if (_usingFile)
 		return _fileBuffer.readFromFile(buffer, size);
@@ -129,7 +129,7 @@ size_t Buffer::readFromBuffer(char *buffer, size_t size)
 	}
 }
 
-size_t Buffer::readFromBuffer(char *buffer, size_t size, size_t offset) const
+size_t			Buffer::readFromBuffer(char *buffer, size_t size, size_t offset) const
 {
 	if (_usingFile)
 	{
@@ -149,7 +149,7 @@ size_t Buffer::readFromBuffer(char *buffer, size_t size, size_t offset) const
 	}
 }
 
-std::string Buffer::getAllContent() const
+std::string		Buffer::getAllContent() const
 {
 	if (_usingFile)
 	{
@@ -168,7 +168,7 @@ std::string Buffer::getAllContent() const
 		return (_memBuffer);
 }
 
-// size_t			Buffer::findInBuffer(const std::string& signature) const
+// size_t		Buffer::findInBuffer(const std::string& signature) const
 // {
 // 	if (_usingFile)
 // 	{
