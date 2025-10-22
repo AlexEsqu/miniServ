@@ -87,27 +87,43 @@ function mouseUpHandler() {
 
 const form = document.querySelector("form");
 
-function sendForm() {
+async function sendForm() {
 	const formData = new FormData(form);
-	fetch("/upload", {
-		method: "POST",
-		body: formData,
-	});
+	try {
+		const response = await fetch("/upload", {
+			method: "POST",
+			body: formData,
+		});
+
+		if (response.ok) {
+			console.log("Data:", response.body);
+			// Display success message or perform any other action
+		} else {
+			console.error("Error:", response.status);
+			window.alert("Error: " + response.status);
+		}
+	} catch (error) {
+		console.error(error);
+		window.alert("Error: " + error.message);
+	}
 }
 
-async function getFormInfo(endpoint, type) {
+async function getFormInfo(endpoint, responseType = "text") {
 	return new Promise((resolve, reject) => {
 		const req = new XMLHttpRequest();
 		req.open("GET", "http://localhost:8080/upload/" + endpoint);
-		req.send();
-		req.responseType = "type";
+		req.responseType = responseType;
 		req.onload = () => {
-			if (req.readyState == 4 && (req.status == 201 || req.status == 200)) {
+			if (req.readyState == 4 && req.status >= 200 && req.status < 300) {
 				resolve(req.response);
 			} else {
 				reject(new Error(`Error: ${req.status}`));
 			}
 		};
+		req.onerror = () => {
+			reject(new Error("Network error"));
+		};
+		req.send();
 	});
 }
 
@@ -120,7 +136,9 @@ form.addEventListener("submit", async function (e) {
 	try {
 		name = await getFormInfo("name", "text");
 		description = await getFormInfo("description", "text");
-		picture = await getFormInfo("picture", "document");
+		picture = await getFormInfo("picture", "blob");
+		imageUrl = URL.createObjectURL(picture);
+
 	} catch (error) {
 		console.error(error);
 		window.alert(error.message);
@@ -140,7 +158,7 @@ form.addEventListener("submit", async function (e) {
 
 	if (picture) {
 		const img = document.createElement("img");
-		img.src = picture;
+		img.src = imageUrl;
 		article.appendChild(img);
 	}
 	if (description) {
@@ -148,5 +166,4 @@ form.addEventListener("submit", async function (e) {
 		p.textContent = description;
 		article.appendChild(p);
 	}
-
 });
