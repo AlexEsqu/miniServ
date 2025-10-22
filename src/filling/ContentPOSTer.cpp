@@ -78,7 +78,7 @@ void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string,
 		if (colonPos != std::string::npos) {
 			std::string headerName = line.substr(0, colonPos);
 			std::string headerValue = line.substr(colonPos + 1, line.size() - 1); // removing larst \r
-			multiPartHeaderMap[headerName] = headerValue;
+			multiPartHeaderMap[headerName] = trim(headerValue);
 		}
 		std::getline(bodyReader, line);
 	}
@@ -145,7 +145,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 				size_t filenameEnd = disposition.find("\"", filenamePos + 10);
 				uploadFilePath.append(disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10)));
 			}
-			else if (disposition.find("name=\""))
+			else if (disposition.find("name=\"") != std::string::npos)
 			{
 				filenamePos = disposition.find("name=\"");
 				size_t filenameEnd = disposition.find("\"", filenamePos + 6);
@@ -164,13 +164,13 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			while (std::getline(bodyReader, line))
 			{
 				// Stop reading if we encounter the next boundary
-				if (line.find(boundary))
+				if (line.find(boundary) != std::string::npos)
 				{
 					if (line == boundary + "--\r")
 						return;
 					break;
 				}
-				
+
 				multiPartBlock.writeToFile(line);
 			}
 		}
