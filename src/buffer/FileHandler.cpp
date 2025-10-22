@@ -143,7 +143,7 @@ void	FileHandler::clearFile()
 
 	int fd = open(_filePath.c_str(), O_TRUNC);
 	close(fd);
-	// would unset here if it was allowed function...
+	std::remove(_filePath.c_str());
 
 	_filePath.clear();
 	_isInitialized = false;
