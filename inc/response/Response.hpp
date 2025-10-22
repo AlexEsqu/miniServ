@@ -51,7 +51,6 @@ public:
 	void			setError(e_status number);
 
 	void			setContent(std::string content);
-	void			setBoundary();
 
 	void			setRoutedUrl(std::string url);
 

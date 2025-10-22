@@ -74,6 +74,8 @@ void			Status::setError(bool value)
 
 void			Status::setStatusCode(e_status statusCode)
 {
+	if (_hasError)
+		return;
 	this->_statusCode = statusCode;
 	try
 	{

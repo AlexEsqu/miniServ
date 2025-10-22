@@ -1,6 +1,6 @@
 #include "ContentFetcher.hpp"
 
-void ContentFetcher::postItemFromServer(ClientSocket *client)
+void		ContentFetcher::postItemFromServer(ClientSocket *client)
 {
 	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
 
@@ -9,7 +9,7 @@ void ContentFetcher::postItemFromServer(ClientSocket *client)
 	createPostResponsePage(client);
 }
 
-void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
+void		ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 {
 	std::cout << "body is [\n" << client->getRequest()->getBody() << "]\n";
 
@@ -34,6 +34,28 @@ std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::st
 	std::cout << "upload path: " << uploadFilepath << std::endl;
 
 	return (uploadFilepath);
+}
+
+std::string	ContentFetcher::extractBoundary(Request* request)
+{
+	std::string boundary;
+
+	if (request->getContentType().empty())
+	{
+		request->setError(BAD_REQUEST);
+		return boundary;
+	}
+
+	boundary = request->getAdditionalHeaderInfo().find("content-type")->second;
+	boundary.erase(0, boundary.find("=") + 1);
+
+	if (boundary.empty())
+	{
+		request->setError(BAD_REQUEST);
+		return boundary;
+	}
+
+	return boundary;
 }
 
 // if Content-Type: application/x-www-form-urlencoded
@@ -77,16 +99,17 @@ void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string,
 	}
 }
 
-
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
 // store boundary and read each section until boundary and store data
 // trying to read from buffer file since multipart may contain images or heavy files
 void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 {
-	client->getResponse()->setBoundary();
-
-	std::string		boundary = client->getResponse()->getBoundary();
+	std::string		boundary = extractBoundary(client->getRequest());
 	std::istream&	bodyReader = client->getRequest()->getStreamFromBodyBuffer();
+
+	// if the boundary has not been extracted, should trigger here
+	if (client->getRequest()->hasError())
+		return;
 
 	std::string		line;
 	e_mutipartState	parsingState = MP_STARTING_LINE;

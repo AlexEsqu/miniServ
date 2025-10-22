@@ -87,7 +87,7 @@ TMP_DIR				=	tmp/
 # **************************************************************************** #
 
 TEST_DIR			=	tests
-DEBUG_FLAG			=	-g -fno-limit-debug-info # for full string view on clang
+DEBUG_FLAG			=	-g -fno-limit-debug-info
 
 #------- NGINX Docker ---------------------------------------------------------#
 
@@ -156,7 +156,7 @@ $(CCLIENT_NAME):
 					$(CC) $(FLAGS) -o $(CCLIENT_NAME) $(CCLIENT)
 
 test:				$(TMP_DIR)
-					$(CC) -g -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
+					$(CC) $(DEBUG_FLAG) -I$(UNIT_TEST_FRAME) $(INC) -o $(UNIT_TEST_BIN) $(UNIT_TEST_SRC) $(SRC_NO_MAIN)
 					./utest_webserv -ni -nv
 
 # **************************************************************************** #
