@@ -161,6 +161,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			FileHandler	multiPartBlock(uploadFilePath);
 
 			// read the damn file
+			// without getline to avoid corruption by removal of random \n
 			while (std::getline(bodyReader, line))
 			{
 				// Stop reading if we encounter the next boundary
@@ -170,6 +171,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 						return;
 					break;
 				}
+				line.append("\n");
 
 				multiPartBlock.writeToFile(line);
 			}
