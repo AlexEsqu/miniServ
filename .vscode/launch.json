@@ -54,7 +54,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/webserv",
       "args": ["${workspaceFolder}/confs/basic.conf"],
-      "stopAtEntry": true,
+      "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
       "externalConsole": false,

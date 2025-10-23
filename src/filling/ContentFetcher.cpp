@@ -41,7 +41,7 @@ void ContentFetcher::addExecutor(Executor *executor)
 
 //------------------- MEMBER FUNCTIONS ------------------------//
 
-std::string getMIMETypeFromPath(const std::string &filePath)
+std::string ContentFetcher::getTypeBasedOnExtension(const std::string &filePath)
 {
     size_t dotPos = filePath.find_last_of('.');
     if (dotPos == std::string::npos)
@@ -97,7 +97,7 @@ std::string getMIMETypeFromPath(const std::string &filePath)
         return "text/plain";
 }
 
-std::string getExtensionFromType(const std::string &type)
+std::string ContentFetcher::getExtensionFromType(const std::string &type)
 {
     std::string extension;
     if (type == "application/json")

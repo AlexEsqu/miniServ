@@ -1,6 +1,6 @@
 #include "ContentFetcher.hpp"
 
-void		ContentFetcher::postItemFromServer(ClientSocket *client)
+void ContentFetcher::postItemFromServer(ClientSocket *client)
 {
 	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
 
@@ -9,9 +9,10 @@ void		ContentFetcher::postItemFromServer(ClientSocket *client)
 	createPostResponsePage(client);
 }
 
-void		ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
+void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 {
-	std::cout << "body is [\n" << client->getRequest()->getBody() << "]\n";
+	std::cout << "body is [\n"
+			  << client->getRequest()->getBody() << "]\n";
 
 	if (client->getRequest()->getContentType().find("application/x-www-form-urlencoded") != std::string::npos)
 	{
@@ -25,7 +26,7 @@ void		ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 		client->getRequest()->setError(UNSUPPORTED_MEDIA_TYPE);
 }
 
-std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::string &uri)
+std::string ContentFetcher::findUploadFilepath(const Route *route, const std::string &uri)
 {
 	std::string uploadFilepath = uri;
 	std::string uploadDirectory = route->getUploadDirectory();
@@ -36,7 +37,7 @@ std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::st
 	return (uploadFilepath);
 }
 
-std::string	ContentFetcher::extractBoundary(std::string contentType)
+std::string ContentFetcher::extractBoundary(std::string contentType)
 {
 	return (contentType.substr(contentType.find("=") + 1, contentType.size()));
 }
@@ -44,7 +45,7 @@ std::string	ContentFetcher::extractBoundary(std::string contentType)
 // if Content-Type: application/x-www-form-urlencoded
 // read key=value&key=value and store data
 // putting body in memroy since assuming urlencoded are short key values
-void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
+void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 {
 	size_t i = 0;
 	std::string pathToUploadDirectory = findUploadFilepath(client->getRequest()->getRoute(), client->getRequest()->getRequestedURL());
@@ -60,7 +61,7 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
 		// create file with the name key, put value in it
-		std::string	pathToUploadFile = pathToUploadDirectory + "/" + key;
+		std::string pathToUploadFile = pathToUploadDirectory + "/" + key;
 		FileHandler file(pathToUploadFile);
 		file.writeToFile(value);
 		if (i > body.length())
@@ -68,14 +69,15 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 	}
 }
 
-void	extractMultiPartHeaderBlock(std::istream& bodyReader, std::map<std::string, std::string>& multiPartHeaderMap, std::string& line)
+void extractMultiPartHeaderBlock(std::istream &bodyReader, std::map<std::string, std::string> &multiPartHeaderMap, std::string &line)
 {
 	while (1)
 	{
 		if (line.empty() || line == "\r")
 			break;
 		size_t colonPos = line.find(":");
-		if (colonPos != std::string::npos) {
+		if (colonPos != std::string::npos)
+		{
 			std::string headerName = line.substr(0, colonPos);
 			std::string headerValue = line.substr(colonPos + 1, line.size() - 1); // removing larst \r
 			multiPartHeaderMap[headerName] = trim(headerValue);
@@ -95,8 +97,8 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 		return;
 	}
 
-	std::string		boundary = extractBoundary(client->getRequest()->getContentType());
-	std::istream&	bodyReader = client->getRequest()->getStreamFromBodyBuffer();
+	std::string boundary = extractBoundary(client->getRequest()->getContentType());
+	std::istream &bodyReader = client->getRequest()->getStreamFromBodyBuffer();
 
 	// if the boundary has not been extracted, should trigger here
 	if (client->getRequest()->hasError())
@@ -105,8 +107,8 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 		return;
 	}
 
-	std::string		line;
-	e_mutipartState	parsingState = MP_STARTING_LINE;
+	std::string line;
+	e_mutipartState parsingState = MP_STARTING_LINE;
 	while (std::getline(bodyReader, line))
 	{
 		trim(line);
@@ -124,7 +126,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			if (line == boundary + "--")
 				return;
 
-			//switching to next step
+			// switching to next step
 			parsingState = MP_HEADERS;
 			continue;
 		}
@@ -132,7 +134,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 		// there can be multiple headers, to be parsed into a header map
 		if (parsingState == MP_HEADERS)
 		{
-			std::map<std::string, std::string>	multiPartHeaderMap; // not stored past loop for now, bad idea ?
+			std::map<std::string, std::string> multiPartHeaderMap; // not stored past loop for now, bad idea ?
 			extractMultiPartHeaderBlock(bodyReader, multiPartHeaderMap, line);
 
 			// trying to find a name for the posted result
@@ -140,16 +142,21 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			std::cout << "dispostition is [" << disposition << "]\n";
 			std::string uploadFilePath = client->getRequest()->getRoute()->getUploadDirectory() + "/";
 			size_t filenamePos = disposition.find("filename=\"");
+			size_t namePos = disposition.find("name=\"");
+			std::string filename;
+			std::string extension;
 			if (filenamePos != std::string::npos)
 			{
 				size_t filenameEnd = disposition.find("\"", filenamePos + 10);
-				uploadFilePath.append(disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10)));
+				filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
+				size_t extensionPos = filename.find('.');
+				extension = filename.substr(extensionPos);
 			}
-			else if (disposition.find("name=\"") != std::string::npos)
+			if (namePos != std::string::npos)
 			{
-				filenamePos = disposition.find("name=\"");
-				size_t filenameEnd = disposition.find("\"", filenamePos + 6);
-				uploadFilePath.append(disposition.substr(filenamePos + 6, filenameEnd - (filenamePos + 6)));
+				namePos = disposition.find("name=\"");
+				size_t filenameEnd = disposition.find("\"", namePos + 6);
+				uploadFilePath.append(disposition.substr(namePos + 6, filenameEnd - (namePos + 6)));
 			}
 			else
 			{
@@ -158,7 +165,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			}
 
 			// create the file
-			FileHandler	multiPartBlock(uploadFilePath);
+			FileHandler multiPartBlock(uploadFilePath + extension);
 
 			// read the damn file
 			// without getline to avoid corruption by removal of random \n
@@ -194,7 +201,7 @@ void ContentFetcher::createPostResponsePage(ClientSocket *client)
 		"<a href='/'>Back to home</a></body></html>";
 
 	client->getResponse()->setContentType("text/html");
-	//client->getResponse()->addToContent(uploadResponse.c_str());
+	// client->getResponse()->addToContent(uploadResponse.c_str());
 	client->getRequest()->setStatus(CREATED);
 	client->getResponse()->createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);

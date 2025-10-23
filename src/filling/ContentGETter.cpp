@@ -28,7 +28,12 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
 
-	if (!input.is_open() || isDirectory(fileURL.c_str()))
+	// if (!input.is_open() || isDirectory(fileURL.c_str())) //test without extension
+	// {
+	// 	input.open()
+		
+	// }
+	// else
 	{
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
 		serveErrorPage(client, NOT_FOUND);
