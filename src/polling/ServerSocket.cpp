@@ -61,6 +61,11 @@ Poller&					ServerSocket::getEpoll()
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
+void			ServerSocket::handleConnection(epoll_event)
+{
+	acceptNewConnection();
+}
+
 void			ServerSocket::acceptNewConnection()
 {
 	// allocating new acccepting socket to be used

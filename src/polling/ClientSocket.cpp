@@ -150,6 +150,12 @@ bool	ClientSocket::isReadingFromPipe() const
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
+void	ClientSocket::handleConnection(epoll_event event)
+{
+	getServer().handleExistingConnection(this, event);
+}
+
+
 void	ClientSocket::createNewResponse()
 {
 	_response = new Response(getRequest());

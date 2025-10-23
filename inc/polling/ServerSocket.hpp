@@ -47,6 +47,8 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
+	void				handleConnection(epoll_event event);
+
 	void				acceptNewConnection();
 	void				removeConnection(ClientSocket* clientSocket);
 	void				handleExistingConnection(ClientSocket* client, epoll_event &event);

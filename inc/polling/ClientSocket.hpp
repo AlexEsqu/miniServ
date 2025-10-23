@@ -70,6 +70,8 @@ public:
 
 	//----------------- MEMBER FUNCTION ------------------//
 
+	void				handleConnection(epoll_event event);
+
 	void				checkForReadError(int valread);
 
 	void				readRequest();

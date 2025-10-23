@@ -153,15 +153,7 @@ void	Poller::processEvents()
 	{
 		Sockette*	currentSocket = static_cast<Sockette*>(_eventQueue[i].data.ptr);
 
-		if (isServerSocket(currentSocket))
-		{
-			static_cast<ServerSocket*>(currentSocket)->acceptNewConnection();
-		}
-		else
-		{
-			static_cast<ClientSocket*>(currentSocket)->getServer()
-				.handleExistingConnection(static_cast<ClientSocket*>(currentSocket), _eventQueue[i]);
-		}
+		currentSocket->handleConnection(_eventQueue[i]);
 	}
 }
 
