@@ -43,7 +43,6 @@ Array.from(tablistButtons).forEach((button) => {
 	button.addEventListener("click", (e) => tablistHandler(e));
 });
 
-
 const windows = document.getElementsByClassName("window");
 
 let offsetX,
@@ -85,3 +84,86 @@ function mouseUpHandler() {
 	document.removeEventListener("mousemove", mouseMoveHandler);
 	document.removeEventListener("mouseup", mouseUpHandler);
 }
+
+const form = document.querySelector("form");
+
+async function sendForm() {
+	const formData = new FormData(form);
+	try {
+		const response = await fetch("/upload", {
+			method: "POST",
+			body: formData,
+		});
+
+		if (response.ok) {
+			console.log("Data:", response.body);
+			// Display success message or perform any other action
+		} else {
+			console.error("Error:", response.status);
+			window.alert("Error: " + response.status);
+		}
+	} catch (error) {
+		console.error(error);
+		window.alert("Error: " + error.message);
+	}
+}
+
+async function getFormInfo(endpoint, responseType = "text") {
+	return new Promise((resolve, reject) => {
+		const req = new XMLHttpRequest();
+		req.open("GET", "http://localhost:8080/upload/" + endpoint);
+		req.responseType = responseType;
+		req.onload = () => {
+			if (req.readyState == 4 && req.status >= 200 && req.status < 300) {
+				resolve(req.response);
+			} else {
+				reject(new Error(`Error: ${req.status}`));
+			}
+		};
+		req.onerror = () => {
+			reject(new Error("Network error"));
+		};
+		req.send();
+	});
+}
+
+form.addEventListener("submit", async function (e) {
+	e.preventDefault(); // Prevents the default form submission behavior
+	console.log("Form submitted");
+
+	sendForm();
+	let name, description, picture;
+	try {
+		name = await getFormInfo("name", "text");
+		description = await getFormInfo("description", "text");
+		picture = await getFormInfo("picture", "blob");
+		imageUrl = URL.createObjectURL(picture);
+
+	} catch (error) {
+		console.error(error);
+		window.alert(error.message);
+		return;
+	}
+
+	console.log("Name:", name);
+	console.log("Description:", description);
+	console.log("Picture:", picture);
+
+	document.getElementById("tablist-button-add-yourself").textContent = name;
+
+	const article = document.getElementById("add-yourself-article");
+	for (let i = 0; i < article.children.length; i++) {
+		article.children[i].remove();
+	}
+
+	if (picture) {
+		const img = document.createElement("img");
+		img.src = imageUrl;
+		article.appendChild(img);
+	}
+	if (description) {
+		const p = document.createElement("p");
+		p.textContent = description;
+		article.appendChild(p);
+	}
+});
