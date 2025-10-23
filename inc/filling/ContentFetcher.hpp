@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include <sys/stat.h>
+#include <dirent.h>
+#include <iomanip>
+#include <algorithm>
 
 #include "Response.hpp"
 #include "Executor.hpp"
@@ -61,6 +64,7 @@ public:
 
 	void			getItemFromServer(ClientSocket* client);
 	void			serveStatic(ClientSocket* client);
+	std::string		createDirectoryListing(const std::string& path, const std::string& requestUri);
 
 	// POST method
 
