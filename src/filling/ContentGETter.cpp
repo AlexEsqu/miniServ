@@ -53,6 +53,8 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket *client)
 	char buffer[4096];
 	ssize_t bytesRead;
 
+	client->updateLastEventTime();
+
 	bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer));
 
 	// If there is nothing the read in the buffer, reached the end of the CGI output

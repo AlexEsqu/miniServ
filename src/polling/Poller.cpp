@@ -32,6 +32,7 @@ void	Poller::addServerSocket(ServerSocket& socket)
 {
 	addSocket(socket);
 	_listeningSockets.insert(socket.getSocketFd());
+	_serverList.push_back(&socket);
 }
 
 // necessary when using epoll to avoid a non filled pipe to make the whole server hang
@@ -100,7 +101,8 @@ void Poller::setPollingMode(e_pollingMode mode, ClientSocket* socket)
 
 void	Poller::waitForEvents()
 {
-	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);
+	// waiting on event for 5 seconds (non blocking to check for timeouts)
+	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, 5000);
 	if (_eventsReadyForProcess == -1)
 	{
 		if (errno == EINTR)
@@ -168,6 +170,9 @@ void	Poller::launchEpollListenLoop()
 	// std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
 	waitForEvents();
 	processEvents();
+
+	for (size_t i = 0; i < _serverList.size(); i++)
+		_serverList[i]->timeoutIdleClients();
 }
 
 //--------------------------- EXCEPTIONS ------------------------------------//

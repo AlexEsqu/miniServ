@@ -87,7 +87,7 @@ TMP_DIR				=	tmp/
 # **************************************************************************** #
 
 TEST_DIR			=	tests
-DEBUG_FLAG			=	-g -fno-limit-debug-info
+DEBUG_FLAG			=	-g #-fno-limit-debug-info
 
 #------- NGINX Docker ---------------------------------------------------------#
 
