@@ -87,7 +87,7 @@ void			Status::setStatusCode(e_status statusCode)
 
 	_statusCode = statusCode;
 	_hasError = (static_cast<int>(statusCode) >= 400);
-	verboseLog("setting status to " + statusCode);
+	verboseLog("setting status to " + _statusMessage);
 }
 
 void			Status::setStatusMessage(std::string message)

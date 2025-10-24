@@ -90,7 +90,6 @@ void	Response::setError(e_status status)
 void	Response::setRoutedUrl(std::string url)
 {
 	_routedPath = url;
-	verboseLog("setting routed URL to " + url);
 }
 
 bool	isDirectory(const char *path)
@@ -173,7 +172,7 @@ void Response::createHTTPHeaders()
 		   << "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
 		   << "Server: miniServ\r\n";
 
-	std::cout << "Content-Length is " << _contentLength << " + " << header.str().size() << "\n";
+	// verboseLog("Content-Length is " + (_contentLength + header.str().size()));
 
 	if (_request->getMethodAsString() == "POST")
 	{

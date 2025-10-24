@@ -1,4 +1,5 @@
 #include "FileHandler.hpp"
+#include "readability.hpp"
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
@@ -116,7 +117,7 @@ void	FileHandler::createFile()
 
 void	FileHandler::createFile(std::string& filePath)
 {
-	std::cout << "Create file: " << filePath << std::endl;
+	verboseLog("Create file: " + filePath);
 	if (_isInitialized)
 		clearFile();
 

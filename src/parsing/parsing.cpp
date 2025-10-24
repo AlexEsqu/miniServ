@@ -48,7 +48,7 @@ std::string		strToLower(std::string& s)
 	return (s);
 }
 
-void			verboseLog(std::string message)
+void			verboseLog(const std::string& message)
 {
 	(void)message;
 	#ifdef DEBUG

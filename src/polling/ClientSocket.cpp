@@ -214,7 +214,7 @@ void	ClientSocket::checkForReadError(int valread)
 void	ClientSocket::readRequest()
 {
 	#ifdef DEBUG
-		std::cout << "\nClient Socket " << getSocketFd();
+		std::cout << "\nClient Socket " << getSocketFd() << " ";
 	#endif
 
 	updateLastEventTime();
@@ -243,8 +243,13 @@ void	ClientSocket::sendResponse()
 	size_t totalToSend = response.length();
 	size_t totalSent = 0;
 
-	std::cout << "Response size: " << response.size() << " bytes" << std::endl;
-	std::cout << "First 100 chars: [" << response.substr(0, 100) << "]" << std::endl;
+	if (getRequest()->hasError())
+		std::cout << RED;
+	else
+		std::cout << GREEN;
+	std::cout << " " << getRequest()->getStatus().getStatusCode() << "\n" << STOP_COLOR;
+
+	verboseLog("First 100 chars: [" + response.substr(0, 100) + "]");
 
 	while (totalSent < totalToSend)
 	{
@@ -266,7 +271,6 @@ void	ClientSocket::sendResponse()
 
 	deleteResponse();
 
-	std::cout << "Successfully sent " << totalSent << " bytes" << std::endl;
 	if (totalSent == totalToSend)
 		setClientState(CLIENT_HAS_SENT);
 

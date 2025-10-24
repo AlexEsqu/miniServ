@@ -474,7 +474,7 @@ e_dataProgress Request::assembleUnChunkedBody(std::string& chunk)
 	chunk.clear();
 
 	// check received content is correct length or wait for more
-	std::cout << "buffer size is [" << _requestBodyBuffer.getBufferSize() << "]\n";
+	// std::cout << "buffer size is [" << _requestBodyBuffer.getBufferSize() << "]\n";
 	if (_requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
 	else
