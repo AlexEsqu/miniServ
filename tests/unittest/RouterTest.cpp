@@ -65,8 +65,6 @@ static void rmdir_force(const std::string& p)
 TEST_CASE("ROUTER")
 {
 
-
-
 SUBCASE("Router utils")
 {
 	SUBCASE("slash helpers and joinPaths")
@@ -201,6 +199,7 @@ SUBCASE("Router for GET")
 			r.setRootDirectory(root);
 			std::vector<std::string> defs;
 			r.setDefaultFiles(defs);
+			r.setAutoIndex(true);
 
 			std::string resolved = Router::routeFilePathForGet("/", &r);
 			// implementation dependent: accept either empty (no file) or the directory path
@@ -228,11 +227,6 @@ SUBCASE("Router for GET")
 	}
 
 	{
-		// This test verifies behaviour when directory has no default file AND route->isAutoIndex()
-		// Because Route interface in the codebase exposes isAutoIndex(), but no direct setter visible in tests,
-		// we emulate scenario by creating a Route with no default files and expecting Router::routeFilePathForGetAsDirectory
-		// to return routedURL only if it is a directory and route->isAutoIndex() true.
-		// If setting autoindex is not available in Route API, this test only validates directory detection logic and default-file pathing.
 		TempDir tmp;
 		REQUIRE(tmp.path.size() > 0);
 

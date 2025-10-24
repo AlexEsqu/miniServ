@@ -49,6 +49,7 @@ std::string ContentFetcher::findFileInDirectory(std::string directory, std::stri
     }
     return std::string();
 }
+
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
 	std::string fileURL(client->getResponse()->getRoutedURL());
@@ -60,9 +61,6 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
 
 	std::cout << GREEN << filename << STOP_COLOR << std::endl;
-#ifdef DEBUG
-	std::cout << "serving static " << fileURL;
-#endif
 
 	if (!input.is_open() || isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
 	{
@@ -75,13 +73,6 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	if (isDirectory(fileURL.c_str()))
 		return serveDirectoryListing(client, fileURL);
 
-	std::ifstream input(fileURL.c_str(), std::ios::binary);
-	if (!input.is_open() || isDirectory(fileURL.c_str()))
-	{
-		verboseLog(ERROR_FORMAT("Could not open file"));
-		serveErrorPage(client, NOT_FOUND);
-		return;
-	}
 	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
 	size_t size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);

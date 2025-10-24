@@ -140,22 +140,14 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			std::string disposition = multiPartHeaderMap["Content-Disposition"];
 			std::cout << "dispostition is [" << disposition << "]\n";
 			std::string uploadFilePath = client->getResponse()->getRoutedURL();
-			size_t filenamePos = disposition.find("filename=\"");
 			size_t namePos = disposition.find("name=\"");
-			std::string filename;
 			std::string extension;
-			if (filenamePos != std::string::npos)
-			{
-				size_t filenameEnd = disposition.find("\"", filenamePos + 10);
-				filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
-				size_t extensionPos = filename.find('.');
-				extension = filename.substr(extensionPos);
-			}
 			if (namePos != std::string::npos)
 			{
 				namePos = disposition.find("name=\"");
-				size_t filenameEnd = disposition.find("\"", namePos + 6);
-				uploadFilePath.append(disposition.substr(namePos + 6, filenameEnd - (namePos + 6)));
+				size_t nameEnd = disposition.find("\"", namePos + 6);
+				std::string filename = disposition.substr(namePos + 6, nameEnd - (namePos + 6));
+				uploadFilePath = Router::joinPaths(uploadFilePath, filename);
 			}
 			else
 			{
