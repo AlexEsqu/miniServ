@@ -220,4 +220,9 @@ void	Route::setAllowedCGI(std::vector<std::string> allowedCGIVector)
 	_allowedCGI = allowedCGIVector;
 }
 
+void	Route::setAutoIndex(bool value)
+{
+	_autoindex = value;
+}
+
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
