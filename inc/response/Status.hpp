@@ -82,10 +82,9 @@ class Status
 {
 
 private:
-	std::string		_statusMessage;
 	e_status		  _statusCode;
-	std::string		_errorPage;
 	bool			    _hasError;
+	std::string		_statusMessage;
 
 public:
 
@@ -93,7 +92,6 @@ public:
 
 	Status();
 	Status(e_status num);
-	Status(std::string message);
 	Status(const Status &copy);
 
 	//----------------- DESTRUCTOR -----------------------//

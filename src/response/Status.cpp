@@ -6,18 +6,26 @@
 
 // create a HTTP status code objects initialized at 200
 Status::Status()
+	: _statusCode(OK)
+	, _hasError(false)
+	, _statusMessage()
 {
 	setStatusCode(OK);
 }
 
 // create a HTTP status code objects initialized at the given int
 Status::Status(e_status num)
+	: _statusCode(OK)
+	, _hasError(false)
+	, _statusMessage()
 {
 	Status::setStatusCode(num);
 }
 
 Status::Status(const Status &copy)
 {
+	this->setStatusCode(copy.getStatusCode());
+
 	*this = copy;
 }
 
@@ -77,22 +85,9 @@ void			Status::setStatusCode(e_status statusCode)
 	if (_hasError)
 		return;
 
+	_statusCode = statusCode;
+	_hasError = (static_cast<int>(statusCode) >= 400);
 	verboseLog("setting status to " + statusCode);
-	this->_statusCode = statusCode;
-	try
-	{
-		if (statusCode <= 511 && *_statusMessages[statusCode] != '\0') //add macro for readability
-			this->_statusMessage = _statusMessages[statusCode];
-		else
-			throw Status::UnknownStatusException();
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << RED << e.what() << STOP_COLOR << '\n';
-	}
-
-	if (statusCode >= BAD_REQUEST)
-		_hasError = true;
 }
 
 void			Status::setStatusMessage(std::string message)
