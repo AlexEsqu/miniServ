@@ -18,23 +18,55 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 	serveStatic(client);
 }
 
+std::string ContentFetcher::findFileInDirectory(std::string directory, std::string filename)
+{
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir(directory.c_str())) != NULL)
+    {
+        while ((ent = readdir(dir)) != NULL)
+        {
+			char *entChar = ent->d_name;
+            std::string ent(entChar);
+
+            size_t dotPos = ent.find(".");
+            if (dotPos != std::string::npos)
+            {
+                std::string fileWithoutExtension = ent.substr(0, dotPos);
+                if (fileWithoutExtension == filename)
+                {
+                    std::string filePath = directory + "/" + ent;
+                    return filePath;
+                }
+            }
+        }
+        closedir(dir);
+    }
+    else
+    {
+        std::cerr << ERROR_FORMAT("Could not open directory") << std::endl;
+        return std::string();
+    }
+    return std::string();
+}
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
 	std::string fileURL(client->getResponse()->getRoutedURL());
+	size_t filenamePos = fileURL.find_last_of('/');
+		std::cout << GREEN << "filename pos: " << filenamePos << STOP_COLOR << std::endl;
 
+	std::string filename;
+	if (filenamePos != std::string::npos)
+		filename = fileURL.substr(filenamePos);
+	std::cout << GREEN << filename << STOP_COLOR << std::endl;
 #ifdef DEBUG
 	std::cout << "serving static " << fileURL;
 #endif
 
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
-
-	// if (!input.is_open() || isDirectory(fileURL.c_str())) //test without extension
-	// {
-	// 	input.open()
-		
-	// }
-	// else
+	if (!input.is_open() || isDirectory(fileURL.c_str())) // test with extension
 	{
+		std::cerr << MAGENTA << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
 		serveErrorPage(client, NOT_FOUND);
 		return;
@@ -53,7 +85,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 #endif
 }
 
-e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket *client)
+e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 {
 	char buffer[4096];
 	ssize_t bytesRead;
@@ -89,5 +121,3 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket *client)
 
 	return WAITING_FOR_MORE;
 }
-
-
