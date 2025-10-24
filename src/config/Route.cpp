@@ -4,27 +4,27 @@
 
 Route::Route()
 {
-	#ifdef DEBUG
-		std::cout << "Route Generic Constructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Route Generic Constructor called" << std::endl;
+	// #endif
 }
 
 Route::Route(const Route &copy)
 {
 	*this = copy;
 
-	#ifdef DEBUG
-		std::cout << "Route copy Constructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Route copy Constructor called" << std::endl;
+	// #endif
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 Route::~Route()
 {
-	#ifdef DEBUG
-		std::cout << "Route Destructor called" << std::endl;
-	#endif
+	// #ifdef DEBUG
+	// 	std::cout << "Route Destructor called" << std::endl;
+	// #endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
