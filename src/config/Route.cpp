@@ -165,8 +165,6 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 
 	if (paramMap.find("index") != paramMap.end())
 		_defaultFiles = split(paramMap.at("index"), ' ');
-	else
-		_defaultFiles.push_back("index.html");
 
 	if (paramMap.find("autoindex") != paramMap.end())
 		_autoindex = (paramMap.at("autoindex") == "on");
@@ -175,11 +173,6 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 
 	if (paramMap.find("allowed_methods") != paramMap.end())
 		_allow_methods = split(paramMap.at("allowed_methods"), ' ');
-	else
-	{
-		_allow_methods.push_back("GET");
-		_allow_methods.push_back("HEAD");
-	}
 
 	if (paramMap.find("upload") != paramMap.end())
 		_uploadDirectory = paramMap.at("upload");

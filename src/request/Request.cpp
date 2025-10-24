@@ -239,7 +239,9 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 void	Request::setError(e_status statusCode)
 {
 	_status.setStatusCode(statusCode);
-	verboseLog("Setting error at " + statusCode);
+	std::ostringstream oss;
+	oss << "Setting error at " << statusCode;
+	verboseLog(oss.str());
 }
 
 // sets the Status object to error code WITHOUT raising the error flag

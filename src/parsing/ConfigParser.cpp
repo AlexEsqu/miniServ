@@ -4,9 +4,7 @@
 
 ConfigParser::ConfigParser()
 {
-#ifdef DEBUG
-	std::cout << "ConfigParser Constructor called" << std::endl;
-#endif
+	verboseLog("ConfigParser Constructor called");
 }
 
 ConfigParser::ConfigParser(const ConfigParser &copy)
