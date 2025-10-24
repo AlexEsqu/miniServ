@@ -163,10 +163,67 @@ SUBCASE("Router for GET")
 			CHECK(resolved.empty());
 		}
 
-		// cleanup
 		rmfile(fileA);
 		rmfile(idx);
 		rmdir_force(dirA);
+
+		SUBCASE("returns default file when '/' with default file")
+		{
+			TempDir tmp;
+			REQUIRE(tmp.path.size() > 0);
+
+			std::string root = tmp.path;
+			// create index at root
+			std::string idx = tmp.join("index.html");
+			writeFile(idx, "<html>root index</html>");
+
+			Route r;
+			r.setURLPath("/");						// route matches root
+			r.setRootDirectory(root);
+			std::vector<std::string> defs;
+			defs.push_back(std::string("index.html"));
+			r.setDefaultFiles(defs);
+
+			std::string resolved = Router::routeFilePathForGet("/", &r);
+			CHECK(resolved == root + "/index.html");
+
+			rmfile(idx);
+		}
+
+		SUBCASE("returns directory when '/' without default file")
+		{
+			TempDir tmp;
+			REQUIRE(tmp.path.size() > 0);
+
+			std::string root = tmp.path;
+			Route r;
+			r.setURLPath("/");
+			r.setRootDirectory(root);
+			std::vector<std::string> defs;
+			r.setDefaultFiles(defs);
+
+			std::string resolved = Router::routeFilePathForGet("/", &r);
+			// implementation dependent: accept either empty (no file) or the directory path
+			CHECK(resolved == root + "/");
+		}
+
+		SUBCASE("returns empty when '/' without default file and no auto index")
+		{
+			TempDir tmp;
+			REQUIRE(tmp.path.size() > 0);
+
+			std::string root = tmp.path;
+			Route r;
+			r.setURLPath("/");
+			r.setRootDirectory(root);
+			std::vector<std::string> defs;
+			r.setDefaultFiles(defs);
+			r.setAutoIndex(false);
+
+			std::string resolved = Router::routeFilePathForGet("/", &r);
+			// implementation dependent: accept either empty (no file) or the directory path
+			CHECK(resolved.empty());
+		}
 
 	}
 
