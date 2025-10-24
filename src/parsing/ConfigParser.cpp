@@ -11,9 +11,7 @@ ConfigParser::ConfigParser()
 
 ConfigParser::ConfigParser(const ConfigParser &copy)
 {
-#ifdef DEBUG
-	std::cout << "ConfigParser copy Constructor called" << std::endl;
-#endif
+	verboseLog("ConfigParser copy Constructor called");
 	*this = copy;
 }
 
@@ -21,9 +19,7 @@ ConfigParser::ConfigParser(const ConfigParser &copy)
 
 ConfigParser::~ConfigParser()
 {
-#ifdef DEBUG
-	std::cout << "ConfigParser Destructor called" << std::endl;
-#endif
+	verboseLog("ConfigParser Destructor called");
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -160,9 +156,7 @@ void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 	else
 		defaultParams["root"] = serverConf.getRoot();
 
-	if (serverConf.getParamMap().find("index") == serverConf.getParamMap().end())
-		defaultParams["index"] = "index.html";
-	else
+	if (serverConf.getParamMap().find("index") != serverConf.getParamMap().end())
 		defaultParams["index"] = serverConf.getParamMap().at("index");
 
 	if (serverConf.getParamMap().find("allowed_methods") == serverConf.getParamMap().end()) // if map entry == map.end(), it doesn't exist in the map; HOWEVER map[entry] can return a value and create an entry if none existed
@@ -170,7 +164,8 @@ void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 	else
 		defaultParams["allowed_methods"] = serverConf.getParamMap().at("allowed_methods");
 
-	defaultParams["autoindex"] = "off";
+	if (serverConf.getParamMap().find("autoindex") != serverConf.getParamMap().end())
+		defaultParams["autoindex"] = serverConf.getParamMap().at("autoindex");
 
 	if (serverConf.getParamMap().find("upload") == serverConf.getParamMap().end())
 		defaultParams["upload"] = "pages/upload";
