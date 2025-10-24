@@ -76,6 +76,8 @@ void			Status::setStatusCode(e_status statusCode)
 {
 	if (_hasError)
 		return;
+
+	verboseLog("setting status to " + statusCode);
 	this->_statusCode = statusCode;
 	try
 	{

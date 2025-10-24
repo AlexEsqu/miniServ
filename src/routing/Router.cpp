@@ -197,7 +197,10 @@ std::string		Router::replaceRoutePathByRootDirectory(const std::string& url, con
 {
 	std::string	result = url;
 
-	result.replace(0, route->getURLPath().size(), route->getRootDirectory());
+	if (isRootPath(route->getURLPath()))
+		result = route->getRootDirectory() + url;
+	else
+		result.replace(0, route->getURLPath().size(), route->getRootDirectory());
 
 	return result;
 }

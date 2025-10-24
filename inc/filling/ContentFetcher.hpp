@@ -10,6 +10,7 @@
 #include "Executor.hpp"
 #include "ServerSocket.hpp"
 #include "ClientSocket.hpp"
+#include "Router.hpp"
 
 class Poller;
 
@@ -64,6 +65,7 @@ public:
 
 	void			getItemFromServer(ClientSocket* client);
 	void			serveStatic(ClientSocket* client);
+	void			serveDirectoryListing(ClientSocket* client, std::string& fileURL);
 	std::string		createDirectoryListing(const std::string& path, const std::string& requestUri);
 
 	// POST method

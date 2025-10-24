@@ -50,7 +50,8 @@ std::string		strToLower(std::string& s)
 
 void			verboseLog(std::string message)
 {
-	#ifndef DEBUG
+	(void)message;
+	#ifdef DEBUG
 	std::cout << message << std::endl;
 	#endif
 }

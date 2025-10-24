@@ -23,35 +23,12 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	std::string fileURL(client->getResponse()->getRoutedURL());
 	verboseLog("serving static " + fileURL);
 
-	// Check if the path is a directory
+	// if the file is a directory and not routed to a default file
+	// serve auto index instead of static page
 	if (isDirectory(fileURL.c_str()))
-	{
-		// Get the route to check if autoindex is enabled
-		const Route* route = client->getRequest()->getRoute();
-
-		std::cout << "is autoindex = " << route->isAutoIndex() << "\n";
-		if (route && route->isAutoIndex())
-		{
-			// Generate directory listing
-			std::string requestUri = client->getRequest()->getRequestedURL();
-			std::string html = createDirectoryListing(fileURL, requestUri);
-
-			if (!html.empty())
-			{
-				client->getResponse()->setContentType("text/html");
-				client->getResponse()->addToContent(html);
-				client->getResponse()->createHTTPHeaders();
-				client->setClientState(CLIENT_HAS_FILLED);
-				return;
-			}
-		}
-		verboseLog("Directory listing not allowed or failed");
-		serveErrorPage(client, NOT_FOUND);
-		return;
-	}
+		return serveDirectoryListing(client, fileURL);
 
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
-
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
 		verboseLog(ERROR_FORMAT("Could not open file"));
@@ -109,6 +86,31 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket *client)
 	return WAITING_FOR_MORE;
 }
 
+void	ContentFetcher::serveDirectoryListing(ClientSocket* client, std::string& fileURL)
+{
+	// Gets the route to check if autoindex is enabled
+	const Route* route = client->getRequest()->getRoute();
+
+	std::cout << "is autoindex = " << route->isAutoIndex() << "\n";
+	if (route && route->isAutoIndex())
+	{
+		std::string requestUri = client->getRequest()->getRequestedURL();
+		std::string directoryListingPage = createDirectoryListing(fileURL, requestUri);
+
+		if (!directoryListingPage.empty())
+		{
+			client->getResponse()->setContentType("text/html");
+			client->getResponse()->addToContent(directoryListingPage);
+			client->getResponse()->createHTTPHeaders();
+			client->setClientState(CLIENT_HAS_FILLED);
+			return;
+		}
+	}
+	verboseLog("Directory listing not allowed or failed");
+	serveErrorPage(client, NOT_FOUND);
+	return;
+}
+
 std::string ContentFetcher::createDirectoryListing(const std::string& path, const std::string& requestUri)
 {
 	DIR*						dir;
@@ -119,11 +121,11 @@ std::string ContentFetcher::createDirectoryListing(const std::string& path, cons
 	if ((dir = opendir(path.c_str())) == NULL)
 		return "";
 
-	// Read directory entries
+	// reads directory entries
 	while ((entry = readdir(dir)) != NULL)
 		entries.push_back(entry->d_name);
 
-	// Sort entries alphabetically
+	// sorts entries alphabetically
 	std::sort(entries.begin(), entries.end());
 
 	// Generate HTML
@@ -152,16 +154,11 @@ std::string ContentFetcher::createDirectoryListing(const std::string& path, cons
 	if (requestUri != "/")
 		html << "		<tr><td><a href=\"..\">..</a></td><td></td><td></td></tr>\n";
 
-	// List all entries
 	for (size_t i = 0; i < entries.size(); i++)
 	{
 		const std::string& name = entries[i];
-		// Skip current directory entry
-		if (name == ".")
-			continue;
-
-		// Skip parent directory entry as we handle it separately
-		if (name == ".." && requestUri != "/")
+		// skips current directory and parent entry
+		if (name == "." || (name == ".." && requestUri != "/"))
 			continue;
 
 		std::string fullPath = path + "/" + name;

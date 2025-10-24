@@ -25,17 +25,6 @@ void		ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 		client->getRequest()->setError(UNSUPPORTED_MEDIA_TYPE);
 }
 
-std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::string &uri)
-{
-	std::string uploadFilepath = uri;
-	std::string uploadDirectory = route->getUploadDirectory();
-	std::string routeDirectory = route->getURLPath();
-	uploadFilepath = uploadFilepath.replace(0, routeDirectory.size(), uploadDirectory);
-	std::cout << "upload path: " << uploadFilepath << std::endl;
-
-	return (uploadFilepath);
-}
-
 std::string	ContentFetcher::extractBoundary(const std::string& contentType)
 {
 	return (contentType.substr(contentType.find("=") + 1, contentType.size()));
@@ -47,7 +36,6 @@ std::string	ContentFetcher::extractBoundary(const std::string& contentType)
 void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 {
 	size_t i = 0;
-	std::string pathToUploadDirectory = findUploadFilepath(client->getRequest()->getRoute(), client->getRequest()->getRequestedURL());
 	std::string body = client->getRequest()->getBody();
 
 	while (1)
@@ -60,7 +48,7 @@ void		ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
 		// create file with the name key, put value in it
-		std::string	pathToUploadFile = pathToUploadDirectory + "/" + key;
+		std::string	pathToUploadFile = client->getResponse()->getRoutedURL() + "/" + key;
 		FileHandler file(pathToUploadFile);
 		file.writeToFile(value);
 		if (i > body.length())
@@ -138,14 +126,9 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			// trying to find a name for the posted result
 			std::string disposition = multiPartHeaderMap["Content-Disposition"];
 			std::cout << "dispostition is [" << disposition << "]\n";
-			std::string uploadFilePath = client->getRequest()->getRoute()->getUploadDirectory() + "/";
+			std::string uploadFilePath = client->getResponse()->getRoutedURL();
 			size_t filenamePos = disposition.find("filename=\"");
-			if (filenamePos != std::string::npos)
-			{
-				size_t filenameEnd = disposition.find("\"", filenamePos + 10);
-				uploadFilePath.append(disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10)));
-			}
-			else if (disposition.find("name=\"") != std::string::npos)
+			if (disposition.find("name=\"") != std::string::npos)
 			{
 				filenamePos = disposition.find("name=\"");
 				size_t filenameEnd = disposition.find("\"", filenamePos + 6);

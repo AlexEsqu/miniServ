@@ -151,9 +151,6 @@ public:
 	e_dataProgress		assembleBody(std::string& chunk);
 	e_dataProgress		assembleChunkedBody(std::string& chunk);
 	e_dataProgress		assembleUnChunkedBody(std::string& chunk);
-
-
-	const Route*		findMatchingRoute();
 };
 
 
