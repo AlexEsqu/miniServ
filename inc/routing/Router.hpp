@@ -27,6 +27,7 @@ public:
 	//----------------- CONSTRUCTORS ---------------------//
 
 	Router();
+	Router(const Router& other);
 
 	//----------------- DESTRUCTOR -----------------------//
 
@@ -42,6 +43,10 @@ public:
 
 	bool			isDirectory(const std::string& path) const;
 	bool			isValidFilePath(const std::string& path) const;
+	bool			isRootPath(const std::string& uri) const;
+	bool			hasStartingSlash(const std::string& uri) const;
+	bool			hasTrailingSlash(const std::string& uri) const;
+	std::string		joinPaths(const std::string& base, const std::string& path) const;
 	std::string		replaceRoutePathByRootDirectory(const std::string& url, const Route* route) const;
 	std::string		replaceRoutePathByUploadDirectory(const std::string& url, const Route* route) const;
 
@@ -49,10 +54,10 @@ public:
 
 	const Route*	findMatchingRoute(const std::string& requestPath, const ServerConf& conf) const;
 	void			routeRequest(Request* request, Response* response);
-	void			validateRequest(Request* request, Response* response);
-	std::string		routeFilePathToGet(const std::string& url, const Route* route) const;
-	std::string		routeFilePathToGetAsDirectory(std::string routedPath, const Route* route) const;
-	std::string		routeFilePathToPost(const std::string& url, const Route* route) const;
+	void			validateRequestWithRoute(Request* request, Response* response);
+	std::string		routeFilePathForGet(const std::string& url, const Route* route) const;
+	std::string		routeFilePathForGetAsDirectory(std::string routedPath, const Route* route) const;
+	std::string		routeFilePathForPost(const std::string& url, const Route* route) const;
 };
 
 #endif

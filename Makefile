@@ -20,6 +20,7 @@ DIR_POLL			=	polling
 DIR_CONF			=	config
 DIR_SIG				=	signal
 DIR_BUFF			=	buffer
+DIR_ROU				=	routing
 
 #----- SOURCE FILES -----------------------------------------------------------#
 
@@ -33,6 +34,7 @@ FUNC_CONF			=	ServerConf.cpp Route.cpp
 FUNC_POLL			=	Sockette.cpp ClientSocket.cpp ServerSocket.cpp Poller.cpp
 FUNC_SIG			=	signal.cpp
 FUNC_BUFF			=	Buffer.cpp FileHandler.cpp
+FUNC_ROU			=	Router.cpp
 
 FUNC				=	$(addprefix $(DIR_FILL)/, $(FUNC_FILL)) \
 						$(addprefix $(DIR_ENCOD)/, $(FUNC_ENCOD)) \
@@ -43,10 +45,12 @@ FUNC				=	$(addprefix $(DIR_FILL)/, $(FUNC_FILL)) \
 						$(addprefix $(DIR_SIG)/, $(FUNC_SIG)) \
 						$(addprefix $(DIR_CONF)/, $(FUNC_CONF)) \
 						$(addprefix $(DIR_BUFF)/, $(FUNC_BUFF)) \
+						$(addprefix $(DIR_ROU)/, $(FUNC_ROU)) \
 						main.cpp
 
 DIRS				=	$(DIR_FILL) $(DIR_ENCOD) $(DIR_DECOD) $(DIR_PARS) \
-						$(DIR_EXEC) $(DIR_POLL) $(DIR_SIG) $(DIR_CONF) $(DIR_BUFF)
+						$(DIR_EXEC) $(DIR_POLL) $(DIR_SIG) $(DIR_CONF) \
+						$(DIR_BUFF) $(DIR_ROU)
 
 SRC					=	$(addprefix $(SRC_DIR)/, $(FUNC))
 
@@ -68,7 +72,8 @@ OBJ_DIRS			= 	$(OBJ_DIR) \
 						$(OBJ_DIR)/$(DIR_SIG) \
 						$(OBJ_DIR)/$(DIR_HAND) \
 						$(OBJ_DIR)/$(DIR_CONF) \
-						$(OBJ_DIR)/$(DIR_BUFF)
+						$(OBJ_DIR)/$(DIR_BUFF) \
+						$(OBJ_DIR)/$(DIR_ROU)
 
 OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 

@@ -2,7 +2,7 @@
 
 void ContentFetcher::getItemFromServer(ClientSocket *client)
 {
-	std::cout << "Processing GET request to: " << client->getResponse()->getRoutedURL() << std::endl;
+	verboseLog("Processing GET request to: " + client->getResponse()->getRoutedURL());
 
 	for (size_t i = 0; i < _executors.size(); i++)
 	{
@@ -21,10 +21,7 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
 	std::string fileURL(client->getResponse()->getRoutedURL());
-
-#ifdef DEBUG
-	std::cout << "serving static " << fileURL;
-#endif
+	verboseLog("serving static " + fileURL);
 
 	// Check if the path is a directory
 	if (isDirectory(fileURL.c_str()))
@@ -48,8 +45,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 				return;
 			}
 		}
-
-		std::cerr << ERROR_FORMAT("Directory listing not allowed or failed") << std::endl;
+		verboseLog("Directory listing not allowed or failed");
 		serveErrorPage(client, NOT_FOUND);
 		return;
 	}
@@ -58,7 +54,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 
 	if (!input.is_open() || isDirectory(fileURL.c_str()))
 	{
-		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;
+		verboseLog(ERROR_FORMAT("Could not open file"));
 		serveErrorPage(client, NOT_FOUND);
 		return;
 	}
@@ -71,9 +67,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	client->getResponse()->addToContent(binaryContent);
 	client->getResponse()->createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
-#ifdef DEBUG
-	std::cout << "Filling done\n";
-#endif
+	verboseLog("Filling done");
 }
 
 e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket *client)
@@ -99,7 +93,7 @@ e_dataProgress	ContentFetcher::readCGIChunk(ClientSocket *client)
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 		{
-			std::cout << "nothing in pipe\n";
+			verboseLog("nothing in pipe");
 			return WAITING_FOR_MORE;
 		}
 		else

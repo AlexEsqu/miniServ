@@ -23,7 +23,11 @@ Router::~Router()
 
 Router&		Router::operator=(const Router &other)
 {
-
+	if (&other != this)
+	{
+		;
+	}
+	return (*this);
 }
 
 //---------------------------- GUETTERS -------------------------------------//
@@ -55,10 +59,10 @@ const Route*	Router::findMatchingRoute(const std::string& requestPath, const Ser
 
 	if (result == NULL)
 	{
-		std::cout << "404: No route for: " << requestPath << std::endl;
+		verboseLog("404: No route for: " + requestPath);
 		return NULL;
 	}
-	std::cout << "Route selected: " << result->getURLPath() << std::endl;
+	verboseLog("Route selected: " + result->getURLPath());
 	return result;
 }
 
@@ -67,14 +71,14 @@ void			Router::routeRequest(Request* request, Response* response)
 	const Route* route = request->getRoute();
 	std::string requestedURL = request->getRequestedURL();
 
-	validateRequest(request, response);
+	validateRequestWithRoute(request, response);
 	if (response->hasError())
 		return;
 
 	std::string path;
 	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD)
 	{
-		path = routeFilePathToGet(requestedURL, route);
+		path = routeFilePathForGet(requestedURL, route);
 	}
 	else
 	{
@@ -86,7 +90,7 @@ void			Router::routeRequest(Request* request, Response* response)
 		response->setRoutedUrl(path);
 }
 
-std::string		Router::routeFilePathToGet(const std::string& url, const Route* route) const
+std::string		Router::routeFilePathForGet(const std::string& url, const Route* route) const
 {
 	if (route == NULL)
 		return "";
@@ -98,13 +102,13 @@ std::string		Router::routeFilePathToGet(const std::string& url, const Route* rou
 		return routedURL;
 
 	// else if might be a directory, so check if default file or auto index exist
-	return routeFilePathToGetAsDirectory(routedURL, route);
+	return routeFilePathForGetAsDirectory(routedURL, route);
 }
 
-std::string		Router::routeFilePathToGetAsDirectory(std::string routedURL, const Route* route) const
+std::string		Router::routeFilePathForGetAsDirectory(std::string routedURL, const Route* route) const
 {
 	// a directory uri is acceptable even without a trailing '/' so adding it if missing
-	if (!routedURL.empty() && routedURL.back() != '/')
+	if (!routedURL.empty() && !hasTrailingSlash(routedURL))
 		routedURL += '/';
 
 	// if it is not a directory tho, GET is impossible
@@ -127,15 +131,13 @@ std::string		Router::routeFilePathToGetAsDirectory(std::string routedURL, const 
 		return "";
 }
 
-std::string		Router::routeFilePathToPost(const std::string& url, const Route* route) const
+std::string		Router::routeFilePathForPost(const std::string& url, const Route* route) const
 {
 	if (route == NULL)
 		return "";
 
 	std::string	routedURL = replaceRoutePathByUploadDirectory(url, route);
 }
-
-
 
 //-------------------------- UTILS -----------------------------------//
 
@@ -155,24 +157,35 @@ bool			Router::isValidFilePath(const std::string& path) const
 	return false;
 }
 
-bool			isRootPath(const std::string& uri)
+bool			Router::isRootPath(const std::string& uri) const
 {
 	return uri == "/" || uri.empty();
 }
 
-std::string		joinPaths(const std::string& base, const std::string& path)
+bool			Router::hasStartingSlash(const std::string& uri) const
+{
+	if (uri.empty())
+		return (false);
+	return (uri[0] == '/');
+}
+
+bool			Router::hasTrailingSlash(const std::string& uri) const
+{
+	if (uri.empty())
+		return (false);
+	return (uri[uri.size() - 1] == '/');
+}
+
+std::string		Router::joinPaths(const std::string& base, const std::string& path) const
 {
 	if (base.empty())
 		return path;
 	if (path.empty())
 		return base;
 
-	bool baseEndsWithSlash = base.back() == '/';
-	bool pathStartsWithSlash = path.front() == '/';
-
-	if (baseEndsWithSlash && pathStartsWithSlash)
+	if (hasTrailingSlash(base) && hasStartingSlash(base))
 		return base + path.substr(1);
-	else if (!baseEndsWithSlash && !pathStartsWithSlash)
+	else if (!hasTrailingSlash(base) && !hasStartingSlash(base))
 		return base + '/' + path;
 	else
 		return base + path;
@@ -197,7 +210,7 @@ std::string		Router::replaceRoutePathByUploadDirectory(const std::string& url, c
 }
 
 // checks for the existence of a route, on which many following function depend
-void			Router::validateRequest(Request* request, Response* response)
+void			Router::validateRequestWithRoute(Request* request, Response* response)
 {
 	const Route* route = request->getRoute();
 	std::string requestedURL = request->getRequestedURL();
