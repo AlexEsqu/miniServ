@@ -66,7 +66,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 
 	if (!input.is_open() || isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
 	{
-		std::cerr << MAGENTA << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
+		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
 		//then try to open findFileInDirectory
 	}
 	// if the file is a directory and not routed to a default file
