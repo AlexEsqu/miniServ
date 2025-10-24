@@ -76,7 +76,7 @@ public:
 	void			parseMultiPartBody(ClientSocket* client);
 	void			createPostResponsePage(ClientSocket* client);
 
-	std::string		extractBoundary(std::string contentType);
+	static std::string		extractBoundary(const std::string& contentType);
 
 	// DELETE method
 

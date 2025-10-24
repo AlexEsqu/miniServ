@@ -37,7 +37,7 @@ Router&		Router::operator=(const Router &other)
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-const Route*	Router::findMatchingRoute(const std::string& requestPath, const ServerConf& conf) const
+const Route*	Router::findMatchingRoute(const std::string& requestPath, const ServerConf& conf)
 {
 	const Route*		result = NULL;
 	size_t				lenMatch = 0;
@@ -82,7 +82,7 @@ void			Router::routeRequest(Request* request, Response* response)
 	}
 	else
 	{
-		path = replaceRoutePathByUploadDirectory(requestedURL, route);
+		path = routeFilePathForPost(requestedURL, route);
 	}
 	if (path.empty())
 		response->setError(NOT_FOUND);
@@ -90,7 +90,7 @@ void			Router::routeRequest(Request* request, Response* response)
 		response->setRoutedUrl(path);
 }
 
-std::string		Router::routeFilePathForGet(const std::string& url, const Route* route) const
+std::string		Router::routeFilePathForGet(const std::string& url, const Route* route)
 {
 	if (route == NULL)
 		return "";
@@ -105,7 +105,7 @@ std::string		Router::routeFilePathForGet(const std::string& url, const Route* ro
 	return routeFilePathForGetAsDirectory(routedURL, route);
 }
 
-std::string		Router::routeFilePathForGetAsDirectory(std::string routedURL, const Route* route) const
+std::string		Router::routeFilePathForGetAsDirectory(std::string routedURL, const Route* route)
 {
 	// a directory uri is acceptable even without a trailing '/' so adding it if missing
 	if (!routedURL.empty() && !hasTrailingSlash(routedURL))
@@ -131,17 +131,19 @@ std::string		Router::routeFilePathForGetAsDirectory(std::string routedURL, const
 		return "";
 }
 
-std::string		Router::routeFilePathForPost(const std::string& url, const Route* route) const
+std::string		Router::routeFilePathForPost(const std::string& url, const Route* route)
 {
 	if (route == NULL)
 		return "";
 
 	std::string	routedURL = replaceRoutePathByUploadDirectory(url, route);
+
+	return (routedURL);
 }
 
 //-------------------------- UTILS -----------------------------------//
 
-bool			Router::isDirectory(const std::string& path) const
+bool			Router::isDirectory(const std::string& path)
 {
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) != 0)
@@ -149,7 +151,7 @@ bool			Router::isDirectory(const std::string& path) const
 	return S_ISDIR(path_stat.st_mode);
 }
 
-bool			Router::isValidFilePath(const std::string& path) const
+bool			Router::isValidFilePath(const std::string& path)
 {
 	std::ifstream in(path.c_str(), std::ios::binary);
 	if (in.is_open() && !isDirectory(path))
@@ -157,41 +159,41 @@ bool			Router::isValidFilePath(const std::string& path) const
 	return false;
 }
 
-bool			Router::isRootPath(const std::string& uri) const
+bool			Router::isRootPath(const std::string& uri)
 {
 	return uri == "/" || uri.empty();
 }
 
-bool			Router::hasStartingSlash(const std::string& uri) const
+bool			Router::hasStartingSlash(const std::string& uri)
 {
 	if (uri.empty())
 		return (false);
 	return (uri[0] == '/');
 }
 
-bool			Router::hasTrailingSlash(const std::string& uri) const
+bool			Router::hasTrailingSlash(const std::string& uri)
 {
 	if (uri.empty())
 		return (false);
 	return (uri[uri.size() - 1] == '/');
 }
 
-std::string		Router::joinPaths(const std::string& base, const std::string& path) const
+std::string		Router::joinPaths(const std::string& base, const std::string& path)
 {
 	if (base.empty())
 		return path;
 	if (path.empty())
 		return base;
 
-	if (hasTrailingSlash(base) && hasStartingSlash(base))
+	if (hasTrailingSlash(base) && hasStartingSlash(path))
 		return base + path.substr(1);
-	else if (!hasTrailingSlash(base) && !hasStartingSlash(base))
+	else if (!hasTrailingSlash(base) && !hasStartingSlash(path))
 		return base + '/' + path;
 	else
 		return base + path;
 }
 
-std::string		Router::replaceRoutePathByRootDirectory(const std::string& url, const Route* route) const
+std::string		Router::replaceRoutePathByRootDirectory(const std::string& url, const Route* route)
 {
 	std::string	result = url;
 
@@ -200,7 +202,7 @@ std::string		Router::replaceRoutePathByRootDirectory(const std::string& url, con
 	return result;
 }
 
-std::string		Router::replaceRoutePathByUploadDirectory(const std::string& url, const Route* route) const
+std::string		Router::replaceRoutePathByUploadDirectory(const std::string& url, const Route* route)
 {
 	std::string	result = url;
 
@@ -212,12 +214,9 @@ std::string		Router::replaceRoutePathByUploadDirectory(const std::string& url, c
 // checks for the existence of a route, on which many following function depend
 void			Router::validateRequestWithRoute(Request* request, Response* response)
 {
-	const Route* route = request->getRoute();
-	std::string requestedURL = request->getRequestedURL();
-
-	if (route == NULL)
+	if (request->getRoute() == NULL)
 		response->setError(NOT_FOUND);
 
-	else if (!route->isAllowedMethod(request->getMethodAsString()))
+	else if (!request->getRoute()->isAllowedMethod(request->getMethodAsString()))
 		response->setError(METHOD_NOT_ALLOWED);
 }

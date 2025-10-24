@@ -748,56 +748,14 @@ TEST_CASE("ContentPOSTER - Boundary Extraction Helper") {
 	SUBCASE("Extract boundary from Content-Type header") {
 		std::string contentTypeHeader = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW";
 
-		// Function to extract boundary
-		std::string extractBoundary(const std::string& contentType) {
-			size_t boundaryPos = contentType.find("boundary=");
-			if (boundaryPos == std::string::npos) {
-				return "";
-			}
-
-			size_t boundaryStart = boundaryPos + 9; // length of "boundary="
-			size_t boundaryEnd = contentType.find(";", boundaryStart);
-			if (boundaryEnd == std::string::npos) {
-				boundaryEnd = contentType.length();
-			}
-
-			return contentType.substr(boundaryStart, boundaryEnd - boundaryStart);
-		}
-
-		std::string boundary = extractBoundary(contentTypeHeader);
+		std::string boundary = ContentFetcher::extractBoundary(contentTypeHeader);
 		CHECK(boundary == "----WebKitFormBoundary7MA4YWxkTrZu0gW");
 	}
 
 	SUBCASE("Boundary with quotes") {
 		std::string contentTypeHeader = "multipart/form-data; boundary=\"----WebKitBoundaryQuoted\"";
 
-		std::string extractBoundary(const std::string& contentType) {
-			size_t boundaryPos = contentType.find("boundary=");
-			if (boundaryPos == std::string::npos) {
-				return "";
-			}
-
-			size_t boundaryStart = boundaryPos + 9;
-
-			// Handle quoted boundary
-			if (contentType[boundaryStart] == '"') {
-				boundaryStart++;
-				size_t boundaryEnd = contentType.find("\"", boundaryStart);
-				if (boundaryEnd != std::string::npos) {
-					return contentType.substr(boundaryStart, boundaryEnd - boundaryStart);
-				}
-			}
-
-			// Unquoted boundary
-			size_t boundaryEnd = contentType.find(";", boundaryStart);
-			if (boundaryEnd == std::string::npos) {
-				boundaryEnd = contentType.length();
-			}
-
-			return contentType.substr(boundaryStart, boundaryEnd - boundaryStart);
-		}
-
-		std::string boundary = extractBoundary(contentTypeHeader);
+		std::string boundary = ContentFetcher::extractBoundary(contentTypeHeader);
 		CHECK(boundary == "----WebKitBoundaryQuoted");
 	}
 }

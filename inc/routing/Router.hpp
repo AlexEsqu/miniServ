@@ -41,23 +41,23 @@ public:
 
 	// UTILS
 
-	bool			isDirectory(const std::string& path) const;
-	bool			isValidFilePath(const std::string& path) const;
-	bool			isRootPath(const std::string& uri) const;
-	bool			hasStartingSlash(const std::string& uri) const;
-	bool			hasTrailingSlash(const std::string& uri) const;
-	std::string		joinPaths(const std::string& base, const std::string& path) const;
-	std::string		replaceRoutePathByRootDirectory(const std::string& url, const Route* route) const;
-	std::string		replaceRoutePathByUploadDirectory(const std::string& url, const Route* route) const;
+	static bool			isDirectory(const std::string& path) ;
+	static bool			isValidFilePath(const std::string& path) ;
+	static bool			isRootPath(const std::string& uri) ;
+	static bool			hasStartingSlash(const std::string& uri) ;
+	static bool			hasTrailingSlash(const std::string& uri) ;
+	static std::string	joinPaths(const std::string& base, const std::string& path) ;
+	static std::string	replaceRoutePathByRootDirectory(const std::string& url, const Route* route) ;
+	static std::string	replaceRoutePathByUploadDirectory(const std::string& url, const Route* route) ;
 
 	// File path resolution methods
 
-	const Route*	findMatchingRoute(const std::string& requestPath, const ServerConf& conf) const;
-	void			routeRequest(Request* request, Response* response);
-	void			validateRequestWithRoute(Request* request, Response* response);
-	std::string		routeFilePathForGet(const std::string& url, const Route* route) const;
-	std::string		routeFilePathForGetAsDirectory(std::string routedPath, const Route* route) const;
-	std::string		routeFilePathForPost(const std::string& url, const Route* route) const;
+	static const Route*	findMatchingRoute(const std::string& requestPath, const ServerConf& conf) ;
+	static void			routeRequest(Request* request, Response* response);
+	static void			validateRequestWithRoute(Request* request, Response* response);
+	static std::string	routeFilePathForGet(const std::string& url, const Route* route) ;
+	static std::string	routeFilePathForGetAsDirectory(std::string routedPath, const Route* route) ;
+	static std::string	routeFilePathForPost(const std::string& url, const Route* route) ;
 };
 
 #endif

@@ -36,7 +36,7 @@ std::string	ContentFetcher::findUploadFilepath(const Route *route, const std::st
 	return (uploadFilepath);
 }
 
-std::string	ContentFetcher::extractBoundary(std::string contentType)
+std::string	ContentFetcher::extractBoundary(const std::string& contentType)
 {
 	return (contentType.substr(contentType.find("=") + 1, contentType.size()));
 }
