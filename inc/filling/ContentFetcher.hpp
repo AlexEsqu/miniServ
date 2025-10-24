@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <sys/stat.h>
+#include <dirent.h>
+#include <algorithm>
 
 #include "Response.hpp"
 #include "Executor.hpp"
@@ -36,6 +38,7 @@ private:
 	size_t			getSizeOfFile(const std::string& filename);
 	std::string		getTypeBasedOnExtension(const std::string& filePath);
 	std::string 	getExtensionFromType(const std::string &type);
+	std::string		findFileInDirectory(std::string directory, std::string filename);
 
 public:
 

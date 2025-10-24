@@ -18,7 +18,7 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 	serveStatic(client);
 }
 
-std::string ContentFetcher::findFileInDirectory(std::string directory, std::string filename)
+std::string ContentFetcher::findFileInDirectory(std::string directory, std::string filename) // EX "/upload", "picture" => picture.jpeg
 {
     DIR *dir;
     struct dirent *ent;
@@ -53,7 +53,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 {
 	std::string fileURL(client->getResponse()->getRoutedURL());
 	size_t filenamePos = fileURL.find_last_of('/');
-		std::cout << GREEN << "filename pos: " << filenamePos << STOP_COLOR << std::endl;
+	std::cout << GREEN << "fileURL: " << fileURL << STOP_COLOR << std::endl;
 
 	std::string filename;
 	if (filenamePos != std::string::npos)
@@ -64,7 +64,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 #endif
 
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
-	if (!input.is_open() || isDirectory(fileURL.c_str())) // test with extension
+	if (!input.is_open() || isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
 	{
 		std::cerr << MAGENTA << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
 		std::cerr << ERROR_FORMAT("Could not open file") << std::endl;

@@ -211,7 +211,8 @@ void	Request::setRequestLine(std::string &requestLine)
 	setMethod(trim(splitRequestLine[0]));
 	setURI(trim(splitRequestLine[1]));
 	setProtocol(trim(splitRequestLine[2]));
-
+	if(_URI == "/upload/picture" && _methodAsString == "GET")
+		std::cout << std::endl;
 	std::cout << _methodAsString << " " << _URI << " ";
 }
 
