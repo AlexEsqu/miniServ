@@ -26,7 +26,7 @@ public:
 
 	//------------------- OPERATORS ----------------------//
 
-	ConfigParser& operator=(const ConfigParser& other);
+	ConfigParser&		operator=(const ConfigParser& other);
 
 
 	//--------------- MEMBER FUNCTIONS -------------------//

@@ -61,6 +61,11 @@ Poller&					ServerSocket::getEpoll()
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
+void			ServerSocket::handleConnection(epoll_event)
+{
+	acceptNewConnection();
+}
+
 void			ServerSocket::acceptNewConnection()
 {
 	// allocating new acccepting socket to be used
@@ -87,17 +92,17 @@ void			ServerSocket::acceptNewConnection()
 
 void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 {
-	#ifdef DEBUG
+	// #ifdef DEBUG
 		std::cout << ERROR_FORMAT("\n++++ Removing Client Socket ";
 		std::cout  << clientSocket->getSocketFd() << " ++++ \n");
-	#endif
+	// #endif
 
 	if (_clients.find(clientSocket->getSocketFd()) != _clients.end())
+	{
 		_clients.erase(clientSocket->getSocketFd());
-
-	_poller.removeSocket(clientSocket);
-
-	delete clientSocket;
+		_poller.removeSocket(clientSocket);
+		delete clientSocket;
+	}
 }
 
 // Client generally receives data from web user to parse into a request
@@ -125,6 +130,8 @@ void			ServerSocket::sendDataIfComplete(ClientSocket* client)
 {
 	if (client->hasFilledResponse())
 	{
+		client->updateLastEventTime();
+
 		client->sendResponse();
 
 		if (client->hasSentResponse())
@@ -154,6 +161,7 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 	catch ( std::exception &e )
 	{
 		std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n") << e.what() << "\n";
+
 		removeConnection(client);
 	}
 }
@@ -163,10 +171,43 @@ void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 	if (socket->getRequest()->isKeepAlive())
 	{
 		socket->resetRequest();
+		socket->updateLastEventTime();
 		_poller.setPollingMode(READING, socket);
 	}
 	else
 		removeConnection(socket);
+}
+
+// checks all client sockets, remove the one who did not set off any events in a while
+void		ServerSocket::timeoutIdleClients()
+{
+	if (_clients.empty())
+		return;
+
+	time_t						currentTime = std::time(NULL);
+	std::vector<ClientSocket*>	clientsToRemove;
+
+	for (std::map<int, ClientSocket*>::iterator it = _clients.begin();
+		it != _clients.end(); ++it)
+	{
+		ClientSocket* client = it->second;
+		time_t idleTime = currentTime - client->getLastEventTime();
+
+		std::cout << "Client " << client->getSocketFd()
+					<< " idle for " << idleTime
+					<< " seconds." << std::endl;
+
+		if (idleTime > TIMEOUT_CONNECTION && client->hasRequest()
+			&& (client->getClientState() == CLIENT_FILLING || client->getClientState() == CLIENT_PARSING))
+		{
+			std::cout << "Timeout: " << TIMEOUT_CONNECTION << std::endl;
+			std::cout << "Removing stuck socket " << std::endl;
+			clientsToRemove.push_back(client);
+		}
+	}
+	// remove in separate vector to avoid iterator decay (took me two segfault...)
+	for (size_t i = 0; i < clientsToRemove.size(); ++i)
+		removeConnection(clientsToRemove[i]);
 }
 
 // socket is ready to receive data or hanging up (recv 0 byte)

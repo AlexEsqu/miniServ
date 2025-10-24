@@ -75,9 +75,4 @@ public:
 
 	std::string		fetchErrorPageContent(const Status &num);
 	void			addToContent(std::string contentChunk);
-
-	void			routeToDefaultFiles(std::string& url, const Route* route, std::string& root);
-	void			routeToFilePath(std::string& url, const Route* route, std::string& root);
-	void			routeUrlForGet(std::string url);
-	void			routeUrlForPostDel(std::string url);
 };

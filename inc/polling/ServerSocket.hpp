@@ -9,6 +9,8 @@
 #include "PythonExecutor.hpp"
 #include "Poller.hpp"
 
+static const time_t	TIMEOUT_CONNECTION = 10;
+
 class ClientSocket;
 
 class Poller;
@@ -45,11 +47,15 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
+	void				handleConnection(epoll_event event);
+
 	void				acceptNewConnection();
 	void				removeConnection(ClientSocket* clientSocket);
 	void				handleExistingConnection(ClientSocket* client, epoll_event &event);
 
 	void				closeConnectionOrCleanAndKeepAlive(ClientSocket* client);
+	void				timeoutIdleClients();
+
 	void				receiveAndParseData(ClientSocket* client);
 	void				sendDataIfComplete(ClientSocket* client);
 

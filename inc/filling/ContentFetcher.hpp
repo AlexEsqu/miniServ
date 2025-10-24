@@ -3,12 +3,14 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <iomanip>
 #include <algorithm>
 
 #include "Response.hpp"
 #include "Executor.hpp"
 #include "ServerSocket.hpp"
 #include "ClientSocket.hpp"
+#include "Router.hpp"
 
 class Poller;
 
@@ -65,6 +67,8 @@ public:
 
 	void			getItemFromServer(ClientSocket* client);
 	void			serveStatic(ClientSocket* client);
+	void			serveDirectoryListing(ClientSocket* client, std::string& fileURL);
+	std::string		createDirectoryListing(const std::string& path, const std::string& requestUri);
 
 	// POST method
 
@@ -76,7 +80,7 @@ public:
 	void			parseMultiPartBody(ClientSocket* client);
 	void			createPostResponsePage(ClientSocket* client);
 
-	std::string		extractBoundary(std::string contentType);
+	static std::string		extractBoundary(const std::string& contentType);
 
 	// DELETE method
 

@@ -29,21 +29,29 @@ std::string& ltrim(std::string& s)
 }
 
 // trim from both ends of string (right then left)
-std::string& trim(std::string& s)
+std::string&	trim(std::string& s)
 {
 	return ltrim(rtrim(s));
 }
 
-std::string strToUpper(std::string& s)
+std::string		strToUpper(std::string& s)
 {
 	for (size_t i = 0; i < s.length(); i++)
 		s[i] = toupper(s[i]);
 	return s;
 }
 
-std::string strToLower(std::string& s)
+std::string		strToLower(std::string& s)
 {
 	for (size_t i = 0; i < s.length(); i++)
 		s[i] = tolower(s[i]);
 	return (s);
+}
+
+void			verboseLog(std::string message)
+{
+	(void)message;
+	#ifdef DEBUG
+	std::cout << message << std::endl;
+	#endif
 }

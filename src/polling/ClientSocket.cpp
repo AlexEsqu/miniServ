@@ -8,6 +8,7 @@ ClientSocket::ClientSocket(ServerSocket &server)
 	, _request(NULL)
 	, _isReadingFromPipe(false)
 	, _clientState(CLIENT_CONNECTED)
+	, _lastEventTime(std::time(NULL))
 {
 // #ifdef DEBUG
 // 	std::cerr << "ClientSocket Constructor called" << std::endl;
@@ -33,14 +34,19 @@ ClientSocket::ClientSocket(ServerSocket &server)
 
 ClientSocket::~ClientSocket()
 {
-	if (_request)
+	if (_request) {
 		delete _request;
-	_request = NULL;
-	if (_response)
+		_request = NULL;
+	}
+
+	if (_response) {
 		delete _response;
-	_response = NULL;
+		_response = NULL;
+	}
+
 	if (_isReadingFromPipe)
 		close(_readingEndOfCgiPipe);
+
 	close(getSocketFd());
 }
 
@@ -48,13 +54,23 @@ ClientSocket::~ClientSocket()
 
 void	ClientSocket::resetRequest()
 {
-	delete _request;
-	_request = NULL;
+	if (_request)
+	{
+		delete _request;
+		_request = NULL;
+	}
+
+	if (_response)
+	{
+		delete _response;
+		_response = NULL;
+	}
 }
 
 void	ClientSocket::setClientState(e_clientState state)
 {
 	_clientState = state;
+	updateLastEventTime();
 }
 
 //------------------------------ GETTER --------------------------------------//
@@ -79,14 +95,19 @@ Response*	ClientSocket::getResponse()
 	return (_response);
 }
 
-int	ClientSocket::getCgiPipeFd()
+int				ClientSocket::getCgiPipeFd()
 {
 	return (_readingEndOfCgiPipe);
 }
 
-e_clientState ClientSocket::getClientState() const
+e_clientState	ClientSocket::getClientState() const
 {
 	return _clientState;
+}
+
+time_t			ClientSocket::getLastEventTime() const
+{
+	return _lastEventTime;
 }
 
 bool	ClientSocket::hasRequest() const
@@ -129,6 +150,12 @@ bool	ClientSocket::isReadingFromPipe() const
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
+void	ClientSocket::handleConnection(epoll_event event)
+{
+	getServer().handleExistingConnection(this, event);
+}
+
+
 void	ClientSocket::createNewResponse()
 {
 	_response = new Response(getRequest());
@@ -136,8 +163,10 @@ void	ClientSocket::createNewResponse()
 
 void	ClientSocket::deleteResponse()
 {
-	delete _response;
-	_response = NULL;
+	if (_response) {
+		delete _response;
+		_response = NULL;
+	}
 }
 
 // adds pipe to epoll to monitor, and read from the pipe
@@ -148,6 +177,7 @@ void	ClientSocket::startReadingPipe(int pipeFd)
 	std::cout << "Adding CGI pipe to epoll: " << pipeFd << std::endl;
 	#endif
 
+	updateLastEventTime();
 	_readingEndOfCgiPipe = pipeFd;
 	getServer().getEpoll().addPipe(this, pipeFd);
 	_isReadingFromPipe = true;
@@ -186,6 +216,8 @@ void	ClientSocket::readRequest()
 	#ifdef DEBUG
 		std::cout << "\nClient Socket " << getSocketFd();
 	#endif
+
+	updateLastEventTime();
 
 	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, 0);
 	checkForReadError(valread);
@@ -239,6 +271,11 @@ void	ClientSocket::sendResponse()
 		setClientState(CLIENT_HAS_SENT);
 
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
+}
+
+void		ClientSocket::updateLastEventTime()
+{
+	_lastEventTime = std::time(NULL);
 }
 
 

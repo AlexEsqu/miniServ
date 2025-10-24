@@ -1,5 +1,6 @@
 #include "Sockette.hpp"
-#include <sys/epoll.h>
+#include "ClientSocket.hpp"
+
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
@@ -129,12 +130,12 @@ void			Sockette::bindToIPAddress()
 	}
 }
 
-void			Sockette::acceptConnectionFrom(Sockette ConnectingSocket)
+void			Sockette::acceptConnectionFrom(ClientSocket* ConnectingSocket)
 {
-	int addrlen = sizeof(ConnectingSocket.getSocketAddr());
+	int addrlen = sizeof(ConnectingSocket->getSocketAddr());
 
-	_socketFd = accept(ConnectingSocket.getSocketFd(), \
-		(struct sockaddr *)ConnectingSocket.getSocketAddr(), \
+	_socketFd = accept(ConnectingSocket->getSocketFd(), \
+		(struct sockaddr *)ConnectingSocket->getSocketAddr(), \
 		(socklen_t *)&addrlen);
 
 	if (_socketFd < 0)

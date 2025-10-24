@@ -8,8 +8,8 @@
 #include "Request.hpp"
 #include "Response.hpp"
 
-#define BUFFSIZE 64000
-#define END_OF_HEADER_STR "\r\n\r\n"
+static const size_t			BUFFSIZE = 64000;
+static const std::string	END_OF_HEADER_STR = "\r\n\r\n";
 
 enum e_clientState {
 	CLIENT_CONNECTED,	// Initial connection established
@@ -39,6 +39,7 @@ private:
 	int					_readingEndOfCgiPipe;
 
 	e_clientState		_clientState;
+	time_t				_lastEventTime;
 
 public:
 
@@ -61,12 +62,15 @@ public:
 	ServerSocket&		getServer();
 	Response*			getResponse();
 	int					getCgiPipeFd();
+	time_t				getLastEventTime() const;
 
 	e_clientState		getClientState() const;
 
 	bool				isReadingFromPipe() const;
 
 	//----------------- MEMBER FUNCTION ------------------//
+
+	void				handleConnection(epoll_event event);
 
 	void				checkForReadError(int valread);
 
@@ -82,5 +86,6 @@ public:
 	bool				hasFilledResponse() const;
 	bool				hasSentResponse() const;
 	void				resetRequest();
+	void				updateLastEventTime();
 
 };

@@ -232,9 +232,7 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 		if (key == "content-type")
 			setContentType(value);
 
-		#ifdef DEBUG
-			std::cout << "Header: [" << key << "] = [" << value << "]\n";
-		#endif
+		verboseLog("Header: [" + key + "] = [" + value + "]");
 	}
 }
 
@@ -242,9 +240,9 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 void	Request::setError(e_status statusCode)
 {
 	_status.setStatusCode(statusCode);
-	#ifdef DEBUG
-		std::cerr << "Setting error at " << statusCode << "\n";
-	#endif
+	std::ostringstream oss;
+	oss << "Setting error at " << statusCode;
+	verboseLog(oss.str());
 }
 
 // sets the Status object to error code WITHOUT raising the error flag
@@ -280,7 +278,7 @@ void			Request::checkMethodIsAllowed()
 
 void			Request::validateRequestLine()
 {
-	_route = findMatchingRoute();
+	_route = Router::findMatchingRoute(_URI, _conf);
 	checkMethodIsAllowed();
 }
 
@@ -370,39 +368,6 @@ void	Request::addRequestChunk(std::string chunk)
 				return;
 		}
 	}
-}
-
-// Matching route is required at the parsing stage to know if a request is using a valid method
-const Route*	Request::findMatchingRoute()
-{
-	const Route* result = NULL;
-	size_t lenMatch = 0;
-
-	std::string requestPath = getRequestedURL();
-
-	for (size_t i = 0; i < getConf().getRoutes().size(); i++)
-	{
-		const Route& route = getConf().getRoutes()[i];
-
-		if (route.isPathMatch(requestPath))
-		{
-			std::string routePath = route.getURLPath();
-			if (routePath.size() > lenMatch)
-			{
-				lenMatch = routePath.size();
-				result = &route;
-			}
-		}
-	}
-	if (result == NULL)
-	{
-		std::cout << RED << "404: No route for: " + requestPath << STOP_COLOR;
-		setError(NOT_FOUND);
-		return NULL;
-	}
-
-	std::cout << GREEN << "Route selected: " + result->getURLPath() << "\n" << STOP_COLOR;
-	return result;
 }
 
 // It is not necessary to parse a body if the request is a GET or HEAD

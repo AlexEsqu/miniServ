@@ -1,13 +1,14 @@
 #pragma once
 # include <iostream>
 # include <sys/socket.h>
-#include <sys/epoll.h>
+# include <sys/epoll.h>
 # include <netinet/in.h>
 # include <cstring>
 # include <unistd.h>
 # include <fcntl.h>
 # include <cstdio>
 
+class ClientSocket;
 
 # define MAX_EVENTS 10
 # define MAX_SOCKET 10
@@ -34,7 +35,7 @@ public:
 
 	//----------------- DESTRUCTOR -----------------------//
 
-	~Sockette();
+	virtual ~Sockette();
 
 	//------------------- OPERATORS ----------------------//
 
@@ -60,7 +61,8 @@ public:
 	void				setSocketNonBlocking();
 	void				bindToIPAddress();
 	void				setListenMode(int maxQueue);
-	void				acceptConnectionFrom(Sockette ConnectingSocket);
+	void				acceptConnectionFrom(ClientSocket* client);
+	virtual void		handleConnection(epoll_event event) = 0;
 
 	//------------------ EXCEPTIONS ----------------------//
 

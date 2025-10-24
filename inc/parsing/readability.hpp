@@ -24,5 +24,6 @@
 
 # define CONNEX_FORMAT(msg) CYAN msg STOP_COLOR
 
+void	verboseLog(std::string message);
 
 #endif

@@ -20,10 +20,10 @@ class Poller
 
 private:
 
-	int						_epollFd;
-	int						_eventsReadyForProcess;
-	struct epoll_event		_eventQueue[MAX_EVENTS];
-	std::set<int>			_listeningSockets;
+	int							_epollFd;
+	int							_eventsReadyForProcess;
+	struct epoll_event			_eventQueue[MAX_EVENTS];
+	std::vector<ServerSocket*>	_serverList;			// for timeout reaping
 
 public:
 
@@ -42,7 +42,6 @@ public:
 	//----------------------- GETTER ---------------------//
 
 	int					getEpoll() const;
-	bool				isServerSocket(Sockette* socket);
 
 	//----------------- MEMBER FUNCTION ------------------//
 

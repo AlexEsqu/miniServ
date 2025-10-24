@@ -31,7 +31,7 @@ void	Poller::addSocket(Sockette& socket)
 void	Poller::addServerSocket(ServerSocket& socket)
 {
 	addSocket(socket);
-	_listeningSockets.insert(socket.getSocketFd());
+	_serverList.push_back(&socket);
 }
 
 // necessary when using epoll to avoid a non filled pipe to make the whole server hang
@@ -100,7 +100,8 @@ void Poller::setPollingMode(e_pollingMode mode, ClientSocket* socket)
 
 void	Poller::waitForEvents()
 {
-	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, -1);
+	// waiting on event for 5 seconds (non blocking to check for timeouts)
+	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, 5000);
 	if (_eventsReadyForProcess == -1)
 	{
 		if (errno == EINTR)
@@ -126,9 +127,6 @@ void	Poller::removeSocket(Sockette* socket)
 
 	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, socket->getSocketFd(), NULL) == -1)
 		throw failedEpollCtl();
-
-	if (_listeningSockets.find(socket->getSocketFd()) != _listeningSockets.end())
-		_listeningSockets.erase(socket->getSocketFd());
 }
 
 void	Poller::updateSocketEvent(Sockette* socket)
@@ -137,29 +135,13 @@ void	Poller::updateSocketEvent(Sockette* socket)
 		throw failedEpollCtl();
 }
 
-bool 	Poller::isServerSocket(Sockette* socket)
-{
-	if (_listeningSockets.find(socket->getSocketFd()) != _listeningSockets.end())
-		return true;
-	else
-		return false;
-}
-
 void	Poller::processEvents()
 {
 	for (int i = 0; i < _eventsReadyForProcess; ++i)
 	{
 		Sockette*	currentSocket = static_cast<Sockette*>(_eventQueue[i].data.ptr);
 
-		if (isServerSocket(currentSocket))
-		{
-			static_cast<ServerSocket*>(currentSocket)->acceptNewConnection();
-		}
-		else
-		{
-			static_cast<ClientSocket*>(currentSocket)->getServer()
-				.handleExistingConnection(static_cast<ClientSocket*>(currentSocket), _eventQueue[i]);
-		}
+		currentSocket->handleConnection(_eventQueue[i]);
 	}
 }
 
@@ -168,6 +150,9 @@ void	Poller::launchEpollListenLoop()
 	// std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
 	waitForEvents();
 	processEvents();
+
+	for (size_t i = 0; i < _serverList.size(); i++)
+		_serverList[i]->timeoutIdleClients();
 }
 
 //--------------------------- EXCEPTIONS ------------------------------------//

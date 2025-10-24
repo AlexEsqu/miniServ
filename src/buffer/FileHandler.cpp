@@ -39,8 +39,8 @@ FileHandler::FileHandler(const FileHandler& original)
 
 FileHandler::~FileHandler()
 {
-	if (!_isPermanent)
-		std::remove(_filePath.c_str());
+	// if (!_isPermanent)
+	// 	std::remove(_filePath.c_str());
 }
 
 //----------------------------- OPERATOR -------------------------------------//
