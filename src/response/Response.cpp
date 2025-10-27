@@ -70,6 +70,11 @@ void Response::setContent(std::string content)
 	_responsePage.writeToBuffer(content);
 }
 
+void Response::setHeader(std::string key, std::string value)
+{
+	_mapOfHeadersToBeAdded[key] = value;
+}
+
 void Response::setRequest(Request *request)
 {
 	_request = request;

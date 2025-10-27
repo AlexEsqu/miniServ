@@ -18,6 +18,9 @@ private:
 	Status&				_status;
 
 	std::string			_routedPath;
+	std::map
+		<std::string,
+		std::string>	_mapOfHeadersToBeAdded;
 
 	std::string			_contentType;
 	size_t				_contentLength;
@@ -50,6 +53,7 @@ public:
 	void			setStatus(e_status number);
 	void			setError(e_status number);
 
+	void			setHeader(std::string key, std::string value);
 	void			setContent(std::string content);
 
 	void			setRoutedUrl(std::string url);

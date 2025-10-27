@@ -211,8 +211,8 @@ void ContentFetcher::fillResponse(ClientSocket *client)
 		postItemFromServer(client);
 	else if (request->getMethodCode() == DELETE)
 		deleteItemFromServer(client);
-	// else if (request.getMethodCode() == PUT)
-	//	postItemFromServer(client);
-	// else if (request.getMethodCode() == HEAD)
-	//	getItemFromServer(client);
+	else if (request->getMethodCode() == PUT)
+		postItemFromServer(client);
+	else if (request->getMethodCode() == HEAD)
+		getItemFromServer(client);
 }

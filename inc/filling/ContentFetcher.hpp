@@ -70,8 +70,6 @@ public:
 	// POST method
 
 	void			postItemFromServer(ClientSocket* client);
-	// void			handleFormSubmission(ClientSocket* client);
-	// std::string		findUploadFilepath(const Route *route, const std::string &uri);
 	void			parseBodyDataAndUpload(ClientSocket* client);
 	void			parseUrlEncodedBody(ClientSocket* client);
 	void			parseMultiPartBody(ClientSocket* client);
@@ -83,6 +81,10 @@ public:
 	// DELETE method
 
 	void			deleteItemFromServer(ClientSocket* client);
+
+	// HEAD method
+
+	void			headItemFromServer(ClientSocket* client);
 
 	// Execution
 
