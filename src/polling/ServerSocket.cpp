@@ -193,9 +193,9 @@ void		ServerSocket::timeoutIdleClients()
 		ClientSocket* client = it->second;
 		time_t idleTime = currentTime - client->getLastEventTime();
 
-		std::cout << "Client " << client->getSocketFd()
-					<< " idle for " << idleTime
-					<< " seconds." << std::endl;
+		// std::cout << "Client " << client->getSocketFd()
+		// 			<< " idle for " << idleTime
+		// 			<< " seconds." << std::endl;
 
 		if (idleTime > TIMEOUT_CONNECTION && client->hasRequest()
 			&& (client->getClientState() == CLIENT_FILLING || client->getClientState() == CLIENT_PARSING))

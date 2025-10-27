@@ -62,7 +62,7 @@ const Route*	Router::findMatchingRoute(const std::string& requestPath, const Ser
 		verboseLog("404: No route for: " + requestPath);
 		return NULL;
 	}
-	verboseLog("Route selected: " + result->getURLPath());
+	std::cout << "[" << result->getURLPath() << "]:[" << result->getRootDirectory() << "]";
 	return result;
 }
 

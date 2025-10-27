@@ -116,8 +116,7 @@ Route	ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const st
 	while (getline(configFileStream, line) && !ConfigParser::isClosedCurlyBrace(line))
 	{
 		trim(line);
-		std::cout << line << "\n";
-
+		
 		if (line.empty() || ltrim(line)[0] == '#')
 			continue;
 

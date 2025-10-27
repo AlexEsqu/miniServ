@@ -2,7 +2,7 @@
 
 void ContentFetcher::postItemFromServer(ClientSocket *client)
 {
-	std::cout << "Processing POST request to: " << client->getResponse()->getRoutedURL() << std::endl;
+	verboseLog("Processing POST request to: " + client->getResponse()->getRoutedURL());
 
 	parseBodyDataAndUpload(client);
 
@@ -11,9 +11,6 @@ void ContentFetcher::postItemFromServer(ClientSocket *client)
 
 void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 {
-	std::cout << "body is [\n"
-			  << client->getRequest()->getBody() << "]\n";
-
 	if (client->getRequest()->getContentType().find("application/x-www-form-urlencoded") != std::string::npos)
 	{
 		parseUrlEncodedBody(client);
@@ -138,7 +135,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 
 			// trying to find a name for the posted result
 			std::string disposition = multiPartHeaderMap["Content-Disposition"];
-			std::cout << "dispostition is [" << disposition << "]\n";
+			// std::cout << "dispostition is [" << disposition << "]\n";
 			std::string uploadFilePath = client->getResponse()->getRoutedURL();
 			size_t namePos = disposition.find("name=\"");
 			std::string extension;
