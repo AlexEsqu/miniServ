@@ -86,6 +86,8 @@ void			Router::routeRequest(Request* request, Response* response)
 	}
 	if (path.empty())
 		response->setError(NOT_FOUND);
+	if (!isAllowed(path.c_str()))
+		response->setError(FORBIDDEN);
 	else
 		response->setRoutedUrl(path);
 }
@@ -98,7 +100,7 @@ std::string		Router::routeFilePathForGet(const std::string& url, const Route* ro
 	std::string	routedURL = replaceRoutePathByRootDirectory(url, route);
 
 	// if the file exist, it is the valid routed path
-	if (isValidFilePath(routedURL))
+	if (isValidGetFilePath(routedURL))
 		return routedURL;
 
 	// else if might be a directory, so check if default file or auto index exist
@@ -120,7 +122,7 @@ std::string		Router::routeFilePathForGetAsDirectory(std::string routedURL, const
 	{
 		std::string possiblePath = joinPaths(routedURL, route->getDefaultFiles()[i]);
 
-		if (isValidFilePath(possiblePath))
+		if (isValidGetFilePath(possiblePath))
 			return possiblePath;
 	}
 
@@ -151,7 +153,22 @@ bool			Router::isDirectory(const std::string& path)
 	return S_ISDIR(path_stat.st_mode);
 }
 
-bool			Router::isValidFilePath(const std::string& path)
+bool			Router::isExisting(const char* path)
+{
+	if (!path)
+		return (false);
+	struct stat	path_stat;
+	return (stat(path, &path_stat) == 0);
+}
+
+bool			Router::isAllowed(const char* path)
+{
+	if (!path)
+		return (false);
+	return (access(path, R_OK) == 0);
+}
+
+bool			Router::isValidGetFilePath(const std::string& path)
 {
 	std::ifstream in(path.c_str(), std::ios::binary);
 	if (in.is_open() && !isDirectory(path))

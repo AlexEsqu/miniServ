@@ -178,31 +178,6 @@ size_t	ContentFetcher::getSizeOfFile(const std::string& filename)
 	return path_stat.st_size;
 }
 
-bool	ContentFetcher::isDirectory(const char* path)
-{
-	if (!path)
-		return (false);
-	struct stat	path_stat;
-	if (stat(path, &path_stat) != 0)
-		return false;
-	return (S_ISDIR(path_stat.st_mode));
-}
-
-bool	ContentFetcher::isExisting(const char* path)
-{
-	if (!path)
-		return (false);
-	struct stat	path_stat;
-	return (stat(path, &path_stat) == 0);
-}
-
-bool	ContentFetcher::isAllowed(const char* path)
-{
-	if (!path)
-		return (false);
-	return (access(path, R_OK) == 0);
-}
-
 void ContentFetcher::serveErrorPage(ClientSocket *client, e_status status)
 {
 	client->getRequest()->setError(status);

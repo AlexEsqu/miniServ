@@ -34,10 +34,6 @@ private:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	bool			isDirectory(const char* path);
-	bool			isExisting(const char* path);
-	bool			isAllowed(const char* path);
-
 	size_t			getSizeOfFile(const std::string& filename);
 	std::string		getTypeBasedOnExtension(const std::string& filePath);
 	std::string 	getExtensionFromType(const std::string& type);

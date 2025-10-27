@@ -7,7 +7,7 @@ void ContentFetcher::deleteItemFromServer(ClientSocket *client)
 	const Route *route = client->getRequest()->getRoute();
 
 	std::string path = findUploadFilepath(route, client->getRequest()->getRequestedURL());
-	if (path.empty() || !isExisting(path.c_str()))
+	if (path.empty() || !Router::isExisting(path.c_str()))
 	{
 		serveErrorPage(client, NOT_FOUND);
 		return;
@@ -17,7 +17,7 @@ void ContentFetcher::deleteItemFromServer(ClientSocket *client)
 
 
 	// error if trying to delete a directory
-	if (isDirectory(path.c_str()))
+	if (Router::isDirectory(path.c_str()))
 	{
 		serveErrorPage(client, FORBIDDEN);
 		return;

@@ -60,7 +60,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 		filename = fileURL.substr(filenamePos);
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
 
-	if (!input.is_open() || isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
+	if (!input.is_open() || Router::isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
 	{
 		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
 		//then try to open findFileInDirectory
@@ -68,7 +68,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 
 	// if the file is a directory and not routed to a default file
 	// serve auto index instead of static page
-	if (isDirectory(fileURL.c_str()))
+	if (Router::isDirectory(fileURL.c_str()))
 		return serveDirectoryListing(client, fileURL);
 
 	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
