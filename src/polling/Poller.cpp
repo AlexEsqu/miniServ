@@ -82,17 +82,17 @@ void Poller::setPollingMode(e_pollingMode mode, ClientSocket* socket)
 {
 	if (mode == WRITING)
 	{
-		verboseLog("Setting EPOLLOUT for socket " + socket->getSocketFd());
+		verboseLog("Setting EPOLLOUT for socket " + socket->getSocketFdString());
 		socket->setEpollEventsMask(EPOLLOUT | EPOLLERR);
 	}
 	else if (mode == READING)
 	{
-		verboseLog("Setting EPOLLIN for socket " + socket->getSocketFd());
+		verboseLog("Setting EPOLLIN for socket " + socket->getSocketFdString());
 		socket->setEpollEventsMask(EPOLLIN | EPOLLERR);
 	}
 	else
 	{
-		verboseLog("Setting ONLY_ERROR for socket " + socket->getSocketFd());
+		verboseLog("Setting ONLY_ERROR for socket " + socket->getSocketFdString());
 		socket->setEpollEventsMask(EPOLLERR);
 	}
 	updateSocketEvent(socket);

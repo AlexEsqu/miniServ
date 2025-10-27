@@ -43,6 +43,7 @@ public:
 	//-------------------- GUETTER -----------------------//
 
 	int					getSocketFd() const;
+	std::string			getSocketFdString() const;
 	const sockaddr_in*	getSocketAddr() const;
 	sockaddr_in*		getSocketAddr();
 	int					getSocketAddrLen() const;

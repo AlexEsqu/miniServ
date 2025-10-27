@@ -45,6 +45,13 @@ int					Sockette::getSocketFd() const
 	return _socketFd;
 }
 
+std::string					Sockette::getSocketFdString() const
+{
+	std::stringstream fd;
+	fd << _socketFd;
+	return fd.str();
+}
+
 sockaddr_in*		Sockette::getSocketAddr()
 {
 	return &_socketAddress;
