@@ -1,6 +1,6 @@
 const tablistButtons = document.getElementsByClassName("tablist-button");
 const presentationArticles = document.getElementsByClassName("presentation-article");
-
+let formSubmitted = false;
 function updateArticleVisibility(clickedButton) {
 	Array.from(presentationArticles).forEach((article) => {
 		if (article.getAttribute("id") === clickedButton.getAttribute("aria-controls")) {
@@ -127,12 +127,9 @@ async function getFormInfo(endpoint, responseType = "text") {
 	});
 }
 
-form.addEventListener("submit", async function (e) {
-	e.preventDefault(); // Prevents the default form submission behavior
-	console.log("Form submitted");
-
-	sendForm();
-	let name, description, picture;
+async function getFormData()
+{
+let name, description, picture;
 	try {
 		name = await getFormInfo("name", "text");
 		description = await getFormInfo("description", "text");
@@ -155,6 +152,8 @@ form.addEventListener("submit", async function (e) {
 	for (let i = 0; i < article.children.length; i++) {
 		article.children[i].remove();
 	}
+	document.getElementById("form-button-ok").remove();
+	document.getElementById("form-button-cancel").remove();
 
 	if (picture) {
 		const img = document.createElement("img");
@@ -166,4 +165,17 @@ form.addEventListener("submit", async function (e) {
 		p.textContent = description;
 		article.appendChild(p);
 	}
+}
+
+form.addEventListener("submit", async function (e) {
+	e.preventDefault(); // Prevents the default form submission behavior
+	localStorage.setItem("formSubmitted", "true");
+	sendForm();
+	getFormData();
+
+});
+
+window.addEventListener("load",async (event) => {
+	if (localStorage.getItem("formSubmitted") == "true")
+		getFormData();
 });
