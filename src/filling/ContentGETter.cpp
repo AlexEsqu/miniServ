@@ -23,18 +23,12 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
 	std::string fileURL(client->getResponse()->getRoutedURL());
-	size_t filenamePos = fileURL.find_last_of('/');
-	std::cout << fileURL;
-	std::string filename;
-	if (filenamePos != std::string::npos)
-		filename = fileURL.substr(filenamePos);
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
 
 	// if the file is a directory and not routed to a default file
 	// serve auto index instead of static page
 	if (isDirectory(fileURL.c_str()))
 		return serveDirectoryListing(client, fileURL);
-
 	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
 	size_t size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
