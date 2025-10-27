@@ -1,0 +1,51 @@
+Config block parsed :
+[allowed_methods] = [GET HEAD DELETE POST]
+[index] = [index.html index.php]
+[listen] = [8080]
+[root] = [pages]
+[server_name] = [localhost]
+setting status to 
+[36m
+++++ Accepted Connection on Socket 5 ++++ 
+[0m
+Client Socket 5 GET / [/]:[pages]Header: [host] = [127.0.0.1:8080]
+Header: [user-agent] = [curl/8.5.0]
+Header: [accept] = [*/*]
+Filling request to: pages/index.html
+Processing GET request to: pages/index.html
+[35m NO CGI [0mpages/index.htmlFilling done
+Setting EPOLLOUT for socket
+[32m 200
+[0mFirst 100 chars: [HTTP/1.1 200 
+Content-Type: text/html
+Content-Length: 5843
+Connection: close
+Server: miniServ
+]
+[32m
+++++++++ Answer has been sent ++++++++ 
+[0m[31m
+++++ Removing Client Socket 5 ++++ 
+[0m[31m
+++++ Removing Socket 5 ++++ 
+[0msetting status to 
+[36m
+++++ Accepted Connection on Socket 5 ++++ 
+[0m
+Client Socket 5 GET /upload/testfile_92278_1761577146.txt [/]:[pages]Header: [host] = [127.0.0.1:8080]
+Header: [user-agent] = [curl/8.5.0]
+Header: [accept] = [*/*]
+Header: [content-type] = [text/plain]
+setting status to 
+Setting error at 404
+Setting error at 403
+Filling request to: 
+Setting EPOLLOUT for socket
+[31m 404
+[0mFirst 100 chars: [HTTP/1.1 404 
+Content-Type: 
+Content-Length: 349
+Connection: close
+Server: miniServ
+
+<!DOCTYPE]
