@@ -735,8 +735,8 @@ TEST_CASE("CONFIG PARSING")
 			route.setRouteParam(paramMap);
 
 			CHECK(route.getRootDirectory() == "/var/www/minimal");
-			CHECK(route.getDefaultFiles().size() == 1);
-			CHECK(route.getDefaultFiles()[0] == "index.html");
+			CHECK(route.getDefaultFiles().size() == 0);
+			CHECK(route.getDefaultFiles().empty());
 			CHECK(route.isAutoIndex() == true);
 		}
 

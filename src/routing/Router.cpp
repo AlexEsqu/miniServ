@@ -197,10 +197,8 @@ std::string		Router::replaceRoutePathByRootDirectory(const std::string& url, con
 {
 	std::string	result = url;
 
-	if (isRootPath(route->getURLPath()))
-		result = route->getRootDirectory() + url;
-	else
-		result.replace(0, route->getURLPath().size(), route->getRootDirectory());
+	result.erase(0, route->getURLPath().size());
+	result = joinPaths(route->getRootDirectory(), result);
 
 	return result;
 }
@@ -209,7 +207,8 @@ std::string		Router::replaceRoutePathByUploadDirectory(const std::string& url, c
 {
 	std::string	result = url;
 
-	result.replace(0, route->getURLPath().size(), route->getUploadDirectory());
+	result.erase(0, route->getURLPath().size());
+	result = joinPaths(route->getUploadDirectory(), result);
 
 	return result;
 }
