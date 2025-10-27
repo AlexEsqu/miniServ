@@ -37,6 +37,39 @@ Router&		Router::operator=(const Router &other)
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
+
+std::string Router::findFileInDirectoryWithExtension(std::string directory, std::string filename) // EX "/upload", "picture" => picture.jpeg
+{
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir(directory.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			char *entChar = ent->d_name;
+			std::string ent(entChar);
+
+			size_t dotPos = ent.find(".");
+			if (dotPos != std::string::npos)
+			{
+				std::string fileWithoutExtension = ent.substr(0, dotPos);
+				if (fileWithoutExtension == filename)
+				{
+					std::string filePath = directory + "/" + ent;
+					return filePath;
+				}
+			}
+		}
+		closedir(dir);
+	}
+	else
+	{
+		std::cerr << ERROR_FORMAT("Could not open directory") << std::endl;
+		return std::string();
+	}
+	return std::string();
+}
+
 const Route*	Router::findMatchingRoute(const std::string& requestPath, const ServerConf& conf)
 {
 	const Route*		result = NULL;
@@ -96,10 +129,13 @@ std::string		Router::routeFilePathForGet(const std::string& url, const Route* ro
 		return "";
 
 	std::string	routedURL = replaceRoutePathByRootDirectory(url, route);
-
+	std::string directory = routedURL.substr(0, routedURL.find_last_of("/"));
+	std::string filename = routedURL.substr(routedURL.find_last_of("/") + 1);
 	// if the file exist, it is the valid routed path
 	if (isValidFilePath(routedURL))
 		return routedURL;
+	else if (!findFileInDirectoryWithExtension(directory, filename).empty()) // test by looking for filename with an extension in directory
+		return(findFileInDirectoryWithExtension(directory, filename));
 
 	// else if might be a directory, so check if default file or auto index exist
 	return routeFilePathForGetAsDirectory(routedURL, route);
@@ -156,6 +192,10 @@ bool			Router::isValidFilePath(const std::string& path)
 	std::ifstream in(path.c_str(), std::ios::binary);
 	if (in.is_open() && !isDirectory(path))
 		return true;
+	
+				// std::cout << MAGENTA << "Found the file in the directory: " << findFileInDirectory(path) << STOP_COLOR << std::endl;
+
+	// else if ()
 	return false;
 }
 

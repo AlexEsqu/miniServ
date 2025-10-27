@@ -90,7 +90,7 @@ const form = document.querySelector("form");
 async function sendForm() {
 	const formData = new FormData(form);
 	try {
-		const response = await fetch("/upload", {
+		const response = await fetch("/post", {
 			method: "POST",
 			body: formData,
 		});
@@ -111,7 +111,7 @@ async function sendForm() {
 async function getFormInfo(endpoint, responseType = "text") {
 	return new Promise((resolve, reject) => {
 		const req = new XMLHttpRequest();
-		req.open("GET", "http://localhost:8080/upload/" + endpoint);
+		req.open("GET", "http://localhost:8080/post/" + endpoint);
 		req.responseType = responseType;
 		req.onload = () => {
 			if (req.readyState == 4 && req.status >= 200 && req.status < 300) {

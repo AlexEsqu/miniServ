@@ -18,37 +18,7 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 	serveStatic(client);
 }
 
-std::string ContentFetcher::findFileInDirectory(std::string directory, std::string filename) // EX "/upload", "picture" => picture.jpeg
-{
-	DIR *dir;
-	struct dirent *ent;
-	if ((dir = opendir(directory.c_str())) != NULL)
-	{
-		while ((ent = readdir(dir)) != NULL)
-		{
-			char *entChar = ent->d_name;
-			std::string ent(entChar);
 
-			size_t dotPos = ent.find(".");
-			if (dotPos != std::string::npos)
-			{
-				std::string fileWithoutExtension = ent.substr(0, dotPos);
-				if (fileWithoutExtension == filename)
-				{
-					std::string filePath = directory + "/" + ent;
-					return filePath;
-				}
-			}
-		}
-		closedir(dir);
-	}
-	else
-	{
-		std::cerr << ERROR_FORMAT("Could not open directory") << std::endl;
-		return std::string();
-	}
-	return std::string();
-}
 
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
@@ -59,12 +29,6 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	if (filenamePos != std::string::npos)
 		filename = fileURL.substr(filenamePos);
 	std::ifstream input(fileURL.c_str(), std::ios::binary);
-
-	if (!input.is_open() || isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
-	{
-		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
-		//then try to open findFileInDirectory
-	}
 
 	// if the file is a directory and not routed to a default file
 	// serve auto index instead of static page
