@@ -134,7 +134,7 @@ TEST_CASE("TOTAL") {
 	SUBCASE("DELETE resource")
 	{
 		auto res = curlRequest("DELETE", resourceUrl, "", false);
-		CHECK(res.first == 204);
+		CHECK(res.first == NO_CONTENT);
 	}
 
 	// 4) GET after DELETE
