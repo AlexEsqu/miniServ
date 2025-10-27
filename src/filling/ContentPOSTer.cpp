@@ -23,16 +23,16 @@ void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 		client->getRequest()->setError(UNSUPPORTED_MEDIA_TYPE);
 }
 
-std::string ContentFetcher::findUploadFilepath(const Route *route, const std::string &uri)
-{
-	std::string uploadFilepath = uri;
-	std::string uploadDirectory = route->getUploadDirectory();
-	std::string routeDirectory = route->getURLPath();
-	uploadFilepath = uploadFilepath.replace(0, routeDirectory.size(), uploadDirectory);
-	std::cout << "upload path: " << uploadFilepath << std::endl;
+// std::string ContentFetcher::findUploadFilepath(const Route *route, const std::string &uri)
+// {
+// 	std::string uploadFilepath = uri;
+// 	std::string uploadDirectory = route->getUploadDirectory();
+// 	std::string routeDirectory = route->getURLPath();
+// 	uploadFilepath = uploadFilepath.replace(0, routeDirectory.size(), uploadDirectory);
+// 	std::cout << "upload path: " << uploadFilepath << std::endl;
 
-	return (uploadFilepath);
-}
+// 	return (uploadFilepath);
+// }
 
 std::string	ContentFetcher::extractBoundary(const std::string& contentType)
 {

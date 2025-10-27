@@ -70,8 +70,8 @@ public:
 	// POST method
 
 	void			postItemFromServer(ClientSocket* client);
-	void			handleFormSubmission(ClientSocket* client);
-	std::string		findUploadFilepath(const Route *route, const std::string &uri);
+	// void			handleFormSubmission(ClientSocket* client);
+	// std::string		findUploadFilepath(const Route *route, const std::string &uri);
 	void			parseBodyDataAndUpload(ClientSocket* client);
 	void			parseUrlEncodedBody(ClientSocket* client);
 	void			parseMultiPartBody(ClientSocket* client);

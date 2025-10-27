@@ -222,10 +222,13 @@ std::string		Router::replaceRoutePathByRootDirectory(const std::string& url, con
 
 std::string		Router::replaceRoutePathByUploadDirectory(const std::string& url, const Route* route)
 {
-	std::string	result = url;
+	std::string	path = url;
 
-	result.erase(0, route->getURLPath().size());
-	result = joinPaths(route->getUploadDirectory(), result);
+	path.erase(0, route->getURLPath().size());
+	if (hasStartingSlash(path))
+		path = path.substr(1);
+
+	std::string result = joinPaths(route->getUploadDirectory(), path);
 
 	return result;
 }

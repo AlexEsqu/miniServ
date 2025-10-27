@@ -48,7 +48,7 @@ TEST_CASE("POST METHOD")
 			route.setUploadDirectory("/var/uploads");
 			route.setURLPath("/upload");
 
-			std::string result = fetcher.findUploadFilepath(&route, "/upload/test.txt");
+			std::string result = Router::routeFilePathForPost("/upload/test.txt", &route);
 
 			CHECK(result.find("/var/uploads") != std::string::npos);
 			CHECK(result.find("test.txt") != std::string::npos);
@@ -60,7 +60,7 @@ TEST_CASE("POST METHOD")
 			Route route;
 			route.setUploadDirectory("/tmp");
 
-			std::string result = fetcher.findUploadFilepath(&route, "/file.dat");
+			std::string result = Router::routeFilePathForPost("/file.dat", &route);
 
 			CHECK(result.find("/tmp") != std::string::npos);
 			CHECK(result.find("file.dat") != std::string::npos);
@@ -72,7 +72,7 @@ TEST_CASE("POST METHOD")
 			Route route;
 			route.setUploadDirectory("");
 
-			std::string result = fetcher.findUploadFilepath(&route, "/test.txt");
+			std::string result = Router::routeFilePathForPost("/test.txt", &route);
 
 			CHECK(result == "test.txt");
 		}

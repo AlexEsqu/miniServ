@@ -6,7 +6,7 @@ void ContentFetcher::deleteItemFromServer(ClientSocket *client)
 
 	const Route *route = client->getRequest()->getRoute();
 
-	std::string path = findUploadFilepath(route, client->getRequest()->getRequestedURL());
+	std::string path = Router::routeFilePathForGet(client->getRequest()->getRequestedURL(), route);
 	if (path.empty() || !Router::isExisting(path.c_str()))
 	{
 		serveErrorPage(client, NOT_FOUND);
