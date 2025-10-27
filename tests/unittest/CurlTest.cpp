@@ -41,6 +41,7 @@ static std::pair<int, std::string> curlRequest(const std::string& method, const 
 	cmd << "-H \"Expect:\" -H \"Content-Type: text/plain\" ";
 	cmd << "-w \"%{http_code}\" ";
 	cmd << url;
+	std::cout << cmd.str() << std::endl;
 	std::string out = execCommand(cmd.str());
 	if (out.size() < 3) {
 		return {0, out};
@@ -51,15 +52,15 @@ static std::pair<int, std::string> curlRequest(const std::string& method, const 
 	return {code, body};
 }
 
-TEST_CASE("Router: POST, GET, DELETE flow via curl") {
+TEST_CASE("CURLing") {
 	// Configuration: adjust as needed for your server
-	const std::string BASE_URL = "http://127.0.0.1:8080"; // change port if required
+	const std::string BASE_URL = "http://localhost:8080"; // change port if required
 	const std::string UPLOAD_ENDPOINT = "/upload"; // adjust to match server route that accepts POST for uploads
 	const std::string RESOURCE_ENDPOINT = "/files"; // adjust to match GET/DELETE base route if different
 
 	// Build a unique filename to avoid collisions
 	pid_t pid = getpid();
-	std::time_t t = std::time(nullptr);
+	std::time_t t = std::time(0);
 	std::ostringstream name;
 	name << "testfile_" << pid << "_" << t << ".txt";
 	std::string filename = name.str();

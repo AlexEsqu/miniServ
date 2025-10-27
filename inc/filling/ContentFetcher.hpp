@@ -75,6 +75,7 @@ public:
 	void			parseBodyDataAndUpload(ClientSocket* client);
 	void			parseUrlEncodedBody(ClientSocket* client);
 	void			parseMultiPartBody(ClientSocket* client);
+	void			parsePlainBody(ClientSocket *client);
 	void			createPostResponsePage(ClientSocket* client);
 
 	static std::string		extractBoundary(const std::string& contentType);

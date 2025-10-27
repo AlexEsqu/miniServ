@@ -163,16 +163,14 @@ void	FileHandler::writeToFile(const char* data, size_t size)
 	if (!_isInitialized)
 		createFile();
 
-	if (!_isWriting) {
+	if (!_isWriting)
 		throw std::runtime_error("Buffer is not in writing mode");
-	}
 
 	_writeStream.write(data, size);
 	_writeStream.flush();
 
-	if (_writeStream.fail()) {
+	if (_writeStream.fail())
 		throw std::runtime_error("Failed to write to buffer file");
-	}
 
 	_totalSize += size;
 }
@@ -182,9 +180,8 @@ size_t	FileHandler::readFromFile(char* buffer, size_t size)
 	if (!_isInitialized)
 		throw std::runtime_error("File not initialized");
 
-	if (!_readStream.is_open()) {
+	if (!_readStream.is_open())
 		_readStream.open(_filePath.c_str(), std::ios::binary);
-	}
 
 	_readStream.read(buffer, size);
 	return _readStream.gcount();
@@ -192,7 +189,8 @@ size_t	FileHandler::readFromFile(char* buffer, size_t size)
 
 void	FileHandler::finishWriting()
 {
-	if (_writeStream.is_open()) {
+	if (_writeStream.is_open())
+	{
 		_writeStream.flush();
 		_writeStream.close();
 	}

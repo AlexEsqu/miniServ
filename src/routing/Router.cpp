@@ -79,17 +79,16 @@ void			Router::routeRequest(Request* request, Response* response)
 	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD)
 	{
 		path = routeFilePathForGet(requestedURL, route);
+		if (path.empty())
+			response->setError(NOT_FOUND);
+		if (!isAllowed(path.c_str()))
+			response->setError(FORBIDDEN);
 	}
 	else
 	{
 		path = routeFilePathForPost(requestedURL, route);
 	}
-	if (path.empty())
-		response->setError(NOT_FOUND);
-	if (!isAllowed(path.c_str()))
-		response->setError(FORBIDDEN);
-	else
-		response->setRoutedUrl(path);
+	response->setRoutedUrl(path);
 }
 
 std::string		Router::routeFilePathForGet(const std::string& url, const Route* route)

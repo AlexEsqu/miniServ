@@ -19,6 +19,8 @@ void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 	{
 		parseMultiPartBody(client);
 	}
+	else if (client->getRequest()->getContentType().find("text/plain") != std::string::npos)
+		parsePlainBody(client);
 	else
 		client->getRequest()->setError(UNSUPPORTED_MEDIA_TYPE);
 }
@@ -177,6 +179,27 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 	if (line == client->getResponse()->getBoundary() + "--")
 	{
 		client->getResponse()->setError(BAD_REQUEST);
+	}
+}
+
+void ContentFetcher::parsePlainBody(ClientSocket *client)
+{
+	std::string			body = client->getRequest()->getBody();
+	if (body.empty())
+		return;
+
+	std::string			uploadPath = client->getResponse()->getRoutedURL();
+
+	// Write body as-is to file
+	FileHandler			fh(uploadPath);
+	try
+	{
+		fh.writeToFile(body);
+	}
+	catch (...)
+	{
+		client->getRequest()->setError(INTERNAL_SERVER_ERROR);
+		return;
 	}
 }
 
