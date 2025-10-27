@@ -269,10 +269,13 @@ void			Request::checkMethodIsAllowed()
 	if (hasError())
 		return;
 
-	if (_methodAsString.empty() || _method == UNSUPPORTED)
+	if (!_route)
+		setError(METHOD_NOT_ALLOWED); // probably tested earlier but for unit test
+
+	else if (_methodAsString.empty() || _method == UNSUPPORTED)
 		setError(METHOD_NOT_ALLOWED);
 
-	if (!_route->isAllowedMethod(_methodAsString))
+	else if (!_route->isAllowedMethod(_methodAsString))
 		setError(METHOD_NOT_ALLOWED);
 }
 

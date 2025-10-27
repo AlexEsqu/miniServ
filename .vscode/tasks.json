@@ -87,6 +87,21 @@
             "command": "make",
             "args": ["re"],
             "group": "build"
-        }
+        },
+		{
+			"label": "watch tests",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"find . -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | entr -r make test"
+			],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "silent",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		}
     ]
 }
