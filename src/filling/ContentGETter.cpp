@@ -8,6 +8,7 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 	{
 		if (_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
 		{
+			std::cout << CGI_FORMAT(" CGI ") << client->getResponse()->getRoutedURL();
 			_executors[i]->executeFile(client);
 			client->setClientState(CLIENT_FILLING);
 			return;
@@ -53,8 +54,9 @@ std::string ContentFetcher::findFileInDirectory(std::string directory, std::stri
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
 	std::string fileURL(client->getResponse()->getRoutedURL());
-	size_t filenamePos = fileURL.find_last_of('/');
 	std::cout << fileURL;
+
+	size_t filenamePos = fileURL.find_last_of('/');
 	std::string filename;
 	if (filenamePos != std::string::npos)
 		filename = fileURL.substr(filenamePos);
