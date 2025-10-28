@@ -6,6 +6,7 @@
 #include "Status.hpp"
 #include "Route.hpp"
 #include "Buffer.hpp"
+#include "Router.hpp"
 
 class Request;
 

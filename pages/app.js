@@ -100,11 +100,9 @@ async function sendForm() {
 			// Display success message or perform any other action
 		} else {
 			console.error("Error:", response.status);
-			window.alert("Error: " + response.status);
 		}
 	} catch (error) {
 		console.error(error);
-		window.alert("Error: " + error.message);
 	}
 }
 
@@ -127,18 +125,16 @@ async function getFormInfo(endpoint, responseType = "text") {
 	});
 }
 
-async function getFormData()
-{
-let name, description, picture;
+async function getFormData() {
+	let name, description, picture;
 	try {
 		name = await getFormInfo("name", "text");
 		description = await getFormInfo("description", "text");
 		picture = await getFormInfo("picture", "blob");
 		imageUrl = URL.createObjectURL(picture);
-
 	} catch (error) {
+		localStorage.setItem("formSubmitted", "false");
 		console.error(error);
-		window.alert(error.message);
 		return;
 	}
 
@@ -149,11 +145,14 @@ let name, description, picture;
 	document.getElementById("tablist-button-add-yourself").textContent = name;
 
 	const article = document.getElementById("add-yourself-article");
-	for (let i = 0; i < article.children.length; i++) {
-		article.children[i].remove();
+	if (localStorage.getItem("formSubmitted") == "true");
+	{
+		for (let i = 0; i < article.children.length; i++) {
+			article.children[i].style.display = "none";
+		}
+		document.getElementById("form-button-ok").style.display = "none";
+		document.getElementById("form-button-cancel").style.display = "none";
 	}
-	document.getElementById("form-button-ok").remove();
-	document.getElementById("form-button-cancel").remove();
 
 	if (picture) {
 		const img = document.createElement("img");
@@ -172,10 +171,10 @@ form.addEventListener("submit", async function (e) {
 	localStorage.setItem("formSubmitted", "true");
 	sendForm();
 	getFormData();
-
 });
 
-window.addEventListener("load",async (event) => {
-	if (localStorage.getItem("formSubmitted") == "true")
+window.addEventListener("load", async (event) => {
+	if (localStorage.getItem("formSubmitted") == "true") {
 		getFormData();
+	}
 });

@@ -102,8 +102,7 @@ std::string FileHandler::generateTempFileName(const std::string& prefix)
 	// TO DO: remove time and rand cuz forbidden
 	std::stringstream oss;
 	oss << prefix << "_"
-		<< time(0) << "_"
-		<< rand() % 100000 << ".tmp";
+		<< std::time(0) << ".tmp";
 	return oss.str();
 }
 

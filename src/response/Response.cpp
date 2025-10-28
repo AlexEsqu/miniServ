@@ -190,7 +190,7 @@ void Response::createHTTPHeaders()
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = _request->getRoute()->getRootDirectory() + "/" + "error.html";
+	std::string errorFile = Router::joinPaths(_request->getConf().getRoot(), "error.html");
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;
