@@ -253,6 +253,7 @@ void					ConfigParser::removeInvalidServers(std::list<ServerConf>& configs)
 		{
 			std::cout << "Server " << i->getServerName() << " is using another server's name, deleting...\n";
 			configs.erase(i--);
+			continue;
 		}
 		else
 			setOfUsedHostName.insert(i->getServerName());
