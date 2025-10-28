@@ -4,23 +4,20 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 ClientSocket::ClientSocket(ServerSocket &server)
-	: _serv(server)
-	, _request(NULL)
-	, _isReadingFromPipe(false)
-	, _clientState(CLIENT_CONNECTED)
-	, _lastEventTime(std::time(NULL))
+	: _serv(server), _request(NULL), _isReadingFromPipe(false), _clientState(CLIENT_CONNECTED), _lastEventTime(std::time(NULL))
 {
-// #ifdef DEBUG
-// 	std::cerr << "ClientSocket Constructor called" << std::endl;
-// #endif
+	// #ifdef DEBUG
+	// 	std::cerr << "ClientSocket Constructor called" << std::endl;
+	// #endif
 
 	int addrlen = sizeof(server.getSocketAddr());
 
-	int socketFd = accept(server.getSocketFd(), \
-		(struct sockaddr *)server.getSocketAddr(), \
-		(socklen_t *)&addrlen);
+	int socketFd = accept(server.getSocketFd(),
+						  (struct sockaddr *)server.getSocketAddr(),
+						  (socklen_t *)&addrlen);
 
-	if (socketFd < 0) {
+	if (socketFd < 0)
+	{
 		perror("accept() failed with error");
 		throw failedSocketAccept();
 	}
@@ -34,12 +31,14 @@ ClientSocket::ClientSocket(ServerSocket &server)
 
 ClientSocket::~ClientSocket()
 {
-	if (_request) {
+	if (_request)
+	{
 		delete _request;
 		_request = NULL;
 	}
 
-	if (_response) {
+	if (_response)
+	{
 		delete _response;
 		_response = NULL;
 	}
@@ -52,7 +51,7 @@ ClientSocket::~ClientSocket()
 
 //------------------------------ SETTER --------------------------------------//
 
-void	ClientSocket::resetRequest()
+void ClientSocket::resetRequest()
 {
 	if (_request)
 	{
@@ -67,7 +66,7 @@ void	ClientSocket::resetRequest()
 	}
 }
 
-void	ClientSocket::setClientState(e_clientState state)
+void ClientSocket::setClientState(e_clientState state)
 {
 	_clientState = state;
 	updateLastEventTime();
@@ -75,48 +74,48 @@ void	ClientSocket::setClientState(e_clientState state)
 
 //------------------------------ GETTER --------------------------------------//
 
-char*	ClientSocket::getBuffer()
+char *ClientSocket::getBuffer()
 {
 	return (_buffer);
 }
 
-Request*	ClientSocket::getRequest()
+Request *ClientSocket::getRequest()
 {
 	return (_request);
 }
 
-ServerSocket&	ClientSocket::getServer()
+ServerSocket &ClientSocket::getServer()
 {
 	return (_serv);
 }
 
-Response*	ClientSocket::getResponse()
+Response *ClientSocket::getResponse()
 {
 	return (_response);
 }
 
-int				ClientSocket::getCgiPipeFd()
+int ClientSocket::getCgiPipeFd()
 {
 	return (_readingEndOfCgiPipe);
 }
 
-e_clientState	ClientSocket::getClientState() const
+e_clientState ClientSocket::getClientState() const
 {
 	return _clientState;
 }
 
-time_t			ClientSocket::getLastEventTime() const
+time_t ClientSocket::getLastEventTime() const
 {
 	return _lastEventTime;
 }
 
-bool	ClientSocket::hasRequest() const
+bool ClientSocket::hasRequest() const
 {
 	return (_request != NULL);
 }
 
 // also sets as parsed if request has finished, ugly, TO DO should rewrite
-bool	ClientSocket::hasParsedRequest()
+bool ClientSocket::hasParsedRequest()
 {
 	if (!hasRequest())
 		return false;
@@ -127,7 +126,7 @@ bool	ClientSocket::hasParsedRequest()
 	return (getClientState() == CLIENT_HAS_PARSED);
 }
 
-bool	ClientSocket::hasFilledResponse() const
+bool ClientSocket::hasFilledResponse() const
 {
 	if (!hasRequest())
 		return false;
@@ -135,7 +134,7 @@ bool	ClientSocket::hasFilledResponse() const
 	return (getClientState() == CLIENT_HAS_FILLED);
 }
 
-bool	ClientSocket::hasSentResponse() const
+bool ClientSocket::hasSentResponse() const
 {
 	if (!hasRequest())
 		return false;
@@ -143,27 +142,27 @@ bool	ClientSocket::hasSentResponse() const
 	return (getClientState() == CLIENT_HAS_SENT);
 }
 
-bool	ClientSocket::isReadingFromPipe() const
+bool ClientSocket::isReadingFromPipe() const
 {
 	return _isReadingFromPipe;
 }
 
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
-void	ClientSocket::handleConnection(epoll_event event)
+void ClientSocket::handleConnection(epoll_event event)
 {
 	getServer().handleExistingConnection(this, event);
 }
 
-
-void	ClientSocket::createNewResponse()
+void ClientSocket::createNewResponse()
 {
 	_response = new Response(getRequest());
 }
 
-void	ClientSocket::deleteResponse()
+void ClientSocket::deleteResponse()
 {
-	if (_response) {
+	if (_response)
+	{
 		delete _response;
 		_response = NULL;
 	}
@@ -171,11 +170,11 @@ void	ClientSocket::deleteResponse()
 
 // adds pipe to epoll to monitor, and read from the pipe
 // receiving the response as the content is executed
-void	ClientSocket::startReadingPipe(int pipeFd)
+void ClientSocket::startReadingPipe(int pipeFd)
 {
-	#ifdef DEBUG
+#ifdef DEBUG
 	std::cout << "Adding CGI pipe to epoll: " << pipeFd << std::endl;
-	#endif
+#endif
 
 	updateLastEventTime();
 	_readingEndOfCgiPipe = pipeFd;
@@ -183,18 +182,18 @@ void	ClientSocket::startReadingPipe(int pipeFd)
 	_isReadingFromPipe = true;
 }
 
-void	ClientSocket::stopReadingPipe()
+void ClientSocket::stopReadingPipe()
 {
-	#ifdef DEBUG
+#ifdef DEBUG
 	std::cout << "Removing CGI pipe to epoll" << std::endl;
-	#endif
+#endif
 
 	_isReadingFromPipe = false;
 	getServer().getEpoll().removePipe(this, _readingEndOfCgiPipe);
 	_readingEndOfCgiPipe = -1;
 }
 
-void	ClientSocket::checkForReadError(int valread)
+void ClientSocket::checkForReadError(int valread)
 {
 	// if valread is 0 or less, an error has occurred :
 	if (valread < 0)
@@ -211,11 +210,11 @@ void	ClientSocket::checkForReadError(int valread)
 		throw endSocket();
 }
 
-void	ClientSocket::readRequest()
+void ClientSocket::readRequest()
 {
-	#ifdef DEBUG
-		std::cout << "\nClient Socket " << getSocketFd() << " ";
-	#endif
+#ifdef DEBUG
+	std::cout << "\nClient Socket " << getSocketFd() << " ";
+#endif
 
 	updateLastEventTime();
 
@@ -223,7 +222,7 @@ void	ClientSocket::readRequest()
 	checkForReadError(valread);
 
 	// since some data can be interspeced with \0, creating a string of valread size
-	std::string	requestChunk(_buffer, valread);
+	std::string requestChunk(_buffer, valread);
 
 	// clear buffer for further use
 	memset(_buffer, '\0', sizeof(_buffer));
@@ -236,7 +235,7 @@ void	ClientSocket::readRequest()
 		_request->addRequestChunk(requestChunk);
 }
 
-void	ClientSocket::sendResponse()
+void ClientSocket::sendResponse()
 {
 	std::string response = getResponse()->getHTTPResponse();
 
@@ -247,15 +246,16 @@ void	ClientSocket::sendResponse()
 		std::cout << RED;
 	else
 		std::cout << GREEN;
-	std::cout << " " << getRequest()->getStatus().getStatusCode() << "\n" << STOP_COLOR;
+	std::cout << " " << getRequest()->getStatus().getStatusCode() << "\n"
+			  << STOP_COLOR;
 
 	verboseLog("First 100 chars: [" + response.substr(0, 100) + "]");
 
 	while (totalSent < totalToSend)
 	{
 		ssize_t bytesSent = send(getSocketFd(),
-								response.c_str() + totalSent,
-								totalToSend - totalSent, 0);
+								 response.c_str() + totalSent,
+								 totalToSend - totalSent, 0);
 		if (bytesSent < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -277,11 +277,29 @@ void	ClientSocket::sendResponse()
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
 }
 
-void		ClientSocket::updateLastEventTime()
+void ClientSocket::updateLastEventTime()
 {
 	_lastEventTime = std::time(NULL);
 }
 
+size_t ClientSocket::generateRandomNumber()
+{
+	std::ifstream file("/dev/random", std::ios_base::in | std::ios_base::binary);
+	if (!file)
+	{
+		std::cerr << "Failed to open /dev/random" << std::endl;
+		return 1;
+	}
 
+	// Create a stream buffer to read from the file
+	std::streambuf *buffer = file.rdbuf();
 
-
+	// Generate a random number from the read data
+	size_t randomNumber = 0;
+	char ch;
+	while (buffer->sgetn(&ch, 1) > 0)
+	{
+		randomNumber = (randomNumber << 8) + ch;
+	}
+	return (randomNumber);
+}

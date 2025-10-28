@@ -40,6 +40,7 @@ private:
 
 	e_clientState		_clientState;
 	time_t				_lastEventTime;
+	// size_t				_sessionId;
 
 public:
 
@@ -87,5 +88,6 @@ public:
 	bool				hasSentResponse() const;
 	void				resetRequest();
 	void				updateLastEventTime();
+	size_t				generateRandomNumber();
 
 };
