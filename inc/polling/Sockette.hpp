@@ -10,8 +10,8 @@
 
 class ClientSocket;
 
-# define MAX_EVENTS 10
-# define MAX_SOCKET 10
+# define MAX_EVENTS 1024
+# define MAX_SOCKET 1024
 
 class Sockette
 {
