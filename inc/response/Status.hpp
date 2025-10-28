@@ -113,7 +113,8 @@ public:
 
 	void			setStatusCode(e_status num);
 	void			setStatusMessage(std::string message);
-  void      setError(bool value);
+	void			setError(bool value);
+	void			reset();
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 

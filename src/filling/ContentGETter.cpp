@@ -8,6 +8,7 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 	{
 		if (_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
 		{
+			std::cout << CGI_FORMAT(" CGI ") << client->getResponse()->getRoutedURL();
 			_executors[i]->executeFile(client);
 			client->setClientState(CLIENT_FILLING);
 			return;
@@ -18,16 +19,58 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 	serveStatic(client);
 }
 
+std::string ContentFetcher::findFileInDirectory(std::string directory, std::string filename) // EX "/upload", "picture" => picture.jpeg
+{
+	DIR					*dir;
+	struct dirent		*ent;
+	if ((dir = opendir(directory.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			char		*entChar = ent->d_name;
+			std::string	ent(entChar);
 
+			size_t		dotPos = ent.find(".");
+			if (dotPos != std::string::npos)
+			{
+				std::string		fileWithoutExtension = ent.substr(0, dotPos);
+				if (fileWithoutExtension == filename)
+				{
+					std::string	filePath = directory + "/" + ent;
+					return filePath;
+				}
+			}
+		}
+		closedir(dir);
+	}
+	else
+	{
+		std::cerr << ERROR_FORMAT("Could not open directory") << std::endl;
+		return std::string();
+	}
+	return std::string();
+}
 
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
-	std::string fileURL(client->getResponse()->getRoutedURL());
-	std::ifstream input(fileURL.c_str(), std::ios::binary);
+	std::string		fileURL(client->getResponse()->getRoutedURL());
+	std::cout << fileURL;
+
+	size_t			filenamePos = fileURL.find_last_of('/');
+	std::string		filename;
+	if (filenamePos != std::string::npos)
+		filename = fileURL.substr(filenamePos);
+	std::ifstream	input(fileURL.c_str(), std::ios::binary);
+
+	if (!input.is_open() || Router::isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
+	{
+		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
+		//then try to open findFileInDirectory
+	}
 
 	// if the file is a directory and not routed to a default file
 	// serve auto index instead of static page
-	if (isDirectory(fileURL.c_str()))
+	if (Router::isDirectory(fileURL.c_str()))
 		return serveDirectoryListing(client, fileURL);
 	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
 	size_t size = getSizeOfFile(fileURL);
@@ -201,4 +244,24 @@ std::string ContentFetcher::createDirectoryListing(const std::string& path, cons
 
 	closedir(dir);
 	return html.str();
+}
+
+// Same as the getItemFromServer but with no body
+void ContentFetcher::headItemFromServer(ClientSocket *client)
+{
+	verboseLog("Processing HEAD request to: " + client->getResponse()->getRoutedURL());
+
+	const Route *route = client->getRequest()->getRoute();
+
+	std::string path = Router::routeFilePathForGet(client->getRequest()->getRequestedURL(), route);
+	if (path.empty() || !Router::isExisting(path.c_str()) || Router::isDirectory(path.c_str()))
+	{
+		serveErrorPage(client, NOT_FOUND);
+		return;
+	}
+
+	client->getResponse()->setContentType(getTypeBasedOnExtension(path));
+	client->getResponse()->createHTTPHeaders();
+	client->setClientState(CLIENT_HAS_FILLED);
+	verboseLog("HEAD prepared for: " + path);
 }

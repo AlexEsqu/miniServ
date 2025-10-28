@@ -33,12 +33,10 @@ private:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	bool			isDirectory(const char *path);
-	bool			isExisting(const char *path);
-	bool			isAllowed(const char *path);
 	size_t			getSizeOfFile(const std::string& filename);
 	std::string		getTypeBasedOnExtension(const std::string& filePath);
-	std::string 	getExtensionFromType(const std::string &type);
+	std::string 	getExtensionFromType(const std::string& type);
+	std::string		findFileInDirectory(std::string directory, std::string filename);
 
 public:
 
@@ -71,11 +69,10 @@ public:
 	// POST method
 
 	void			postItemFromServer(ClientSocket* client);
-	void			handleFormSubmission(ClientSocket* client);
-	std::string		findUploadFilepath(const Route *route, const std::string &uri);
 	void			parseBodyDataAndUpload(ClientSocket* client);
 	void			parseUrlEncodedBody(ClientSocket* client);
 	void			parseMultiPartBody(ClientSocket* client);
+	void			parsePlainBody(ClientSocket *client);
 	void			createPostResponsePage(ClientSocket* client);
 
 	static std::string		extractBoundary(const std::string& contentType);
@@ -83,6 +80,10 @@ public:
 	// DELETE method
 
 	void			deleteItemFromServer(ClientSocket* client);
+
+	// HEAD method
+
+	void			headItemFromServer(ClientSocket* client);
 
 	// Execution
 

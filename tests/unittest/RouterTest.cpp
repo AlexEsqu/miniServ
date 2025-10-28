@@ -85,7 +85,7 @@ SUBCASE("Router utils")
 	CHECK(Router::joinPaths("/root", "/file") == "/root/file");
 	}
 
-	SUBCASE("Router isDirectory and isValidFilePath")
+	SUBCASE("Router isDirectory and isValidGetFilePath")
 	{
 	TempDir tmp;
 	REQUIRE(tmp.path.size() > 0);
@@ -100,8 +100,8 @@ SUBCASE("Router utils")
 	CHECK(Router::isDirectory(dirpath) == true);
 	CHECK(Router::isDirectory(filepath) == false);
 
-	CHECK(Router::isValidFilePath(filepath) == true);
-	CHECK(Router::isValidFilePath(dirpath) == false);
+	CHECK(Router::isValidGetFilePath(filepath) == true);
+	CHECK(Router::isValidGetFilePath(dirpath) == false);
 
 	// cleanup
 	rmfile(filepath);

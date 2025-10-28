@@ -282,10 +282,13 @@ void Request::checkMethodIsAllowed()
 	if (hasError())
 		return;
 
-	if (_methodAsString.empty() || _method == UNSUPPORTED)
+	if (!_route)
+		setError(METHOD_NOT_ALLOWED); // probably tested earlier but for unit test
+
+	else if (_methodAsString.empty() || _method == UNSUPPORTED)
 		setError(METHOD_NOT_ALLOWED);
 
-	if (!_route->isAllowedMethod(_methodAsString))
+	else if (!_route->isAllowedMethod(_methodAsString))
 		setError(METHOD_NOT_ALLOWED);
 }
 
@@ -446,7 +449,7 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 		size_t chunkSize = 0;
 		std::istringstream iss(sizeLine);
 		iss >> std::hex >> chunkSize;
-		std::cout << "chunksize is [" << chunkSize << "]\n";
+		// std::cout << "chunksize is [" << chunkSize << "]\n";
 
 		offset = sizeEnd + 2;
 
@@ -463,7 +466,7 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 
 		// extracting a chunk into the Buffer
 		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize - 2);
-		std::cout << "chunk data [" << chunkData << "]\n";
+		// std::cout << "chunk data [" << chunkData << "]\n";
 		_requestBodyBuffer.writeToBuffer(chunkData);
 
 		// move on the the next chunk which may be in the same buffer

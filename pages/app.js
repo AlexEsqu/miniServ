@@ -178,3 +178,45 @@ window.addEventListener("load", async (event) => {
 		getFormData();
 	}
 });
+
+// Delete Button
+var deleteButton = document.getElementById("delete-button");
+
+async function deleteFormInfo(endpoint, responseType = "text") {
+	return new Promise((resolve, reject) => {
+		const req = new XMLHttpRequest();
+		req.open("DELETE", "http://localhost:8080/post/" + endpoint);
+		req.responseType = responseType;
+		req.onload = () => {
+			if (req.readyState == 4 && req.status >= 200 && req.status < 300) {
+				resolve(req.response);
+			} else {
+				reject(new Error(`Error: ${req.status}`));
+			}
+		};
+		req.onerror = () => {
+			reject(new Error("Network error"));
+		};
+		req.send();
+	});
+}
+
+deleteButton.addEventListener("click", async (e) => {
+	if (window.confirm("Are you sure you want to delete your data?")) {
+		try {
+			await deleteFormInfo("name");
+			console.log("name deleted successfully");
+			await deleteFormInfo("description");
+			console.log("description deleted successfully");
+			await deleteFormInfo("picture");
+			console.log("description deleted successfully");
+			localStorage.setItem("formSubmitted", "false");
+
+			// Perform any additional actions after the form is deleted\
+			window.location.reload();
+		} catch (error) {
+			console.error("Error deleting form:", error);
+			// Handle the error or display an error message to the user
+		}
+	}
+});

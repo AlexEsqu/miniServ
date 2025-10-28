@@ -64,6 +64,8 @@ void ClientSocket::resetRequest()
 		delete _response;
 		_response = NULL;
 	}
+
+	_status.reset();
 }
 
 void ClientSocket::setClientState(e_clientState state)
@@ -246,8 +248,7 @@ void ClientSocket::sendResponse()
 		std::cout << RED;
 	else
 		std::cout << GREEN;
-	std::cout << " " << getRequest()->getStatus().getStatusCode() << "\n"
-			  << STOP_COLOR;
+	std::cout << " " << getRequest()->getStatus().getStatusCode() << "\n\n" << STOP_COLOR;
 
 	verboseLog("First 100 chars: [" + response.substr(0, 100) + "]");
 
@@ -274,7 +275,9 @@ void ClientSocket::sendResponse()
 	if (totalSent == totalToSend)
 		setClientState(CLIENT_HAS_SENT);
 
+	#ifdef DEBUG
 	std::cout << VALID_FORMAT("\n++++++++ Answer has been sent ++++++++ \n");
+	#endif
 }
 
 void ClientSocket::updateLastEventTime()

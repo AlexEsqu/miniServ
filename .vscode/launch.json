@@ -49,11 +49,11 @@
       ]
     },
 	{
-      "name": "Debug webserv basic conf",
+      "name": "Debug webserv tester conf",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/webserv",
-      "args": ["${workspaceFolder}/confs/basic.conf"],
+      "args": ["${workspaceFolder}/confs/tester.conf"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],

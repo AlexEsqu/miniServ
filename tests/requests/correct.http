@@ -3,7 +3,7 @@ GET http://localhost:8080/
 ####
 
 GET http://localhost:8080/pages/index.html
-content-type: text/html
+content-type: multipart/form-data
 
 {
   "body": "Hello World !"
@@ -20,7 +20,7 @@ content-type: text/plain
 
 ###
 
-POST http://localhost:8080/beep2.txt
+POST http://localhost:8080/post/beep2.txt
 content-type: plain/text
 
 {

@@ -70,6 +70,11 @@ void Response::setContent(std::string content)
 	_responsePage.writeToBuffer(content);
 }
 
+void Response::setHeader(std::string key, std::string value)
+{
+	_mapOfHeadersToBeAdded[key] = value;
+}
+
 void Response::setRequest(Request *request)
 {
 	_request = request;
@@ -167,12 +172,10 @@ void Response::createHTTPHeaders()
 
 	std::stringstream header;
 	header << _request->getProtocol() << " " << getStatus() << "\r\n"
-		   << "Content-Type: " << _contentType << "\r\n"
-		   << "Content-Length: " << _contentLength << "\r\n"
-		   << "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
-		   << "Server: miniServ\r\n";
-
-	// verboseLog("Content-Length is " + (_contentLength + header.str().size()));
+			<< "Content-Type: " << _contentType << "\r\n"
+			<< "Content-Length: " << _contentLength << "\r\n"
+			<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
+			<< "Server: miniServ\r\n";
 
 	if (_request->getMethodAsString() == "POST")
 	{

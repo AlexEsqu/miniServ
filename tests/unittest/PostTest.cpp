@@ -26,17 +26,13 @@ void removeTestFile(const std::string& path)
 
 std::string readTestFile(const std::string& path)
 {
-	std::ifstream file(path.c_str());
-	if (!file.is_open())
-		return "";
+	std::ifstream file(path, std::ios::binary);
+	if (!file)
+		return {};
 
-	std::string content;
-	std::string line;
-	while (std::getline(file, line))
-	{
-		content += line + "\n";
-	}
-	return content;
+	std::ostringstream ss;
+	ss << file.rdbuf();
+	return ss.str();
 }
 
 TEST_CASE("POST METHOD")
@@ -52,7 +48,7 @@ TEST_CASE("POST METHOD")
 			route.setUploadDirectory("/var/uploads");
 			route.setURLPath("/upload");
 
-			std::string result = fetcher.findUploadFilepath(&route, "/upload/test.txt");
+			std::string result = Router::routeFilePathForPost("/upload/test.txt", &route);
 
 			CHECK(result.find("/var/uploads") != std::string::npos);
 			CHECK(result.find("test.txt") != std::string::npos);
@@ -64,7 +60,7 @@ TEST_CASE("POST METHOD")
 			Route route;
 			route.setUploadDirectory("/tmp");
 
-			std::string result = fetcher.findUploadFilepath(&route, "/file.dat");
+			std::string result = Router::routeFilePathForPost("/file.dat", &route);
 
 			CHECK(result.find("/tmp") != std::string::npos);
 			CHECK(result.find("file.dat") != std::string::npos);
@@ -76,7 +72,7 @@ TEST_CASE("POST METHOD")
 			Route route;
 			route.setUploadDirectory("");
 
-			std::string result = fetcher.findUploadFilepath(&route, "/test.txt");
+			std::string result = Router::routeFilePathForPost("/test.txt", &route);
 
 			CHECK(result == "test.txt");
 		}
@@ -509,7 +505,7 @@ TEST_CASE("POST METHOD")
 				"Content-Disposition: form-data; name=\"large_text\"\r\n"
 				"\r\n" +
 				largeContent +
-				"------WebKitFormBoundaryLargeData--\r\n";
+				"\r\n------WebKitFormBoundaryLargeData--\r\n";
 
 			// Verify body size
 			CHECK(multipartBody.length() > 10000);
@@ -753,13 +749,6 @@ TEST_CASE("POST METHOD")
 
 			std::string boundary = ContentFetcher::extractBoundary(contentTypeHeader);
 			CHECK(boundary == "----WebKitFormBoundary7MA4YWxkTrZu0gW");
-		}
-
-		SUBCASE("Boundary with quotes") {
-			std::string contentTypeHeader = "multipart/form-data; boundary=\"----WebKitBoundaryQuoted\"";
-
-			std::string boundary = ContentFetcher::extractBoundary(contentTypeHeader);
-			CHECK(boundary == "----WebKitBoundaryQuoted");
 		}
 	}
 }

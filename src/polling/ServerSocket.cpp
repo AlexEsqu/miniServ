@@ -97,10 +97,10 @@ void			ServerSocket::acceptNewConnection()
 
 void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 {
-	// #ifdef DEBUG
-		std::cout << ERROR_FORMAT("\n++++ Removing Client Socket ";
-		std::cout  << clientSocket->getSocketFd() << " ++++ \n");
-	// #endif
+	#ifdef DEBUG
+		std::cout << "\n++++ Removing Client Socket ";
+		std::cout  << clientSocket->getSocketFd() << " ++++ \n";
+	#endif
 
 	if (_clients.find(clientSocket->getSocketFd()) != _clients.end())
 	{
@@ -156,17 +156,26 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 		{
 			sendDataIfComplete(client);
 		}
+		else if (socketIsHangingUp(event))
+		{
+			removeConnection(client);
+		}
 		else if (socketIsHavingTrouble(event))
 		{
 			throw std::runtime_error("Connection closed or error occurred");
 		}
 	}
 
+	// if a soket hangs up, close it, it has ended its purpose
+	catch (endSocket& e)
+	{
+		removeConnection(client);
+	}
+
 	// catch system error such as alloc, read, or write fail, and remove faulty sockets
 	catch ( std::exception &e )
 	{
 		std::cout << ERROR_FORMAT("\n\n+++++++ Non HTTP Error +++++++ \n") << e.what() << "\n";
-
 		removeConnection(client);
 	}
 }
@@ -228,10 +237,10 @@ bool		ServerSocket::socketIsReadyToSendData(epoll_event& event)
 
 bool		ServerSocket::socketIsHangingUp(epoll_event& event)
 {
-	return (event.events & EPOLLHUP);
+	return (event.events & (EPOLLHUP | EPOLLRDHUP));
 }
 
 bool		ServerSocket::socketIsHavingTrouble(epoll_event& event)
 {
-	return (event.events & (EPOLLERR | EPOLLRDHUP));
+	return (event.events & EPOLLERR);
 }

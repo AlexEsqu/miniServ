@@ -114,6 +114,12 @@ void			Status::setStatusMessage(std::string message)
 	}
 }
 
+void			Status::reset()
+{
+	_statusCode = OK;
+	_hasError = false;
+}
+
 ///////////////////////////////////////////////////////////////////
 ///                     MEMBER FUNCTIONS                         //
 ///////////////////////////////////////////////////////////////////

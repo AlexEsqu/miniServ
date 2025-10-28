@@ -42,11 +42,21 @@ public:
 
 	// UTILS
 
-	static bool			isDirectory(const std::string& path) ;
-	static bool			isValidFilePath(const std::string& path) ;
+	static bool			isDirectory(const std::string& path);
+	static bool			isExisting(const char* path);
+	static bool			isAllowed(const char* path);
+
+	// TO DO:
+	static bool			isAllowedRead(const char* path);
+	static bool			isAllowedWrite(const char* path);
+	static bool			isAllowedExecute(const char* path);
+
+	static bool			isValidGetFilePath(const std::string& path) ;
 	static bool			isRootPath(const std::string& uri) ;
+
 	static bool			hasStartingSlash(const std::string& uri) ;
 	static bool			hasTrailingSlash(const std::string& uri) ;
+
 	static std::string	joinPaths(const std::string& base, const std::string& path) ;
 	static std::string	replaceRoutePathByRootDirectory(const std::string& url, const Route* route) ;
 	static std::string	replaceRoutePathByUploadDirectory(const std::string& url, const Route* route) ;

@@ -82,17 +82,17 @@ void Poller::setPollingMode(e_pollingMode mode, ClientSocket* socket)
 {
 	if (mode == WRITING)
 	{
-		verboseLog("Setting EPOLLOUT for socket " + socket->getSocketFdString());
+		verboseLog("Setting EPOLLOUT for socket");
 		socket->setEpollEventsMask(EPOLLOUT | EPOLLERR);
 	}
 	else if (mode == READING)
 	{
-		verboseLog("Setting EPOLLIN for socket " + socket->getSocketFdString());
+		verboseLog("Setting EPOLLIN for socket");
 		socket->setEpollEventsMask(EPOLLIN | EPOLLERR);
 	}
 	else
 	{
-		verboseLog("Setting ONLY_ERROR for socket " + socket->getSocketFdString());
+		verboseLog("Setting ONLY_ERROR for socket");
 		socket->setEpollEventsMask(EPOLLERR);
 	}
 	updateSocketEvent(socket);
@@ -101,7 +101,7 @@ void Poller::setPollingMode(e_pollingMode mode, ClientSocket* socket)
 void	Poller::waitForEvents()
 {
 	// waiting on event for 5 seconds (non blocking to check for timeouts)
-	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, 5000);
+	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, 1);
 	if (_eventsReadyForProcess == -1)
 	{
 		if (errno == EINTR)
