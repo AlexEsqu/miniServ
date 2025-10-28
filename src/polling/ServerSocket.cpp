@@ -59,6 +59,11 @@ Poller&					ServerSocket::getEpoll()
 	return _poller;
 }
 
+std::map<size_t, Session>&	ServerSocket::getSessionMap()
+{
+	return _sessionMap;
+}
+
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
 void			ServerSocket::handleConnection(epoll_event)

@@ -6,12 +6,13 @@
 #include <map>
 #include <sstream>
 #include <set>
+#include <utility>
 
 #include "readability.hpp"
 #include "ServerConf.hpp"
 #include "Status.hpp"
 #include "Buffer.hpp"
-
+// #include "ServerSocket.hpp"
 
 // Used in Request object for machine state receiving and parsing of request chunks
 enum e_requestState {
@@ -44,6 +45,8 @@ class Response;
 
 class ServerConf;
 
+class ServerSocket;
+
 class Request
 {
 private:
@@ -63,6 +66,7 @@ private:
 	bool				_isChunked;
 	size_t				_contentLength;			// length of the request body to be expected
 	std::string			_contentType;
+	bool				_hasSessionId;
 
 	// REQUEST BUFFERS
 
@@ -71,7 +75,8 @@ private:
 	int					_readingEndOfCGIPipe;	// if CGI is needed, fd to read the result in
 
 	// CONFIGURATION APPLICABLE TO THE REQUEST
-
+	
+	ServerSocket& _serv;
 	const ServerConf&	_conf;					// configuration of the server socket
 	const Route*		_route;					// route matched through the URI
 	std::string			_paramCGI;
@@ -85,7 +90,7 @@ public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Request(const ServerConf& conf, Status& status, std::string requestChunk);
+	Request(ServerSocket &serv, Status& status, std::string requestChunk);
 	Request(const Request &copy);
 
 	//----------------- DESTRUCTOR -----------------------//

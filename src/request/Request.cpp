@@ -8,17 +8,15 @@
 // initializes a new request with a first chunk of request content
 // the object starts parsing as it receives information
 // the status is initialized empty, so set at 200 / SUCCESS
-Request::Request(const ServerConf& conf, Status& status, std::string requestChunk)
-	: _conf(conf)
-	, _requestState(PARSING_REQUEST_LINE)
-	, _status(status)
+Request::Request(ServerSocket &serv, Status &status, std::string requestChunk)
+	: _serv(serv),
+	  _conf(serv.getConf()), _requestState(PARSING_REQUEST_LINE), _status(status)
 {
 	addRequestChunk(requestChunk);
 }
 
 Request::Request(const Request &copy)
-	: _conf(copy._conf)
-	, _status(copy._status)
+	:_serv(copy._serv), _conf(copy._conf), _status(copy._status)
 {
 	*this = copy;
 }
@@ -33,15 +31,16 @@ Request::~Request()
 
 Request &Request::operator=(const Request &other)
 {
-	if (this != &other) {
-		_unparsedBuffer	= other._unparsedBuffer;
-		_methodAsString			= other._methodAsString;
-		_protocol				= other._protocol;
-		_URI					= other._URI;
-		_requestHeaderMap		= other._requestHeaderMap;
-		_route					= other._route;
-		_requestBodyBuffer		= other._requestBodyBuffer;
-		_status					= other._status;
+	if (this != &other)
+	{
+		_unparsedBuffer = other._unparsedBuffer;
+		_methodAsString = other._methodAsString;
+		_protocol = other._protocol;
+		_URI = other._URI;
+		_requestHeaderMap = other._requestHeaderMap;
+		_route = other._route;
+		_requestBodyBuffer = other._requestBodyBuffer;
+		_status = other._status;
 	}
 
 	return *this;
@@ -49,73 +48,76 @@ Request &Request::operator=(const Request &other)
 
 //---------------------------- GUETTERS -------------------------------------//
 
-std::string			Request::getMethodAsString() const
+std::string Request::getMethodAsString() const
 {
 	return _methodAsString;
 }
 
-e_methods			Request::getMethodCode() const
+e_methods Request::getMethodCode() const
 {
 	return _method;
 }
 
-std::string			Request::getProtocol() const
+std::string Request::getProtocol() const
 {
 	return _protocol;
 }
 
-std::string			Request::getRequestedURL() const
+std::string Request::getRequestedURL() const
 {
 	return _URI;
 }
 
-std::map<std::string, std::string>&	Request::getAdditionalHeaderInfo()
+std::map<std::string, std::string> &Request::getAdditionalHeaderInfo()
 {
 	return _requestHeaderMap;
 }
 
-void				Request::setContentType(std::string string)
+void Request::setContentType(std::string string)
 {
 	_contentType = string;
 }
 
 std::string Request::getContentType() const
 {
-	return(_contentType);
+	return (_contentType);
 }
 
-const ServerConf&	Request::getConf() const
+const ServerConf &Request::getConf() const
 {
 	return _conf;
 }
 
-Status&		Request::getStatus()
+Status &Request::getStatus()
 {
 	return _status;
 }
 
-int					Request::getParsingState() const
+int Request::getParsingState() const
 {
 	return _requestState;
 }
 
-const Route*		Request::getRoute() const
+const Route *Request::getRoute() const
 {
 	return (_route);
 }
 
-std::string			Request::getBody() const
+std::string Request::getBody() const
 {
 	// std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
 	// std::cout << "Buffer using file: " << _requestBodyBuffer.isUsingFile() << std::endl;
 	// std::cout << "Buffer size: " << _requestBodyBuffer.getBufferSize() << std::endl;
 
-	if (_requestBodyBuffer.isUsingFile()) {
+	if (_requestBodyBuffer.isUsingFile())
+	{
 		// std::cout << "Reading from file buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getAllContent();
 		// std::cout << "File content size: " << content.size() << std::endl;
 		return content;
-	} else {
+	}
+	else
+	{
 		// std::cout << "Reading from memory buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getMemoryBuffer();
 		// std::cout << "Memory content size: " << content.size() << std::endl;
@@ -123,31 +125,31 @@ std::string			Request::getBody() const
 	}
 }
 
-int			Request::getCgiPipe() const
+int Request::getCgiPipe() const
 {
 	return (_readingEndOfCGIPipe);
 }
 
-std::istream&	Request::getStreamFromBodyBuffer()
+std::istream &Request::getStreamFromBodyBuffer()
 {
 	return (_requestBodyBuffer.getStream());
 }
 
-bool				Request::isKeepAlive()
+bool Request::isKeepAlive()
 {
 	if (_requestHeaderMap.find("connection") != _requestHeaderMap.end())
 		return (_requestHeaderMap["connection"] == "keep-alive");
 	return false;
 }
 
-bool				Request::hasError() const
+bool Request::hasError() const
 {
 	return _status.hasError();
 }
 
 //----------------------- SETTERS -----------------------------------//
 
-void	Request::setMethod(std::string &method)
+void Request::setMethod(std::string &method)
 {
 	_methodAsString = method;
 	if (_methodAsString == "GET")
@@ -168,7 +170,7 @@ void	Request::setMethod(std::string &method)
 }
 
 // extracts the ?key=value CGI param from the URI, storing them in another string
-void	Request::setURI(std::string &URI)
+void Request::setURI(std::string &URI)
 {
 	size_t queryPos = URI.find('?');
 	if (queryPos != std::string::npos)
@@ -180,26 +182,26 @@ void	Request::setURI(std::string &URI)
 		_URI = URI;
 }
 
-void	Request::setProtocol(std::string &protocol)
+void Request::setProtocol(std::string &protocol)
 {
 	_protocol = protocol;
 	if (_protocol != "HTTP/1.1")
 		setError(HTTP_VERSION_NOT_SUPPORTED);
 }
 
-void	Request::setRoute(const Route* route)
+void Request::setRoute(const Route *route)
 {
 	_route = route;
 }
 
-void	Request::setParsingState(e_requestState requestState)
+void Request::setParsingState(e_requestState requestState)
 {
 	_requestState = requestState;
 }
 
 // Valid request line (1st line of a HTTP request) must have the format:
 //    Method SP Request-URI SP HTTP-Version CRLF
-void	Request::setRequestLine(std::string &requestLine)
+void Request::setRequestLine(std::string &requestLine)
 {
 	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
@@ -213,16 +215,33 @@ void	Request::setRequestLine(std::string &requestLine)
 	setProtocol(trim(splitRequestLine[2]));
 	std::cout << _methodAsString << " " << _URI << " ";
 }
+// Cookie: a=valeur
+// Cookie: b=autreValeur
 
-void	Request::addAsHeaderVar(std::string &keyValueString)
+void Request::addAsHeaderVar(std::string &keyValueString)
 {
-	size_t	equalPos = keyValueString.find(':');
-
-	if (equalPos != std::string::npos) {
+	size_t equalPos = keyValueString.find(':');
+	size_t sessionId;
+	if (equalPos != std::string::npos)
+	{
 		std::string key = keyValueString.substr(0, equalPos);
 		std::string value = keyValueString.substr(equalPos + 1);
 		key = trim(key);
 		value = trim(value);
+		if (key == "Cookie")
+		{
+			if (value.find("session_id") != std::string::npos) // if session_id is in cookie
+				_hasSessionId = true;
+			else
+			{
+				// assign a pseudo random number to session_id
+				sessionId = Session::generatePseudoRandomNumber();
+				_serv.getSessionMap().insert(std::pair<size_t, Session>(sessionId, Session(sessionId)));
+			}
+			_serv.getSessionMap()[sessionId].addCookie(value);
+			return;
+		}
+
 		strToLower(key);
 		strToLower(value);
 		_requestHeaderMap[key] = value;
@@ -235,7 +254,7 @@ void	Request::addAsHeaderVar(std::string &keyValueString)
 }
 
 // sets the Status object to error code and raises the error flag
-void	Request::setError(e_status statusCode)
+void Request::setError(e_status statusCode)
 {
 	_status.setStatusCode(statusCode);
 	std::ostringstream oss;
@@ -244,25 +263,21 @@ void	Request::setError(e_status statusCode)
 }
 
 // sets the Status object to error code WITHOUT raising the error flag
-void	Request::setStatus(e_status statusCode)
+void Request::setStatus(e_status statusCode)
 {
 	_status.setStatusCode(statusCode);
 }
 
-void	Request::setCgiPipe(int pipeFd)
+void Request::setCgiPipe(int pipeFd)
 {
 	_readingEndOfCGIPipe = pipeFd;
 }
 
-
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
-
-
-
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-void			Request::checkMethodIsAllowed()
+void Request::checkMethodIsAllowed()
 {
 	if (hasError())
 		return;
@@ -274,13 +289,13 @@ void			Request::checkMethodIsAllowed()
 		setError(METHOD_NOT_ALLOWED);
 }
 
-void			Request::validateRequestLine()
+void Request::validateRequestLine()
 {
 	_route = Router::findMatchingRoute(_URI, _conf);
 	checkMethodIsAllowed();
 }
 
-e_dataProgress	Request::parseRequestLine(std::string& chunk)
+e_dataProgress Request::parseRequestLine(std::string &chunk)
 {
 	// store chunk and return to epoll if the chunk does not contain
 	// the end of the request line
@@ -307,7 +322,7 @@ e_dataProgress	Request::parseRequestLine(std::string& chunk)
 	return RECEIVED_ALL;
 }
 
-e_dataProgress	Request::parseHeaderLine(std::string& chunk)
+e_dataProgress Request::parseHeaderLine(std::string &chunk)
 {
 	// store chunk and return to epoll if the chunk does not contain
 	// the end of the header line
@@ -319,7 +334,7 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 	}
 
 	// create request line out of chunk and possible unparsed leftover
-	std::string headerLine =_unparsedBuffer + chunk.substr(0, lineEnd);
+	std::string headerLine = _unparsedBuffer + chunk.substr(0, lineEnd);
 	_unparsedBuffer.clear();
 
 	// either add the header line as variable to the header map of variable
@@ -338,32 +353,32 @@ e_dataProgress	Request::parseHeaderLine(std::string& chunk)
 
 // For every chunk of data added to the request, parsing continues from last state
 // and returns if the current parsed item (header, body...) is not finished
-void	Request::addRequestChunk(std::string chunk)
+void Request::addRequestChunk(std::string chunk)
 {
 	while (_requestState != PARSING_DONE)
 	{
 		switch (_requestState)
 		{
-			case PARSING_REQUEST_LINE:
-			{
-				if (parseRequestLine(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
-			case PARSING_HEADERS:
-			{
-				if (parseHeaderLine(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
-			case PARSING_BODY:
-			{
-				if (assembleBody(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
-			default:
+		case PARSING_REQUEST_LINE:
+		{
+			if (parseRequestLine(chunk) == WAITING_FOR_MORE)
 				return;
+			break;
+		}
+		case PARSING_HEADERS:
+		{
+			if (parseHeaderLine(chunk) == WAITING_FOR_MORE)
+				return;
+			break;
+		}
+		case PARSING_BODY:
+		{
+			if (assembleBody(chunk) == WAITING_FOR_MORE)
+				return;
+			break;
+		}
+		default:
+			return;
 		}
 	}
 }
@@ -371,7 +386,7 @@ void	Request::addRequestChunk(std::string chunk)
 // It is not necessary to parse a body if the request is a GET or HEAD
 // even when a body should be parsed, it is only up to content length
 // unless the request is specifically marked as chunked by transfer encoding
-void				Request::setIfAssemblingBody()
+void Request::setIfAssemblingBody()
 {
 	// for certain methods and if an error is found in the headers, no need to parse body
 	if (_method == HEAD || _method == GET || _method == DELETE || hasError())
@@ -387,8 +402,7 @@ void				Request::setIfAssemblingBody()
 		_requestState = PARSING_DONE;
 	}
 
-	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end()
-		&& _requestHeaderMap["transfer-encoding"] == "chunked")
+	if (_requestHeaderMap.find("transfer-encoding") != _requestHeaderMap.end() && _requestHeaderMap["transfer-encoding"] == "chunked")
 	{
 		_requestState = PARSING_BODY;
 		_isChunked = true;
@@ -404,7 +418,7 @@ void				Request::setIfAssemblingBody()
 }
 
 // Making sure the body has been received in full, whether chunked or with Content-Length
-e_dataProgress	Request::assembleBody(std::string& chunk)
+e_dataProgress Request::assembleBody(std::string &chunk)
 {
 	if (_isChunked)
 		return assembleChunkedBody(chunk);
@@ -414,7 +428,7 @@ e_dataProgress	Request::assembleBody(std::string& chunk)
 
 // made for many small chunks which need to be parsed, so using the unparsedbuffer
 // for string manipulation before writing to the Buffer object
-e_dataProgress Request::assembleChunkedBody(std::string& chunk)
+e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 {
 	// append to chunked body any possible leftover from the header parsing
 	_unparsedBuffer.append(chunk);
@@ -460,7 +474,7 @@ e_dataProgress Request::assembleChunkedBody(std::string& chunk)
 }
 
 // Made for large single request, so making use of the temporary file buffer object
-e_dataProgress Request::assembleUnChunkedBody(std::string& chunk)
+e_dataProgress Request::assembleUnChunkedBody(std::string &chunk)
 {
 	// copy all leftover from the parsing into the buffer
 	if (!_unparsedBuffer.empty())

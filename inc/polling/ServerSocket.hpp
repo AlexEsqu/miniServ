@@ -47,6 +47,7 @@ public:
 
 	const ServerConf&	getConf() const;
 	Poller&				getEpoll();
+	std::map<size_t, Session>&	getSessionMap();
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 

@@ -29,7 +29,6 @@
 # include "PythonExecutor.hpp"
 # include "ContentFetcher.hpp"
 # include "ConfigParser.hpp"
-# include "Session.hpp"
 
 enum e_CGI
 {

@@ -229,7 +229,7 @@ void ClientSocket::readRequest()
 
 	// add a Request object if none exist, make it parse the current chunk
 	if (_request == NULL)
-		_request = new Request(_serv.getConf(), _status, requestChunk);
+		_request = new Request(_serv, _status, requestChunk);
 	// else add the chunk of unparsed material to the existing request
 	else
 		_request->addRequestChunk(requestChunk);
