@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <iostream>
+#include <dirent.h>
 
 #include "Request.hpp"
 #include "Response.hpp"
@@ -63,6 +64,7 @@ public:
 	static std::string	routeFilePathForGet(const std::string& url, const Route* route) ;
 	static std::string	routeFilePathForGetAsDirectory(std::string routedPath, const Route* route) ;
 	static std::string	routeFilePathForPost(const std::string& url, const Route* route) ;
+	static std::string	findFileInDirectoryWithExtension(std::string directory, std::string filename);
 };
 
 #endif

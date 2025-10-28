@@ -72,7 +72,6 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	// serve auto index instead of static page
 	if (Router::isDirectory(fileURL.c_str()))
 		return serveDirectoryListing(client, fileURL);
-
 	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
 	size_t size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
