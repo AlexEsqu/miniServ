@@ -9,14 +9,22 @@
 // the object starts parsing as it receives information
 // the status is initialized empty, so set at 200 / SUCCESS
 Request::Request(ServerSocket &serv, Status &status, std::string requestChunk)
-	: _serv(serv),
-	  _conf(serv.getConf()), _requestState(PARSING_REQUEST_LINE), _status(status)
+	: _hasSessionId(false),
+	  _sessionId(0),
+	  _serv(serv),
+	  _conf(serv.getConf()),
+	  _requestState(PARSING_REQUEST_LINE),
+	  _status(status)
 {
 	addRequestChunk(requestChunk);
 }
 
 Request::Request(const Request &copy)
-	:_serv(copy._serv), _conf(copy._conf), _status(copy._status)
+	: _hasSessionId(false),
+	  _sessionId(0), 
+	  _serv(copy._serv),
+	  _conf(copy._conf),
+	  _status(copy._status)
 {
 	*this = copy;
 }
@@ -41,6 +49,8 @@ Request &Request::operator=(const Request &other)
 		_route = other._route;
 		_requestBodyBuffer = other._requestBodyBuffer;
 		_status = other._status;
+		_sessionId = other._sessionId;
+		_hasSessionId = other._hasSessionId;
 	}
 
 	return *this;
@@ -88,6 +98,11 @@ const ServerConf &Request::getConf() const
 	return _conf;
 }
 
+ServerSocket &Request::getServerSocket()
+{
+	return _serv;
+}
+
 Status &Request::getStatus()
 {
 	return _status;
@@ -101,6 +116,16 @@ int Request::getParsingState() const
 const Route *Request::getRoute() const
 {
 	return (_route);
+}
+
+bool Request::hasSessionId() const
+{
+	return (_hasSessionId);
+}
+
+size_t Request::getSessionId() const
+{
+	return (_sessionId);
 }
 
 std::string Request::getBody() const
@@ -221,7 +246,7 @@ void Request::setRequestLine(std::string &requestLine)
 void Request::addAsHeaderVar(std::string &keyValueString)
 {
 	size_t equalPos = keyValueString.find(':');
-	size_t sessionId;
+	size_t sessionId = 0;
 	if (equalPos != std::string::npos)
 	{
 		std::string key = keyValueString.substr(0, equalPos);
@@ -236,9 +261,11 @@ void Request::addAsHeaderVar(std::string &keyValueString)
 			{
 				// assign a pseudo random number to session_id
 				sessionId = Session::generatePseudoRandomNumber();
+
 				_serv.getSessionMap().insert(std::pair<size_t, Session>(sessionId, Session(sessionId)));
 			}
 			_serv.getSessionMap()[sessionId].addCookie(value);
+			_sessionId = sessionId;
 			return;
 		}
 

@@ -7,7 +7,7 @@
 #include "Route.hpp"
 #include "Buffer.hpp"
 #include "Router.hpp"
-
+#include "ServerSocket.hpp"
 class Request;
 
 class Response
@@ -80,4 +80,5 @@ public:
 
 	std::string		fetchErrorPageContent(const Status &num);
 	void			addToContent(std::string contentChunk);
+	void			addHttpHeader(std::string key, std::string value);
 };

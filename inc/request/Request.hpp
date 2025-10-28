@@ -12,7 +12,6 @@
 #include "ServerConf.hpp"
 #include "Status.hpp"
 #include "Buffer.hpp"
-// #include "ServerSocket.hpp"
 
 // Used in Request object for machine state receiving and parsing of request chunks
 enum e_requestState {
@@ -62,12 +61,11 @@ private:
 	std::map
 		<std::string,
 		std::string>	_requestHeaderMap;		// key=value of all header variables
-
 	bool				_isChunked;
 	size_t				_contentLength;			// length of the request body to be expected
 	std::string			_contentType;
 	bool				_hasSessionId;
-
+	size_t				_sessionId;
 	// REQUEST BUFFERS
 
 	std::string			_unparsedBuffer;	// may store chunks of request header
@@ -128,13 +126,15 @@ public:
 	std::string			getContentType() const;
 
 	const ServerConf&	getConf() const;
+	ServerSocket&		getServerSocket();
 	Status&				getStatus();
 	int					getParsingState() const;
 	bool				hasError() const;
-
+	size_t				getSessionId() const;	
 	std::string			getBody() const;
 	std::istream&		getStreamFromBodyBuffer();
 	int					getCgiPipe() const;
+	bool				hasSessionId() const;
 
 	bool				isKeepAlive();
 

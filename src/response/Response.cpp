@@ -7,18 +7,18 @@
 ///////////////////////////////////////////////////////////////////
 
 Response::Response(Request *req)
-	: _request(req)
-	, _status(req->getStatus())
+	: _request(req), 
+	_status(req->getStatus())
 {
 }
 
 Response::Response(const Response &copy)
-	: _request(copy._request)
-	, _status(copy._status)
-	, _routedPath(copy._routedPath)
-	, _contentType(copy._contentType)
-	, _responsePage(copy._responsePage)
-	, _byteSent(copy._byteSent)
+	: _request(copy._request), 
+	_status(copy._status), 
+	_routedPath(copy._routedPath), 
+	_contentType(copy._contentType), 
+	_responsePage(copy._responsePage), 
+	_byteSent(copy._byteSent)
 {
 	// std::cout << "Response copy Constructor called" << std::endl;
 }
@@ -41,12 +41,12 @@ Response &Response::operator=(const Response &other)
 	if (this == &other)
 		return (*this);
 
-	_request			= other._request;
-	_status				= other._status;
-	_routedPath			= other._routedPath;
-	_contentType		= other._contentType;
-	_contentLength		= other._contentLength;
-	_responsePage		= other._responsePage;
+	_request = other._request;
+	_status = other._status;
+	_routedPath = other._routedPath;
+	_contentType = other._contentType;
+	_contentLength = other._contentLength;
+	_responsePage = other._responsePage;
 	return (*this);
 }
 
@@ -87,24 +87,24 @@ void Response::setStatus(e_status status)
 }
 
 // sets status code and raises error flag in request
-void	Response::setError(e_status status)
+void Response::setError(e_status status)
 {
 	_request->setError(status);
 }
 
-void	Response::setRoutedUrl(std::string url)
+void Response::setRoutedUrl(std::string url)
 {
 	_routedPath = url;
 }
 
-bool	isDirectory(const char *path)
+bool isDirectory(const char *path)
 {
 	struct stat path_stat;
 	stat(path, &path_stat);
 	return S_ISDIR(path_stat.st_mode);
 }
 
-bool	isValidPath(std::string& path)
+bool isValidPath(std::string &path)
 {
 	std::ifstream in(path.c_str(), std::ios::binary);
 	if (in.is_open() && !isDirectory(path.c_str()))
@@ -116,27 +116,27 @@ bool	isValidPath(std::string& path)
 ///                    GETTERS 			                         //
 ///////////////////////////////////////////////////////////////////
 
-Request		*Response::getRequest()
+Request *Response::getRequest()
 {
 	return (_request);
 }
 
-std::string	Response::getRoutedURL() const
+std::string Response::getRoutedURL() const
 {
 	return (_routedPath);
 }
 
-Status&		Response::getStatus()
+Status &Response::getStatus()
 {
 	return (_request->getStatus());
 }
 
-std::string	Response::getHTTPHeaders() const
+std::string Response::getHTTPHeaders() const
 {
 	return (_HTTPHeaders);
 }
 
-std::string	Response::getHTTPResponse()
+std::string Response::getHTTPResponse()
 {
 	std::string result;
 
@@ -149,14 +149,14 @@ std::string	Response::getHTTPResponse()
 	return result;
 }
 
-bool		Response::hasError() const
+bool Response::hasError() const
 {
 	return (_status.hasError());
 }
 
 std::string Response::getBoundary()
 {
-	return(_boundary);
+	return (_boundary);
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -165,26 +165,38 @@ std::string Response::getBoundary()
 
 void Response::createHTTPHeaders()
 {
+	std::map<std::string, std::string>::iterator it;
+	std::map<std::string, std::string> cookieMap = _request->getServerSocket().getSessionMap()[_request->getSessionId()].getCookies();
 	if (getStatus().getStatusCode() >= 400) // if its an error
 		setContent(fetchErrorPageContent(getStatus()));
-
-	this->_contentLength = _responsePage.getBufferSize();
-
-	std::stringstream header;
-	header << _request->getProtocol() << " " << getStatus() << "\r\n"
-			<< "Content-Type: " << _contentType << "\r\n"
-			<< "Content-Length: " << _contentLength << "\r\n"
-			<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
-			<< "Server: miniServ\r\n";
-
+	_contentLength = _responsePage.getBufferSize();
+	std::stringstream contentLength;
+	contentLength << _contentLength;
+	addHttpHeader(_request->getProtocol(), getStatus().getStringStatusCode());
+	addHttpHeader("Content-Type", _contentType);
+	addHttpHeader("Content-Length", contentLength.str());
+	addHttpHeader("Connection", (_request->isKeepAlive() ? "keep-alive" : "close"));
+	addHttpHeader("Server", "miniServ");
+	if (_request->hasSessionId())
+	{
+		for (it = cookieMap.begin(); it != cookieMap.end(); it++)
+		{
+			addHttpHeader("Set-Cookie", it->first + "=" + it->second);
+		}
+	}
 	if (_request->getMethodAsString() == "POST")
 	{
-		header << "Refresh: 0; url=/\r\n";
+		_HTTPHeaders += "Refresh: 0; url=/\r\n";
 	}
 
-	header << "\r\n";
+	_HTTPHeaders += "\r\n";
+}
 
-	_HTTPHeaders = header.str();
+void Response::addHttpHeader(std::string key, std::string value)
+{
+	std::stringstream header;
+	header << key << ": " << value << "\r\n";
+	_HTTPHeaders += header.str();
 }
 
 std::string Response::createErrorPageContent(const Status &num)
@@ -216,7 +228,7 @@ std::string Response::createErrorPageContent(const Status &num)
 	return (outputString.str());
 }
 
-void		Response::addToContent(const std::string content)
+void Response::addToContent(const std::string content)
 {
 	_responsePage.writeToBuffer(content.c_str(), content.size());
 }
@@ -246,5 +258,3 @@ std::string Response::fetchErrorPageContent(const Status &num)
 	inputErrorFile.close();
 	return (outputString.str());
 }
-
-
