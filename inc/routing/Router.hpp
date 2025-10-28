@@ -46,6 +46,11 @@ public:
 	static bool			isExisting(const char* path);
 	static bool			isAllowed(const char* path);
 
+	// TO DO:
+	static bool			isAllowedRead(const char* path);
+	static bool			isAllowedWrite(const char* path);
+	static bool			isAllowedExecute(const char* path);
+
 	static bool			isValidGetFilePath(const std::string& path) ;
 	static bool			isRootPath(const std::string& uri) ;
 
