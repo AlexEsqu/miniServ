@@ -101,7 +101,7 @@ void Poller::setPollingMode(e_pollingMode mode, ClientSocket* socket)
 void	Poller::waitForEvents()
 {
 	// waiting on event for 5 seconds (non blocking to check for timeouts)
-	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, 5000);
+	_eventsReadyForProcess = epoll_wait(_epollFd, _eventQueue, MAX_EVENTS, 1);
 	if (_eventsReadyForProcess == -1)
 	{
 		if (errno == EINTR)
