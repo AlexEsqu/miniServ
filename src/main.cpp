@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	checkConfigExist(argc, argv);
 
 	// parsing config file to create config objects with routes, ports, setup...
-	std::vector<ServerConf> serversConfs;
+	std::list<ServerConf> serversConfs;
 	serversConfs = ConfigParser::parseConfigFile(static_cast<const char *>(argv[1]));
 
 	// constructing epoll instance to poll (i.e. watch) the server and client sockets
@@ -43,8 +43,8 @@ int main(int argc, char **argv)
 
 	// opening sockets listening on the configured ports, acting as servers
 	std::vector<ServerSocket *> serverSockets;
-	for (size_t i = 0; i < serversConfs.size(); i++)
-		serverSockets.push_back(new ServerSocket(poller, serversConfs[i]));
+	for (std::list<ServerConf>::iterator i = serversConfs.begin(); i != serversConfs.end(); i++)
+		serverSockets.push_back(new ServerSocket(poller, *i));
 
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);

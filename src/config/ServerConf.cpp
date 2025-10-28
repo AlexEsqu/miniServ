@@ -92,6 +92,11 @@ const std::string&			ServerConf::getRoot() const
 	return (_root);
 }
 
+const std::string			ServerConf::getServerName() const
+{
+	return (_serverName);
+}
+
 const std::map<std::string, std::string>	&ServerConf::getParamMap() const
 {
 	return (_paramMap);

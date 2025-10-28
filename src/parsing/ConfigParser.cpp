@@ -116,7 +116,7 @@ Route	ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const st
 	while (getline(configFileStream, line) && !ConfigParser::isClosedCurlyBrace(line))
 	{
 		trim(line);
-		
+
 		if (line.empty() || ltrim(line)[0] == '#')
 			continue;
 
@@ -233,9 +233,35 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 	return serverConf;
 }
 
-std::vector<ServerConf> ConfigParser::parseConfigFile(const char *configFilePath)
+void					ConfigParser::removeInvalidServers(std::list<ServerConf>& configs)
 {
-	std::vector<ServerConf> configs;
+	std::set<int>			setOfUsedPorts;
+	std::set<std::string>	setOfUsedHostName;
+
+	for (std::list<ServerConf>::iterator i = configs.begin(); i != configs.end(); i++)
+	{
+		if (setOfUsedPorts.find(i->getPort()) != setOfUsedPorts.end())
+		{
+			std::cout << "Server " << i->getServerName() << " is using another server's port, deleting...\n";
+			configs.erase(i--);
+			continue;
+		}
+		else
+			setOfUsedPorts.insert(i->getPort());
+
+		if (setOfUsedHostName.find(i->getServerName()) != setOfUsedHostName.end())
+		{
+			std::cout << "Server " << i->getServerName() << " is using another server's name, deleting...\n";
+			configs.erase(i--);
+		}
+		else
+			setOfUsedHostName.insert(i->getServerName());
+	}
+}
+
+std::list<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath)
+{
+	std::list<ServerConf> configs;
 
 	if (!configFilePath)
 	{
@@ -262,6 +288,8 @@ std::vector<ServerConf> ConfigParser::parseConfigFile(const char *configFilePath
 			configs.push_back(parseServerBlock(configFileStream));
 		}
 	}
+
+	removeInvalidServers(configs);
 
 	return configs;
 }

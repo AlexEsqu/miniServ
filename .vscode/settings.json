@@ -89,7 +89,8 @@
     "spanstream": "cpp",
     "stacktrace": "cpp",
     "format": "cpp",
-    "stdfloat": "cpp"
+    "stdfloat": "cpp",
+    "__nullptr": "cpp"
   },
   "testMate.cpp.test.executables": "${workspaceFolder}/utest_webserv",
   "testMate.cpp.discovery.loadOnStartup": true,

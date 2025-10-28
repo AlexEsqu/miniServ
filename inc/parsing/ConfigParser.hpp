@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <list>
 #include <cstdlib>
 #include <fstream>
 
@@ -31,7 +32,7 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	static std::vector<ServerConf>	parseConfigFile(const char* configFilePath);
+	static std::list<ServerConf>	parseConfigFile(const char* configFilePath);
 	static ServerConf	parseServerBlock(std::ifstream& configFileStream);
 	static Route		parseLocationBlock(std::ifstream& configFileStream, const std::string& locationLine);
 	static std::string	extractLocationPath(const std::string& locationLine);
@@ -39,5 +40,5 @@ public:
 	static void			addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string>& paramMap);
 	static bool			isClosedCurlyBrace(std::string& line);
 	static void			addDefaultRoute(ServerConf& serverConf);
-
+	static void			removeInvalidServers(std::list<ServerConf>& configs);
 };

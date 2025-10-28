@@ -45,6 +45,7 @@ public:
 	//------------------- GETTERS ------------------------//
 
 	unsigned int				getPort() const;
+	const std::string			getServerName() const;
 	unsigned int				getMaxSizeClientRequestBody() const;
 	const std::vector<Route>&	getRoutes() const;
 	const std::string&			getRoot() const;
