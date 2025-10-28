@@ -8,6 +8,7 @@
 #include "PHPExecutor.hpp"
 #include "PythonExecutor.hpp"
 #include "Poller.hpp"
+#include "Session.hpp"
 
 static const time_t	TIMEOUT_CONNECTION = 10;
 
@@ -26,6 +27,8 @@ private:
 	const ServerConf&				_conf;
 	ContentFetcher*					_cf;
 	std::map<int, ClientSocket*>	_clients;
+	std::map<size_t, Session> 		_sessionMap;
+
 
 public:
 

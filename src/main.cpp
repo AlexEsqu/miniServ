@@ -27,9 +27,10 @@ void	checkConfigExist(int argc, char **argv)
 	configFile.close();
 }
 
-int main(int argc, char **argv)
+int main(int argc, char**argv)
 {
-	// SERVER CONFIGURATION
+	// std::cout << Session::generateRandomNumber() << std::endl;
+	//SERVER CONFIGURATION
 
 	// check the config file exists
 	checkConfigExist(argc, argv);
