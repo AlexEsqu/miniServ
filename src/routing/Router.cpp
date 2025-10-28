@@ -40,8 +40,8 @@ Router&		Router::operator=(const Router &other)
 
 std::string Router::findFileInDirectoryWithExtension(std::string directory, std::string filename) // EX "/upload", "picture" => picture.jpeg
 {
-	DIR *dir;
-	struct dirent *ent;
+	DIR				*dir;
+	struct dirent	*ent;
 	if ((dir = opendir(directory.c_str())) != NULL)
 	{
 		while ((ent = readdir(dir)) != NULL)
@@ -55,7 +55,8 @@ std::string Router::findFileInDirectoryWithExtension(std::string directory, std:
 				std::string fileWithoutExtension = ent.substr(0, dotPos);
 				if (fileWithoutExtension == filename)
 				{
-					std::string filePath = directory + "/" + ent;
+					std::string filePath = Router::joinPaths(directory, ent);
+					closedir(dir);
 					return filePath;
 				}
 			}
@@ -208,7 +209,7 @@ bool			Router::isValidGetFilePath(const std::string& path)
 	std::ifstream in(path.c_str(), std::ios::binary);
 	if (in.is_open() && !isDirectory(path))
 		return true;
-	
+
 				// std::cout << MAGENTA << "Found the file in the directory: " << findFileInDirectory(path) << STOP_COLOR << std::endl;
 
 	// else if ()

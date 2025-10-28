@@ -64,6 +64,8 @@ void ClientSocket::resetRequest()
 		delete _response;
 		_response = NULL;
 	}
+
+	_status.reset();
 }
 
 void ClientSocket::setClientState(e_clientState state)

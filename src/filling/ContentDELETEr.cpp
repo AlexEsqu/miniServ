@@ -32,7 +32,7 @@ void ContentFetcher::deleteItemFromServer(ClientSocket *client)
 		}
 	}
 
-	client->getRequest()->setStatus(NO_CONTENT);
+	client->getResponse()->setStatus(NO_CONTENT);
 	client->getResponse()->createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
 	verboseLog("DELETE succeeded for: " + path);

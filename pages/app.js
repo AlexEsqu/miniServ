@@ -210,6 +210,8 @@ deleteButton.addEventListener("click", async (e) => {
 			console.log("description deleted successfully");
 			await deleteFormInfo("picture");
 			console.log("description deleted successfully");
+			localStorage.setItem("formSubmitted", "false");
+
 			// Perform any additional actions after the form is deleted\
 			window.location.reload();
 		} catch (error) {
