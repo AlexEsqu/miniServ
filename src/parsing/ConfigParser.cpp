@@ -292,5 +292,25 @@ std::vector<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath
 
 	removeInvalidServerConf(configs);
 
+	if (configs.empty())
+		throw std::runtime_error("No valid configurations in config file");
+
 	return configs;
+}
+
+std::vector<ServerConf>	ConfigParser::parseConfig(int argc, char** argv)
+{
+	if (argc != 2)
+	{
+		throw std::runtime_error("Usage: ./webserv configuration_file");
+	}
+
+	std::ifstream configFile(argv[1]);
+	if (!configFile.is_open())
+	{
+		throw std::runtime_error("The configuration file is not valid");
+	}
+	configFile.close();
+
+	return parseConfigFile(argv[1]);
 }

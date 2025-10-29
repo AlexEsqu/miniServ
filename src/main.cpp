@@ -1,31 +1,20 @@
 #include "server.hpp"
 
-void	checkConfigExist(int argc, char **argv)
-{
-	if (argc != 2)
-	{
-		std::cout << "Usage: ./webserv configuration_file" << std::endl;
-		exit(1);
-	}
-
-	std::ifstream configFile(argv[1]);
-	if (!configFile.is_open())
-	{
-		std::cout << "The configuration file is not valid" << std::endl;
-		exit(1);
-	}
-	configFile.close();
-}
-
 int main(int argc, char**argv)
 {
 	//SERVER CONFIGURATION
 
-	// check the config file exists
-	checkConfigExist(argc, argv);
-
-	// parsing config file into config objects with server name, routes, ports...
-	std::vector<ServerConf> serversConfs = ConfigParser::parseConfigFile(static_cast<const char *>(argv[1]));
+	// check the config file exists, is readable, provides at least one good configuration...
+	std::vector<ServerConf> serversConfs;
+	try
+	{
+		serversConfs = ConfigParser::parseConfig(argc, argv);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
 
 	// constructing epoll instance to poll (i.e. watch) the server and client sockets
 	Poller poller;
@@ -41,6 +30,7 @@ int main(int argc, char**argv)
 
 	// using the poller to watch for any socket ready to write or read, and act accordingly
 	poller.launchEpollListenLoop();
+
 
 	return 0;
 }

@@ -30,6 +30,7 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
+	static std::vector<ServerConf>	parseConfig(int argc, char** argv);
 	static std::vector<ServerConf>	parseConfigFile(const char* configFilePath);
 	static ServerConf	parseServerBlock(std::ifstream& configFileStream);
 	static Route		parseLocationBlock(std::ifstream& configFileStream, const std::string& locationLine);
@@ -38,8 +39,5 @@ public:
 	static void			addLineAsServerKeyValue(std::string& line, std::map<std::string, std::string>& paramMap);
 	static bool			isClosedCurlyBrace(std::string& line);
 	static void			addDefaultRoute(ServerConf& serverConf);
-	static bool			isValidServerConf(const ServerConf& config,
-									const std::set<int>& usedPorts,
-									const std::set<std::string>& usedHostNames);
 	static void			removeInvalidServerConf(std::vector<ServerConf>& configs);
 };
