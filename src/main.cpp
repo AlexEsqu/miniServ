@@ -1,15 +1,5 @@
 #include "server.hpp"
 
-volatile sig_atomic_t g_running = 1;
-
-void listeningLoop(Poller &poller)
-{
-	while (g_running)
-	{
-		poller.launchEpollListenLoop();
-	}
-}
-
 void	checkConfigExist(int argc, char **argv)
 {
 	if (argc != 2)
@@ -50,10 +40,7 @@ int main(int argc, char**argv)
 	// SERVER RUNNING LOOP
 
 	// using the poller to watch for any socket ready to write or read, and act accordingly
-	listeningLoop(poller);
-
-
-	// CLEAN UP happens in poller destructer
+	poller.launchEpollListenLoop();
 
 	return 0;
 }

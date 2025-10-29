@@ -1,5 +1,7 @@
 #include "Poller.hpp"
 
+volatile sig_atomic_t g_running = 1;
+
 Poller::Poller()
 {
 	_epollFd = epoll_create(1);
@@ -171,11 +173,14 @@ void	Poller::processEvents()
 
 void	Poller::launchEpollListenLoop()
 {
-	waitForEvents();
-	processEvents();
+	while (g_running)
+	{
+		waitForEvents();
+		processEvents();
 
-	for (size_t i = 0; i < _serverList.size(); i++)
-		_serverList[i]->timeoutIdleClients();
+		for (size_t i = 0; i < _serverList.size(); i++)
+			_serverList[i]->timeoutIdleClients();
+	}
 }
 
 void	Poller::closeServers()
