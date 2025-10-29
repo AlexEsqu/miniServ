@@ -193,7 +193,7 @@ void Response::createHTTPHeaders()
 	{
 		for (it = cookieMap.begin(); it != cookieMap.end(); it++)
 		{
-			addHttpHeader("Set-Cookie", it->first + "=" + it->second + "; SameSite=Strict");
+			addHttpHeader("Set-Cookie", it->first + "=" + it->second + "; SameSite=Strict; Path=/");
 		}
 	}
 	if (_request.getMethodAsString() == "POST")
