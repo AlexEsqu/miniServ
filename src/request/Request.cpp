@@ -5,15 +5,12 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-// initializes a new request with a first chunk of request content
-// the object starts parsing as it receives information
-// the status is initialized empty, so set at 200 / SUCCESS
-Request::Request(const ServerConf& conf, Status& status, std::string requestChunk)
+Request::Request(const ServerConf& conf, Status& status)
 	: _conf(conf)
-	, _requestState(PARSING_REQUEST_LINE)
+	, _requestState(EMPTY)
 	, _status(status)
+	, _method(UNSUPPORTED)
 {
-	addRequestChunk(requestChunk);
 }
 
 Request::Request(const Request &copy)
@@ -34,7 +31,7 @@ Request::~Request()
 Request &Request::operator=(const Request &other)
 {
 	if (this != &other) {
-		_unparsedBuffer	= other._unparsedBuffer;
+		_unparsedBuffer			= other._unparsedBuffer;
 		_methodAsString			= other._methodAsString;
 		_protocol				= other._protocol;
 		_URI					= other._URI;
@@ -146,6 +143,24 @@ bool				Request::hasError() const
 }
 
 //----------------------- SETTERS -----------------------------------//
+
+void	Request::reset()
+{
+	_methodAsString.clear();
+	_method = UNSUPPORTED;
+	_protocol.clear();
+	_URI.clear();
+	_requestHeaderMap.clear();
+	_isChunked = false;
+	_contentLength = 0;
+	_contentType.clear();
+	_unparsedBuffer.clear();
+	_requestBodyBuffer.clearBuffer();
+	_readingEndOfCGIPipe = -1;
+	_route = NULL;
+	_paramCGI.clear();
+	_requestState = EMPTY;
+}
 
 void	Request::setMethod(std::string &method)
 {
@@ -347,6 +362,8 @@ void	Request::addRequestChunk(std::string chunk)
 	{
 		switch (_requestState)
 		{
+			case EMPTY:
+			{}
 			case PARSING_REQUEST_LINE:
 			{
 				if (parseRequestLine(chunk) == WAITING_FOR_MORE)

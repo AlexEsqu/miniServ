@@ -1,4 +1,5 @@
 #include "Response.hpp"
+#include "ClientSocket.hpp"
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -6,9 +7,9 @@
 ///                  CONSTRUCTORS                                //
 ///////////////////////////////////////////////////////////////////
 
-Response::Response(Request *req)
-	: _request(req)
-	, _status(req->getStatus())
+Response::Response(Request& request, Status& status)
+	: _request(request)
+	, _status(status)
 {
 }
 
@@ -29,7 +30,6 @@ Response::Response(const Response &copy)
 
 Response::~Response()
 {
-	// std::cout << "Response Destructor called" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -54,42 +54,49 @@ Response &Response::operator=(const Response &other)
 ///                    SETTERS				                     //
 ///////////////////////////////////////////////////////////////////
 
-void Response::setContentType(std::string type)
+void	Response::reset()
+{
+	_routedPath.clear();
+	_mapOfHeadersToBeAdded.clear();
+	_contentType.clear();
+	_contentLength = 0;
+	_boundary.clear();
+	_HTTPHeaders.clear();
+	_responsePage.clearBuffer();
+	_byteSent = 0;
+}
+
+void	Response::setContentType(std::string type)
 {
 	this->_contentType = type;
 }
 
-void Response::setContentLength(int length)
+void	Response::setContentLength(int length)
 {
 	this->_contentLength = length;
 }
 
-void Response::setContent(std::string content)
+void	Response::setContent(std::string content)
 {
 	_responsePage.clearBuffer();
 	_responsePage.writeToBuffer(content);
 }
 
-void Response::setHeader(std::string key, std::string value)
+void	Response::setHeader(std::string key, std::string value)
 {
 	_mapOfHeadersToBeAdded[key] = value;
 }
 
-void Response::setRequest(Request *request)
-{
-	_request = request;
-}
-
 // sets status code but does not raise error flag in request
-void Response::setStatus(e_status status)
+void	Response::setStatus(e_status status)
 {
-	_request->setStatus(status);
+	_status.setStatusCode(status);
 }
 
 // sets status code and raises error flag in request
 void	Response::setError(e_status status)
 {
-	_request->setError(status);
+	_status.setError(status);
 }
 
 void	Response::setRoutedUrl(std::string url)
@@ -116,19 +123,19 @@ bool	isValidPath(std::string& path)
 ///                    GETTERS 			                         //
 ///////////////////////////////////////////////////////////////////
 
-Request		*Response::getRequest()
+Request&	Response::getRequest()
 {
 	return (_request);
+}
+
+Status&		Response::getStatus()
+{
+	return (_status);
 }
 
 std::string	Response::getRoutedURL() const
 {
 	return (_routedPath);
-}
-
-Status&		Response::getStatus()
-{
-	return (_request->getStatus());
 }
 
 std::string	Response::getHTTPHeaders() const
@@ -149,14 +156,15 @@ std::string	Response::getHTTPResponse()
 	return result;
 }
 
-bool		Response::hasError() const
-{
-	return (_status.hasError());
-}
-
 std::string Response::getBoundary()
 {
 	return(_boundary);
+}
+
+
+bool		Response::hasError() const
+{
+	return (_status.hasError());
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -171,13 +179,13 @@ void Response::createHTTPHeaders()
 	this->_contentLength = _responsePage.getBufferSize();
 
 	std::stringstream header;
-	header << _request->getProtocol() << " " << getStatus() << "\r\n"
+	header << _request.getProtocol() << " " << getStatus() << "\r\n"
 			<< "Content-Type: " << _contentType << "\r\n"
 			<< "Content-Length: " << _contentLength << "\r\n"
-			<< "Connection: " << (_request->isKeepAlive() ? "keep-alive" : "close") << "\r\n"
+			<< "Connection: " << (_request.isKeepAlive() ? "keep-alive" : "close") << "\r\n"
 			<< "Server: miniServ\r\n";
 
-	if (_request->getMethodAsString() == "POST")
+	if (_request.getMethodAsString() == "POST")
 	{
 		header << "Refresh: 0; url=/\r\n";
 	}
@@ -190,7 +198,7 @@ void Response::createHTTPHeaders()
 std::string Response::createErrorPageContent(const Status &num)
 {
 	std::ifstream inputErrorFile;
-	std::string errorFile = Router::joinPaths(_request->getConf().getRoot(), "error.html");
+	std::string errorFile = Router::joinPaths(_request.getConf().getRoot(), "error.html");
 	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
 	std::stringstream outputString;
 	std::string line;
@@ -230,8 +238,8 @@ std::string Response::fetchErrorPageContent(const Status &num)
 	std::string errorPagePath;
 	errorKey << "error_page_" << num.getStatusCode();
 
-	if (_request->getConf().getParamMap().find(errorKey.str()) != _request->getConf().getParamMap().end())
-		errorPagePath = _request->getRoute()->getRootDirectory() + _request->getConf().getParamMap().find(errorKey.str())->second;
+	if (_request.getConf().getParamMap().find(errorKey.str()) != _request.getConf().getParamMap().end())
+		errorPagePath = _request.getRoute()->getRootDirectory() + _request.getConf().getParamMap().find(errorKey.str())->second;
 	else
 		return (createErrorPageContent(num));
 

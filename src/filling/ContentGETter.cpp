@@ -2,13 +2,13 @@
 
 void ContentFetcher::getItemFromServer(ClientSocket *client)
 {
-	verboseLog("Processing GET request to: " + client->getResponse()->getRoutedURL());
+	verboseLog("Processing GET request to: " + client->getResponse().getRoutedURL());
 
 	for (size_t i = 0; i < _executors.size(); i++)
 	{
-		if (_executors[i]->canExecuteFile(client->getResponse()->getRoutedURL()))
+		if (_executors[i]->canExecuteFile(client->getResponse().getRoutedURL()))
 		{
-			std::cout << CGI_FORMAT(" CGI ") << client->getResponse()->getRoutedURL();
+			std::cout << CGI_FORMAT(" CGI ") << client->getResponse().getRoutedURL();
 			_executors[i]->executeFile(client);
 			client->setClientState(CLIENT_FILLING);
 			return;
@@ -53,7 +53,7 @@ std::string ContentFetcher::findFileInDirectory(std::string directory, std::stri
 
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
-	std::string		fileURL(client->getResponse()->getRoutedURL());
+	std::string		fileURL(client->getResponse().getRoutedURL());
 	std::cout << fileURL;
 
 	size_t			filenamePos = fileURL.find_last_of('/');
@@ -64,7 +64,7 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 
 	if (!input.is_open() || Router::isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
 	{
-		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest()->getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
+		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest().getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
 		//then try to open findFileInDirectory
 	}
 
@@ -72,13 +72,13 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	// serve auto index instead of static page
 	if (Router::isDirectory(fileURL.c_str()))
 		return serveDirectoryListing(client, fileURL);
-	client->getResponse()->setContentType(getTypeBasedOnExtension(fileURL));
+	client->getResponse().setContentType(getTypeBasedOnExtension(fileURL));
 	size_t size = getSizeOfFile(fileURL);
 	std::vector<char> buffer(size);
 	input.read(buffer.data(), size);
 	std::string binaryContent(buffer.begin(), buffer.end());
-	client->getResponse()->addToContent(binaryContent);
-	client->getResponse()->createHTTPHeaders();
+	client->getResponse().addToContent(binaryContent);
+	client->getResponse().createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
 	verboseLog("Filling done");
 }
@@ -97,7 +97,7 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 	{
 		client->stopReadingPipe();
 		// wrap response content / error page with HTTP headers
-		client->getResponse()->createHTTPHeaders();
+		client->getResponse().createHTTPHeaders();
 		client->setClientState(CLIENT_HAS_FILLED);
 		return RECEIVED_ALL;
 	}
@@ -117,7 +117,7 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 	}
 
 	std::string stringBuffer(buffer, bytesRead);
-	client->getResponse()->addToContent(stringBuffer);
+	client->getResponse().addToContent(stringBuffer);
 
 	return WAITING_FOR_MORE;
 }
@@ -125,19 +125,19 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 void	ContentFetcher::serveDirectoryListing(ClientSocket* client, std::string& fileURL)
 {
 	// Gets the route to check if autoindex is enabled
-	const Route* route = client->getRequest()->getRoute();
+	const Route* route = client->getRequest().getRoute();
 
 	std::cout << "is autoindex = " << route->isAutoIndex() << "\n";
 	if (route && route->isAutoIndex())
 	{
-		std::string requestUri = client->getRequest()->getRequestedURL();
+		std::string requestUri = client->getRequest().getRequestedURL();
 		std::string directoryListingPage = createDirectoryListing(fileURL, requestUri);
 
 		if (!directoryListingPage.empty())
 		{
-			client->getResponse()->setContentType("text/html");
-			client->getResponse()->addToContent(directoryListingPage);
-			client->getResponse()->createHTTPHeaders();
+			client->getResponse().setContentType("text/html");
+			client->getResponse().addToContent(directoryListingPage);
+			client->getResponse().createHTTPHeaders();
 			client->setClientState(CLIENT_HAS_FILLED);
 			return;
 		}
@@ -249,19 +249,19 @@ std::string ContentFetcher::createDirectoryListing(const std::string& path, cons
 // Same as the getItemFromServer but with no body
 void ContentFetcher::headItemFromServer(ClientSocket *client)
 {
-	verboseLog("Processing HEAD request to: " + client->getResponse()->getRoutedURL());
+	verboseLog("Processing HEAD request to: " + client->getResponse().getRoutedURL());
 
-	const Route *route = client->getRequest()->getRoute();
+	const Route *route = client->getRequest().getRoute();
 
-	std::string path = Router::routeFilePathForGet(client->getRequest()->getRequestedURL(), route);
+	std::string path = Router::routeFilePathForGet(client->getRequest().getRequestedURL(), route);
 	if (path.empty() || !Router::isExisting(path.c_str()) || Router::isDirectory(path.c_str()))
 	{
 		serveErrorPage(client, NOT_FOUND);
 		return;
 	}
 
-	client->getResponse()->setContentType(getTypeBasedOnExtension(path));
-	client->getResponse()->createHTTPHeaders();
+	client->getResponse().setContentType(getTypeBasedOnExtension(path));
+	client->getResponse().createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
 	verboseLog("HEAD prepared for: " + path);
 }

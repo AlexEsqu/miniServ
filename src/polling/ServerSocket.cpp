@@ -177,9 +177,9 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 
 void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 {
-	if (socket->getRequest()->isKeepAlive())
+	if (socket->getRequest().isKeepAlive())
 	{
-		socket->resetRequest();
+		socket->resetContent();
 		socket->updateLastEventTime();
 		_poller.setPollingMode(READING, socket);
 	}
@@ -206,7 +206,7 @@ void		ServerSocket::timeoutIdleClients()
 		// 			<< " idle for " << idleTime
 		// 			<< " seconds." << std::endl;
 
-		if (idleTime > TIMEOUT_CONNECTION && client->hasRequest()
+		if (idleTime > TIMEOUT_CONNECTION && client->hasStartedRequest()
 			&& (client->getClientState() == CLIENT_FILLING || client->getClientState() == CLIENT_PARSING))
 		{
 			std::cout << "Timeout: " << TIMEOUT_CONNECTION << std::endl;

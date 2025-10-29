@@ -70,8 +70,8 @@ void	PythonExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 	// unchunk (if needed ?)
 
 	// assemble into an execve approved array of char*, add EOF at end
-	std::vector<const char*> argv(buildArgv(program, client->getResponse()->getRoutedURL()));
-	std::vector<const char*> env(buildEnv(*client->getRequest()));
+	std::vector<const char*> argv(buildArgv(program, client->getResponse().getRoutedURL()));
+	std::vector<const char*> env(buildEnv(client->getRequest()));
 
 	execve(program, (char**)argv.data(), (char**)env.data());
 

@@ -32,8 +32,8 @@ private:
 	char				_buffer[BUFFSIZE];
 
 	Status				_status;
-	Request*			_request;
-	Response*			_response;
+	Request				_request;
+	Response			_response;
 
 	bool				_isReadingFromPipe;
 	int					_readingEndOfCgiPipe;
@@ -58,15 +58,16 @@ public:
 
 	//----------------------- GETTER ---------------------//
 
-	char*				getBuffer();
-	Request*			getRequest();
+	Request&			getRequest();
+	Response&			getResponse();
+	Status&				getStatus();
 	ServerSocket&		getServer();
-	Response*			getResponse();
+
+	char*				getBuffer();
 	int					getCgiPipeFd();
+
 	time_t				getLastEventTime() const;
-
 	e_clientState		getClientState() const;
-
 	bool				isReadingFromPipe() const;
 
 	//----------------- MEMBER FUNCTION ------------------//
@@ -76,18 +77,16 @@ public:
 	void				checkForReadError(int valread);
 
 	void				readRequest();
-	void				createNewResponse();
 	void				startReadingPipe(int pipeFd);
 	void				stopReadingPipe();
 	void				sendResponse();
-	void				deleteResponse();
 
-	bool				hasRequest() const;
+	bool				hasStartedRequest() const;
 	bool				hasParsedRequest();
 	bool				hasFilledResponse() const;
 	bool				hasSentResponse() const;
-	void				resetRequest();
+
+	void				resetContent();
 	void				updateLastEventTime();
 	size_t				generateRandomNumber();
-
 };

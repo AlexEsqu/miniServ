@@ -15,6 +15,7 @@
 
 // Used in Request object for machine state receiving and parsing of request chunks
 enum e_requestState {
+	EMPTY,
 	PARSING_REQUEST_LINE,
 	PARSING_HEADERS,
 	PARSING_BODY,
@@ -50,6 +51,14 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
+	const ServerConf&	_conf;					// configuration of the server socket
+	Buffer 				_requestBodyBuffer;		// stores the body of the request
+
+	// REQUEST CURRENT STATE
+
+	e_requestState		_requestState;			// current state of the request (parsing, fufilling, sending)
+	Status&				_status;				// keeps track of request status code
+
 	// REQUEST DATA
 
 	std::string			_methodAsString;		// type of request as string
@@ -67,25 +76,22 @@ private:
 	// REQUEST BUFFERS
 
 	std::string			_unparsedBuffer;	// may store chunks of request header
-	Buffer 				_requestBodyBuffer;		// stores the body of the request
+
 	int					_readingEndOfCGIPipe;	// if CGI is needed, fd to read the result in
 
 	// CONFIGURATION APPLICABLE TO THE REQUEST
 
-	const ServerConf&	_conf;					// configuration of the server socket
 	const Route*		_route;					// route matched through the URI
 	std::string			_paramCGI;
 
-	// REQUEST CURRENT STATE
 
-	e_requestState		_requestState;			// current state of the request (parsing, fufilling, sending)
-	Status&				_status;				// keeps track of request status code
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Request(const ServerConf& conf, Status& status, std::string requestChunk);
+	Request(const ServerConf& conf, Status& status);
+
 	Request(const Request &copy);
 
 	//----------------- DESTRUCTOR -----------------------//
@@ -93,6 +99,8 @@ public:
 	~Request();
 
 	//-------------------- SETTER ------------------------//
+
+	void				reset();
 
 	void				setMethod(std::string& method);
 	void				setProtocol(std::string& protocol);

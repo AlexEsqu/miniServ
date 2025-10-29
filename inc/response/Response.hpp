@@ -15,7 +15,7 @@ class Response
 private:
 	//------------------ ATTRIBUTES ----------------------//
 
-	Request*			_request;
+	Request&			_request;
 	Status&				_status;
 
 	std::string			_routedPath;
@@ -36,18 +36,21 @@ private:
 public:
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Response(Request *req);
+	Response(Request& request, Status& status);
+
 	Response(const Response &copy);
 
 	//------------------- OPERATORS ----------------------//
 
-	Response		&operator=(const Response &other);
+	Response&		operator=(const Response &other);
 
 	//----------------- DESTRUCTOR -----------------------//
 
 	virtual			~Response();
 
 	//-------------------- SETTER ------------------------//
+
+	void			reset();
 
 	void			createHTTPHeaders();
 
@@ -59,13 +62,12 @@ public:
 
 	void			setRoutedUrl(std::string url);
 
-	void			setRequest(Request* request);
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
 
 	//-------------------- GETTERS -----------------------//
 
-	Request*		getRequest();
+	Request&		getRequest();
 	Status&			getStatus();
 
 	std::string		getHTTPHeaders() const;

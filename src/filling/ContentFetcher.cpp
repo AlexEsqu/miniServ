@@ -180,39 +180,36 @@ size_t	ContentFetcher::getSizeOfFile(const std::string& filename)
 
 void ContentFetcher::serveErrorPage(ClientSocket *client, e_status status)
 {
-	client->getRequest()->setError(status);
-	client->getResponse()->createHTTPHeaders();
+	client->getStatus().setError(status);
+	client->getResponse().createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
 }
 
 void ContentFetcher::serveErrorPageBasedOnExistingStatus(ClientSocket *client)
 {
-	client->getResponse()->createHTTPHeaders();
+	client->getResponse().createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
 }
 
 void ContentFetcher::fillResponse(ClientSocket *client)
 {
-	// create a response object and attach it to the request
-	client->createNewResponse();
-	Request *request = client->getRequest();
-	Router::routeRequest(client->getRequest(), client->getResponse());
+	Router::routeRequest(&(client->getRequest()), &(client->getResponse()));
 
-	verboseLog("Filling request to: " + client->getResponse()->getRoutedURL());
+	verboseLog("Filling request to: " + client->getResponse().getRoutedURL());
 
 	// if an error has been caught when parsing, no need to fetch content
-	if (request->hasError())
+	if (client->getRequest().hasError())
 		serveErrorPageBasedOnExistingStatus(client);
 
 	// else use the correct function to execute the requested method
-	else if (request->getMethodCode() == GET)
+	else if (client->getRequest().getMethodCode() == GET)
 		getItemFromServer(client);
-	else if (request->getMethodCode() == POST)
+	else if (client->getRequest().getMethodCode() == POST)
 		postItemFromServer(client);
-	else if (request->getMethodCode() == DELETE)
+	else if (client->getRequest().getMethodCode() == DELETE)
 		deleteItemFromServer(client);
-	else if (request->getMethodCode() == PUT)
+	else if (client->getRequest().getMethodCode() == PUT)
 		postItemFromServer(client);
-	else if (request->getMethodCode() == HEAD)
+	else if (client->getRequest().getMethodCode() == HEAD)
 		getItemFromServer(client);
 }
