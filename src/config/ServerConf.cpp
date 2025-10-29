@@ -7,9 +7,9 @@ ServerConf::ServerConf()
 	, _port(8080)
 {
 
-// #ifdef DEBUG
-// 	std::cout << "ServerConf Generic Constructor called" << std::endl;
-// #endif
+#ifdef DEBUG
+	std::cout << "ServerConf Generic Constructor called" << std::endl;
+#endif
 }
 
 ServerConf::ServerConf(std::map<std::string, std::string> paramMap)
@@ -21,9 +21,9 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap)
 		_port = atoi(_paramMap["listen"].c_str());
 	}
 
-// #ifdef DEBUG
-// 	std::cout << "ServerConf Custom Constructor called" << std::endl;
-// #endif
+#ifdef DEBUG
+	std::cout << "ServerConf Custom Constructor called" << std::endl;
+#endif
 }
 
 ServerConf::ServerConf(const ServerConf &copy)
@@ -33,22 +33,23 @@ ServerConf::ServerConf(const ServerConf &copy)
 	, _root(copy._root)
 	, _paramMap(copy._paramMap)
 {
+	_routes.clear();
+	_routes.reserve(copy._routes.size());
 	for (size_t i = 0; i < copy._routes.size(); ++i)
 		_routes.push_back(Route(copy._routes[i]));
 
-// #ifdef DEBUG
-// 	std::cout << "ServerConf copy Constructor called" << std::endl;
-// #endif
+#ifdef DEBUG
+	std::cout << "ServerConf copy Constructor called" << std::endl;
+#endif
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 ServerConf::~ServerConf()
 {
-// #ifdef DEBUG
-// 	std::cout
-// 		<< "ServerConf Destructor called" << std::endl;
-// #endif
+#ifdef DEBUG
+	std::cout << "ServerConf Destructor called" << std::endl;
+#endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -64,7 +65,10 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 		_root = other._root;
 
 		_paramMap = other._paramMap;
-		for (size_t i = 0; i < other._routes.size(); ++i)
+
+		_routes.clear();
+		_routes.reserve(other._routes.size());
+		for (size_t i = 0; i < other._routes.size(); i++)
 			_routes.push_back(Route(other._routes[i]));
 	}
 	return (*this);

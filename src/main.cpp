@@ -29,23 +29,19 @@ void	checkConfigExist(int argc, char **argv)
 
 int main(int argc, char**argv)
 {
-	// std::cout << Session::generateRandomNumber() << std::endl;
 	//SERVER CONFIGURATION
 
 	// check the config file exists
 	checkConfigExist(argc, argv);
 
-	// parsing config file to create config objects with routes, ports, setup...
-	std::list<ServerConf> serversConfs;
-	serversConfs = ConfigParser::parseConfigFile(static_cast<const char *>(argv[1]));
+	// parsing config file into config objects with server name, routes, ports...
+	std::vector<ServerConf> serversConfs = ConfigParser::parseConfigFile(static_cast<const char *>(argv[1]));
 
 	// constructing epoll instance to poll (i.e. watch) the server and client sockets
 	Poller poller;
 
 	// opening sockets listening on the configured ports, acting as servers
-	std::vector<ServerSocket *> serverSockets;
-	for (std::list<ServerConf>::iterator i = serversConfs.begin(); i != serversConfs.end(); i++)
-		serverSockets.push_back(new ServerSocket(poller, *i));
+	poller.openServersAndAddToWatchList(serversConfs);
 
 	// initializing and handling signals
 	signal(SIGINT, singalHandler);
@@ -57,11 +53,7 @@ int main(int argc, char**argv)
 	listeningLoop(poller);
 
 
-	// CLEAN UP
-
-	// deleting the allocated info contained in the server sockets
-	for (size_t i = 0; i < serverSockets.size(); i++)
-		delete serverSockets[i];
+	// CLEAN UP happens in poller destructer
 
 	return 0;
 }

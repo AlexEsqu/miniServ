@@ -233,12 +233,12 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 	return serverConf;
 }
 
-void					ConfigParser::removeInvalidServers(std::list<ServerConf>& configs)
+void					ConfigParser::removeInvalidServerConf(std::vector<ServerConf>& configs)
 {
 	std::set<int>			setOfUsedPorts;
 	std::set<std::string>	setOfUsedHostName;
 
-	for (std::list<ServerConf>::iterator i = configs.begin(); i != configs.end(); i++)
+	for (std::vector<ServerConf>::iterator i = configs.begin(); i != configs.end(); i++)
 	{
 		if (setOfUsedPorts.find(i->getPort()) != setOfUsedPorts.end())
 		{
@@ -260,9 +260,9 @@ void					ConfigParser::removeInvalidServers(std::list<ServerConf>& configs)
 	}
 }
 
-std::list<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath)
+std::vector<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath)
 {
-	std::list<ServerConf> configs;
+	std::vector<ServerConf> configs;
 
 	if (!configFilePath)
 	{
@@ -290,7 +290,7 @@ std::list<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath)
 		}
 	}
 
-	removeInvalidServers(configs);
+	removeInvalidServerConf(configs);
 
 	return configs;
 }

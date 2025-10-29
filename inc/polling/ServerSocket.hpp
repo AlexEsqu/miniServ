@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <sys/epoll.h>
+#include <list>
 
 #include "ClientSocket.hpp"
 #include "ServerConf.hpp"
@@ -68,4 +69,7 @@ public:
 	bool				socketIsHavingTrouble(epoll_event& event);
 	bool				socketIsHangingUp(epoll_event& event);
 
+
+	static std::vector
+		<ServerSocket *>	OpenAndTrackServer(std::list<ServerConf>& serversConfs, Poller& poller);
 };

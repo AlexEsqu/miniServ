@@ -4,27 +4,27 @@
 
 Route::Route()
 {
-	// #ifdef DEBUG
-	// 	std::cout << "Route Generic Constructor called" << std::endl;
-	// #endif
+	#ifdef DEBUG
+		std::cout << "Route Generic Constructor called" << std::endl;
+	#endif
 }
 
 Route::Route(const Route &copy)
 {
 	*this = copy;
 
-	// #ifdef DEBUG
-	// 	std::cout << "Route copy Constructor called" << std::endl;
-	// #endif
+	#ifdef DEBUG
+		std::cout << "Route copy Constructor called" << std::endl;
+	#endif
 }
 
 //--------------------------- DESTRUCTORS -----------------------------------//
 
 Route::~Route()
 {
-	// #ifdef DEBUG
-	// 	std::cout << "Route Destructor called" << std::endl;
-	// #endif
+	#ifdef DEBUG
+		std::cout << "Route Destructor called" << std::endl;
+	#endif
 }
 
 //---------------------------- OPERATORS ------------------------------------//
@@ -104,14 +104,11 @@ bool	Route::isPathMatch(const std::string& requestPath) const
 	if (_urlPath == "/")
 		return true;
 
-	// Check if request path starts with route path
 	if (requestPath.find(_urlPath) == 0)
 	{
-		// Exact match
 		if (requestPath.length() == _urlPath.length())
 			return true;
 
-		// Path continues with / (proper prefix)
 		if (requestPath.length() > _urlPath.length() &&
 			requestPath[_urlPath.length()] == '/')
 			return true;

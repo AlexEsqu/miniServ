@@ -23,7 +23,7 @@ private:
 	int							_epollFd;
 	int							_eventsReadyForProcess;
 	struct epoll_event			_eventQueue[MAX_EVENTS];
-	std::vector<ServerSocket*>	_serverList;			// for timeout reaping
+	std::vector<ServerSocket*>	_serverList;
 
 public:
 
@@ -45,6 +45,8 @@ public:
 
 	//----------------- MEMBER FUNCTION ------------------//
 
+	void				openServersAndAddToWatchList(std::vector<ServerConf>& serversConfs);
+
 	void				addSocket(Sockette& socket);
 	void				addServerSocket(ServerSocket& serverSocket);
 	void				removeSocket(Sockette* socket);
@@ -58,6 +60,8 @@ public:
 	void				processEvents();
 	void				updateSocketEvent(Sockette* socket);
 	void				setPollingMode(e_pollingMode mode, ClientSocket* socket);
+
+	void				closeServers();
 
 	//------------------ EXCEPTIONS ----------------------//
 
