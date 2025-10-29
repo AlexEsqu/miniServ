@@ -5,23 +5,21 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-Request::Request(ServerConf& conf, Status& status)
-	: _conf(conf)
-	, _requestState(EMPTY)
-	, _status(status)
-	, _method(UNSUPPORTED)
-	, _hasSessionId(false)
-	, _sessionId(0)
+Request::Request(ServerConf &conf, Status &status)
+	: _conf(conf),
+	  _requestState(EMPTY),
+	  _status(status),
+	  _method(UNSUPPORTED),
+	  _sessionId(0)
 {
 }
 
 Request::Request(const Request &copy)
-	: _conf(copy._conf)
-	, _requestState(copy._requestState)
-	, _status(copy._status)
-	, _method(copy.getMethodCode())
-	, _hasSessionId(copy.hasSessionId())
-	, _sessionId(copy.getSessionId())
+	: _conf(copy._conf),
+	  _requestState(copy._requestState),
+	  _status(copy._status),
+	  _method(copy.getMethodCode()),
+	  _sessionId(copy.getSessionId())
 {
 	*this = copy;
 }
@@ -38,7 +36,7 @@ Request &Request::operator=(const Request &other)
 {
 	if (this != &other)
 	{
-		_unparsedBuffer 		= other._unparsedBuffer;
+		_unparsedBuffer = other._unparsedBuffer;
 		_methodAsString = other._methodAsString;
 		_protocol = other._protocol;
 		_URI = other._URI;
@@ -47,7 +45,6 @@ Request &Request::operator=(const Request &other)
 		_requestBodyBuffer = other._requestBodyBuffer;
 		_status = other._status;
 		_sessionId = other._sessionId;
-		_hasSessionId = other._hasSessionId;
 	}
 
 	return *this;
@@ -95,7 +92,7 @@ const ServerConf &Request::getConf() const
 	return _conf;
 }
 
-std::map<size_t, Session>& Request::getSessionMap()
+std::map<size_t, Session> &Request::getSessionMap()
 {
 	return _conf.getSessionMap();
 }
@@ -117,7 +114,7 @@ const Route *Request::getRoute() const
 
 bool Request::hasSessionId() const
 {
-	return (_hasSessionId);
+	return (_sessionId != 0);
 }
 
 size_t Request::getSessionId() const
@@ -171,7 +168,7 @@ bool Request::hasError() const
 
 //----------------------- SETTERS -----------------------------------//
 
-void	Request::reset()
+void Request::reset()
 {
 	_methodAsString.clear();
 	_method = UNSUPPORTED;
@@ -189,7 +186,7 @@ void	Request::reset()
 	_requestState = EMPTY;
 }
 
-void	Request::setMethod(std::string &method)
+void Request::setMethod(std::string &method)
 {
 	_methodAsString = method;
 	if (_methodAsString == "GET")
@@ -270,17 +267,19 @@ void Request::addAsHeaderVar(std::string &keyValueString)
 		value = trim(value);
 		if (key == "Cookie")
 		{
-			if (value.find("session_id") != std::string::npos) // if session_id is in cookie
-				_hasSessionId = true;
-			else
-			{
-				// assign a pseudo random number to session_id
-				sessionId = Session::generatePseudoRandomNumber();
-
-				getSessionMap().insert(std::pair<size_t, Session>(sessionId, Session(sessionId)));
-			}
 			getSessionMap()[sessionId].addCookie(value);
+			if (value.find("session_id") != std::string::npos) // if session_id is in cookie
+				return;
+		}
+		else if (hasSessionId() == false)
+		{
+			// assign a pseudo random number to session_id if it doesn't exist
+			sessionId = Session::generatePseudoRandomNumber();
+			getSessionMap().insert(std::pair<size_t, Session>(sessionId, Session(sessionId)));
 			_sessionId = sessionId;
+			std::stringstream sessionCookie;
+			sessionCookie << "session_id=" << sessionId;
+			getSessionMap()[sessionId].addCookie(sessionCookie.str());
 			return;
 		}
 
@@ -404,28 +403,29 @@ void Request::addRequestChunk(std::string chunk)
 	{
 		switch (_requestState)
 		{
-			case EMPTY:
-			{}
-			case PARSING_REQUEST_LINE:
-			{
-				if (parseRequestLine(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
-			case PARSING_HEADERS:
-			{
-				if (parseHeaderLine(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
-			case PARSING_BODY:
-			{
-				if (assembleBody(chunk) == WAITING_FOR_MORE)
-					return;
-				break;
-			}
-			default:
+		case EMPTY:
+		{
+		}
+		case PARSING_REQUEST_LINE:
+		{
+			if (parseRequestLine(chunk) == WAITING_FOR_MORE)
 				return;
+			break;
+		}
+		case PARSING_HEADERS:
+		{
+			if (parseHeaderLine(chunk) == WAITING_FOR_MORE)
+				return;
+			break;
+		}
+		case PARSING_BODY:
+		{
+			if (assembleBody(chunk) == WAITING_FOR_MORE)
+				return;
+			break;
+		}
+		default:
+			return;
 		}
 	}
 }

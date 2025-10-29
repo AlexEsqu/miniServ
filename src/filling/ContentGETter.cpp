@@ -15,7 +15,6 @@ void ContentFetcher::getItemFromServer(ClientSocket *client)
 		}
 	}
 
-	std::cout << CGI_FORMAT(" NO CGI ");
 	serveStatic(client);
 }
 

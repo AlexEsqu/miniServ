@@ -90,7 +90,6 @@ private:
 
 	// SESSION MANAGEMENT
 
-	bool				_hasSessionId;
 	size_t				_sessionId;
 
 public:

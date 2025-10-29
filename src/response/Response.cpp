@@ -193,14 +193,13 @@ void Response::createHTTPHeaders()
 	{
 		for (it = cookieMap.begin(); it != cookieMap.end(); it++)
 		{
-			addHttpHeader("Set-Cookie", it->first + "=" + it->second);
+			addHttpHeader("Set-Cookie", it->first + "=" + it->second + "; SameSite=Strict");
 		}
 	}
 	if (_request.getMethodAsString() == "POST")
 	{
 		_HTTPHeaders += "Refresh: 0; url=/\r\n";
 	}
-
 	_HTTPHeaders += "\r\n";
 }
 
@@ -208,7 +207,7 @@ void Response::addHttpHeader(std::string key, std::string value)
 {
 	std::stringstream header;
 	header << key << ": " << value << "\r\n";
-	_HTTPHeaders += header.str();
+	_HTTPHeaders += header.str() ;
 }
 
 std::string Response::createErrorPageContent(const Status &num)
