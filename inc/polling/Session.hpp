@@ -1,3 +1,4 @@
+#pragma once
 #include "FileHandler.hpp"
 #include "Router.hpp"
 #include <iostream>
