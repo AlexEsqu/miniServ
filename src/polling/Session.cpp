@@ -19,7 +19,8 @@ Session::Session(const Session &copy)
 
 size_t Session::generatePseudoRandomNumber()
 {
-	return (std::time(0) >> rand());
+	srand (std::time(NULL));
+	return (std::rand());
 }
 
 void Session::setSessionId(size_t sessionId)
