@@ -9,6 +9,7 @@
 #include "Route.hpp"
 #include "readability.hpp"
 #include "Request.hpp"
+#include "Session.hpp"
 
 class Route;
 
@@ -25,6 +26,7 @@ private:
 
 	std::vector<Route>	_routes;
 	std::map<std::string, std::string>	_paramMap;
+	std::map<size_t, Session>	_sessionMap;
 
 public:
 
@@ -50,6 +52,7 @@ public:
 	const std::vector<Route>&	getRoutes() const;
 	const std::string&			getRoot() const;
 	const std::map<std::string, std::string>	&getParamMap() const;
+	std::map<size_t, Session>&	getSessionMap();
 
 	//------------------- SETTERS ------------------------//
 

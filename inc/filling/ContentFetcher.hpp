@@ -12,7 +12,7 @@
 #include "Router.hpp"
 
 class Poller;
-
+class Executor;
 enum	e_mutipartState
 {
 	MP_STARTING_LINE,

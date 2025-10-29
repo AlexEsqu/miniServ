@@ -191,6 +191,11 @@ void ContentFetcher::serveErrorPageBasedOnExistingStatus(ClientSocket *client)
 	client->setClientState(CLIENT_HAS_FILLED);
 }
 
+void checkIfKnownClient(ClientSocket *client)
+{
+	std::string cookie = client->getRequest().getAdditionalHeaderInfo()["Cookie"];
+}
+
 void ContentFetcher::fillResponse(ClientSocket *client)
 {
 	Router::routeRequest(&(client->getRequest()), &(client->getResponse()));

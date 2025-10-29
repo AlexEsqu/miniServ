@@ -69,6 +69,9 @@ public:
 
 	Request&		getRequest();
 	Status&			getStatus();
+	std::map
+		<size_t,
+		Session>&	getSessionMap();
 
 	std::string		getHTTPHeaders() const;
 	std::string		getRoutedURL() const;
@@ -82,4 +85,5 @@ public:
 
 	std::string		fetchErrorPageContent(const Status &num);
 	void			addToContent(std::string contentChunk);
+	void			addHttpHeader(std::string key, std::string value);
 };

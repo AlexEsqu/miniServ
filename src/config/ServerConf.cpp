@@ -102,6 +102,11 @@ const std::map<std::string, std::string>	&ServerConf::getParamMap() const
 	return (_paramMap);
 }
 
+std::map<size_t, Session>& ServerConf::getSessionMap()
+{
+	return _sessionMap;
+}
+
 //---------------------------- SETTERS --------------------------------------//
 
 void			ServerConf::setPort(int portNum)

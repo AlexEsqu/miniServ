@@ -23,6 +23,8 @@ enum e_clientState {
 
 class ServerSocket;
 
+class Response;
+
 class ClientSocket: public Sockette
 {
 
@@ -30,6 +32,7 @@ private:
 
 	ServerSocket&		_serv;
 	char				_buffer[BUFFSIZE];
+	std::map<size_t, Session>& _sessionMap;
 
 	Status				_status;
 	Request				_request;
@@ -62,6 +65,9 @@ public:
 	Response&			getResponse();
 	Status&				getStatus();
 	ServerSocket&		getServer();
+	std::map
+		<size_t,
+		Session>&		getSessionMap();
 
 	char*				getBuffer();
 	int					getCgiPipeFd();

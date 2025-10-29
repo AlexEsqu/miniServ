@@ -6,12 +6,13 @@
 #include <map>
 #include <sstream>
 #include <set>
+#include <utility>
 
 #include "readability.hpp"
 #include "ServerConf.hpp"
 #include "Status.hpp"
 #include "Buffer.hpp"
-
+#include "Session.hpp"
 
 // Used in Request object for machine state receiving and parsing of request chunks
 enum e_requestState {
@@ -45,13 +46,15 @@ class Response;
 
 class ServerConf;
 
+class ServerSocket;
+
 class Request
 {
 private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
-	const ServerConf&	_conf;					// configuration of the server socket
+	ServerConf&			_conf;					// configuration of the server socket
 	Buffer 				_requestBodyBuffer;		// stores the body of the request
 
 	// REQUEST CURRENT STATE
@@ -68,10 +71,11 @@ private:
 	std::map
 		<std::string,
 		std::string>	_requestHeaderMap;		// key=value of all header variables
-
 	bool				_isChunked;
 	size_t				_contentLength;			// length of the request body to be expected
 	std::string			_contentType;
+
+
 
 	// REQUEST BUFFERS
 
@@ -84,13 +88,16 @@ private:
 	const Route*		_route;					// route matched through the URI
 	std::string			_paramCGI;
 
+	// SESSION MANAGEMENT
 
+	bool				_hasSessionId;
+	size_t				_sessionId;
 
 public:
 
 	//----------------- CONSTRUCTORS ---------------------//
 
-	Request(const ServerConf& conf, Status& status);
+	Request(ServerConf& conf, Status& status);
 
 	Request(const Request &copy);
 
@@ -131,13 +138,17 @@ public:
 	std::string			getContentType() const;
 
 	const ServerConf&	getConf() const;
+	std::map
+		<size_t,
+		Session>&		getSessionMap();
 	Status&				getStatus();
 	int					getParsingState() const;
 	bool				hasError() const;
-
+	size_t				getSessionId() const;
 	std::string			getBody() const;
 	std::istream&		getStreamFromBodyBuffer();
 	int					getCgiPipe() const;
+	bool				hasSessionId() const;
 
 	bool				isKeepAlive();
 

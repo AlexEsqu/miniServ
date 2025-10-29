@@ -2,7 +2,7 @@
 
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
-ServerSocket::ServerSocket(Poller& poller, const ServerConf& conf)
+ServerSocket::ServerSocket(Poller& poller, ServerConf& conf)
 	: _poller(poller)
 	, _conf(conf)
 {
@@ -49,7 +49,7 @@ ServerSocket::~ServerSocket()
 
 //---------------------------- GETTERS --------------------------------------//
 
-const ServerConf&		ServerSocket::getConf() const
+ServerConf&		ServerSocket::getConf()
 {
 	return _conf;
 }
@@ -57,6 +57,11 @@ const ServerConf&		ServerSocket::getConf() const
 Poller&					ServerSocket::getEpoll()
 {
 	return _poller;
+}
+
+std::map<size_t, Session>&	ServerSocket::getSessionMap()
+{
+	return _sessionMap;
 }
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//

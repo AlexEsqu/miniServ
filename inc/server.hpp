@@ -30,7 +30,6 @@
 # include "ContentFetcher.hpp"
 # include "ConfigParser.hpp"
 
-
 enum e_CGI
 {
 	NO_CGI,
