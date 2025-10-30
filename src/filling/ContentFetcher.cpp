@@ -217,4 +217,6 @@ void ContentFetcher::fillResponse(ClientSocket *client)
 		postItemFromServer(client);
 	else if (client->getRequest().getMethodCode() == HEAD)
 		getItemFromServer(client);
+	else
+		client->getRequest().setError(METHOD_NOT_ALLOWED);
 }
