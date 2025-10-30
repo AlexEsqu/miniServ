@@ -25,18 +25,7 @@ void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 		client->getRequest().setError(UNSUPPORTED_MEDIA_TYPE);
 }
 
-// std::string ContentFetcher::findUploadFilepath(const Route *route, const std::string &uri)
-// {
-// 	std::string uploadFilepath = uri;
-// 	std::string uploadDirectory = route->getUploadDirectory();
-// 	std::string routeDirectory = route->getURLPath();
-// 	uploadFilepath = uploadFilepath.replace(0, routeDirectory.size(), uploadDirectory);
-// 	std::cout << "upload path: " << uploadFilepath << std::endl;
-
-// 	return (uploadFilepath);
-// }
-
-std::string	ContentFetcher::extractBoundary(const std::string& contentType)
+std::string ContentFetcher::extractBoundary(const std::string &contentType)
 {
 	return (contentType.substr(contentType.find("=") + 1, contentType.size()));
 }
@@ -59,7 +48,7 @@ void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
 		// create file with the name key, put value in it
-		std::string	pathToUploadFile = client->getResponse().getRoutedURL() + "/" + key;
+		std::string pathToUploadFile = client->getResponse().getRoutedURL() + "/" + key;
 		FileHandler file(pathToUploadFile);
 		file.writeToFile(value);
 		if (i > body.length())
@@ -82,6 +71,44 @@ void extractMultiPartHeaderBlock(std::istream &bodyReader, std::map<std::string,
 		}
 		std::getline(bodyReader, line);
 	}
+}
+
+std::string generateFilename(ClientSocket *client, std::istream &bodyReader, std::string line)
+{
+	std::map<std::string, std::string> multiPartHeaderMap; // not stored past loop for now, bad idea ?
+	extractMultiPartHeaderBlock(bodyReader, multiPartHeaderMap, line);
+
+	// trying to find a name for the posted result
+	std::string disposition = multiPartHeaderMap["Content-Disposition"];
+	std::string uploadFilePath = client->getRequest().getRoute()->getUploadDirectory() + "/" + client->getRequest().getStringSessionId() + "_" ;
+	size_t filenamePos = disposition.find("filename=\"");
+	size_t namePos = disposition.find("name=\"");
+	std::string filename;
+	std::string extension;
+	if (filenamePos != std::string::npos) // getting the filename extension to append it later to the name
+	{
+		size_t filenameEnd = disposition.find("\"", filenamePos + 10);
+		filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
+		size_t extensionPos = filename.find('.');
+		extension = filename.substr(extensionPos);
+		filename = "";
+	}
+	if (namePos != std::string::npos) // otherwise if no filename was provided, just get the name as name of file
+	{
+		namePos = disposition.find("name=\"");
+		size_t filenameEnd = disposition.find("\"", namePos + 6);
+		filename = disposition.substr(namePos + 6, filenameEnd - (namePos + 6));
+	}
+	else
+	{
+		client->getResponse().setError(BAD_REQUEST);
+		return("");
+	}
+	
+	uploadFilePath += filename;
+	if (extension != "")
+		uploadFilePath += extension;
+	return(uploadFilePath);
 }
 
 // if Content-Type: multipart/form-data; boundary=---------------------------84751486837113120871083762733
@@ -132,38 +159,9 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 		// there can be multiple headers, to be parsed into a header map
 		if (parsingState == MP_HEADERS)
 		{
-			std::map<std::string, std::string> multiPartHeaderMap; // not stored past loop for now, bad idea ?
-			extractMultiPartHeaderBlock(bodyReader, multiPartHeaderMap, line);
-
-			// trying to find a name for the posted result
-			std::string disposition = multiPartHeaderMap["Content-Disposition"];
-			std::cout << "dispostition is [" << disposition << "]\n";
-			std::string uploadFilePath = client->getRequest().getRoute()->getUploadDirectory() + "/";
-			size_t filenamePos = disposition.find("filename=\"");
-			size_t namePos = disposition.find("name=\"");
-			std::string filename;
-			std::string extension;
-			if (filenamePos != std::string::npos) // getting the filename extension to append it later to the name
-			{
-				size_t filenameEnd = disposition.find("\"", filenamePos + 10);
-				filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
-				size_t extensionPos = filename.find('.');
-				extension = filename.substr(extensionPos);
-			}
-			if (namePos != std::string::npos) // otherwise if no filename was provided, just get the name as name of file
-			{
-				namePos = disposition.find("name=\"");
-				size_t filenameEnd = disposition.find("\"", namePos + 6);
-				uploadFilePath.append(disposition.substr(namePos + 6, filenameEnd - (namePos + 6)));
-			}
-			else
-			{
-				client->getResponse().setError(BAD_REQUEST);
-				return;
-			}
 
 			// create the file
-			FileHandler multiPartBlock(uploadFilePath + extension);
+			FileHandler multiPartBlock(generateFilename(client, bodyReader,line));
 
 			// read the damn file
 			// without getline to avoid corruption by removal of random \n
@@ -192,14 +190,14 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 
 void ContentFetcher::parsePlainBody(ClientSocket *client)
 {
-	std::string			body = client->getRequest().getBody();
+	std::string body = client->getRequest().getBody();
 	if (body.empty())
 		return;
 
-	std::string			uploadPath = client->getResponse().getRoutedURL();
+	std::string uploadPath = client->getResponse().getRoutedURL();
 
 	// Write body as-is to file
-	FileHandler			fh(uploadPath);
+	FileHandler fh(uploadPath);
 	try
 	{
 		fh.writeToFile(body);
@@ -224,4 +222,21 @@ void ContentFetcher::createPostResponsePage(ClientSocket *client)
 	client->getRequest().setStatus(CREATED);
 	client->getResponse().createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
+}
+
+void ContentFetcher::openSessionDirectory(ClientSocket *client)
+{
+	std::string url = client->getResponse().getRoutedURL();
+	size_t sessionId = client->getRequest().getSessionId();
+	std::stringstream fullSessionPath;
+	fullSessionPath << url << "/" << sessionId << "/";
+	DIR *dir = opendir(fullSessionPath.str().c_str());
+	if (dir == NULL)
+	{
+		std::cerr << ERROR_FORMAT("Cannot open session directory") << std::endl;
+		client->getRequest().setStatus(INTERNAL_SERVER_ERROR);
+	}
+	std::cout << MAGENTA << fullSessionPath.str() << std::endl
+			  << STOP_COLOR;
+	closedir(dir);
 }

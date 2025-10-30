@@ -210,7 +210,9 @@ void ContentFetcher::fillResponse(ClientSocket *client)
 	else if (client->getRequest().getMethodCode() == GET)
 		getItemFromServer(client);
 	else if (client->getRequest().getMethodCode() == POST)
+	{
 		postItemFromServer(client);
+	}
 	else if (client->getRequest().getMethodCode() == DELETE)
 		deleteItemFromServer(client);
 	else if (client->getRequest().getMethodCode() == PUT)

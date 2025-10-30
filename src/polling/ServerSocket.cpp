@@ -125,7 +125,6 @@ void			ServerSocket::receiveAndParseData(ClientSocket* client)
 
 		if (client->hasParsedRequest())
 			_cf->fillResponse(client);
-
 		if (client->hasFilledResponse())
 			_poller.setPollingMode(WRITING, client);
 	}

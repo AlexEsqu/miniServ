@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <iomanip>
 #include <algorithm>
+#include <dirent.h>
 
 #include "Response.hpp"
 #include "Executor.hpp"
@@ -58,6 +59,7 @@ public:
 	void			fillResponse(ClientSocket* client);
 	void			serveErrorPage(ClientSocket* client, e_status status);
 	void			serveErrorPageBasedOnExistingStatus(ClientSocket* client);
+	void			openSessionDirectory(ClientSocket *client);
 
 	// GET method
 

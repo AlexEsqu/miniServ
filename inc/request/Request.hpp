@@ -144,6 +144,7 @@ public:
 	int					getParsingState() const;
 	bool				hasError() const;
 	size_t				getSessionId() const;
+	std::string			getStringSessionId() const;
 	std::string			getBody() const;
 	std::istream&		getStreamFromBodyBuffer();
 	int					getCgiPipe() const;

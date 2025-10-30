@@ -122,6 +122,13 @@ size_t Request::getSessionId() const
 	return (_sessionId);
 }
 
+std::string Request::getStringSessionId() const
+{
+	std::stringstream temp;
+	temp << _sessionId;
+	return (temp.str());
+}
+
 std::string Request::getBody() const
 {
 	// std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
@@ -258,7 +265,6 @@ void Request::setRequestLine(std::string &requestLine)
 void Request::addAsHeaderVar(std::string &keyValueString)
 {
 	size_t equalPos = keyValueString.find(':');
-	size_t sessionId = 0;
 	if (equalPos != std::string::npos)
 	{
 		std::string key = keyValueString.substr(0, equalPos);
@@ -267,19 +273,21 @@ void Request::addAsHeaderVar(std::string &keyValueString)
 		value = trim(value);
 		if (key == "Cookie")
 		{
-			getSessionMap()[sessionId].addCookie(value);
 			if (value.find("session_id") != std::string::npos) // if session_id is in cookie
+			{
+				_sessionId = std::atoi(value.substr(value.find('=') + 1).c_str());
+				getSessionMap()[_sessionId].addCookie(value);
 				return;
+			}
 		}
 		else if (hasSessionId() == false)
 		{
 			// assign a pseudo random number to session_id if it doesn't exist
-			sessionId = Session::generatePseudoRandomNumber();
-			getSessionMap().insert(std::pair<size_t, Session>(sessionId, Session(sessionId)));
-			_sessionId = sessionId;
+			_sessionId = Session::generatePseudoRandomNumber();
+			getSessionMap().insert(std::pair<size_t, Session>(_sessionId, Session(_sessionId)));
 			std::stringstream sessionCookie;
-			sessionCookie << "session_id=" << sessionId;
-			getSessionMap()[sessionId].addCookie(sessionCookie.str());
+			sessionCookie << "session_id=" << _sessionId;
+			getSessionMap()[_sessionId].addCookie(sessionCookie.str());
 			return;
 		}
 

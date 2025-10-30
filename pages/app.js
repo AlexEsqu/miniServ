@@ -1,6 +1,8 @@
 const tablistButtons = document.getElementsByClassName("tablist-button");
 const presentationArticles = document.getElementsByClassName("presentation-article");
 let formSubmitted = false;
+	localStorage.setItem("formSubmitted", "false");
+
 function updateArticleVisibility(clickedButton) {
 	Array.from(presentationArticles).forEach((article) => {
 		if (article.getAttribute("id") === clickedButton.getAttribute("aria-controls")) {
@@ -132,37 +134,31 @@ async function getFormData() {
 		description = await getFormInfo("description", "text");
 		picture = await getFormInfo("picture", "blob");
 		imageUrl = URL.createObjectURL(picture);
+		document.getElementById("tablist-button-add-yourself").textContent = name;
+		if (localStorage.getItem("formSubmitted") == "true");
+		{
+			for (let i = 0; i < article.children.length; i++) {
+				article.children[i].style.display = "none";
+			}
+			document.getElementById("form-button-ok").style.display = "none";
+			document.getElementById("form-button-cancel").style.display = "none";
+		}
+
+		if (picture) {
+			const img = document.createElement("img");
+			img.src = imageUrl;
+			article.appendChild(img);
+		}
+		if (description) {
+			const p = document.createElement("p");
+			p.textContent = description;
+			article.appendChild(p);
+		}
 	} catch (error) {
 		localStorage.setItem("formSubmitted", "false");
 		console.error(error);
+		console.log("form set to false");
 		return;
-	}
-
-	console.log("Name:", name);
-	console.log("Description:", description);
-	console.log("Picture:", picture);
-
-	document.getElementById("tablist-button-add-yourself").textContent = name;
-
-	const article = document.getElementById("add-yourself-article");
-	if (localStorage.getItem("formSubmitted") == "true");
-	{
-		for (let i = 0; i < article.children.length; i++) {
-			article.children[i].style.display = "none";
-		}
-		document.getElementById("form-button-ok").style.display = "none";
-		document.getElementById("form-button-cancel").style.display = "none";
-	}
-
-	if (picture) {
-		const img = document.createElement("img");
-		img.src = imageUrl;
-		article.appendChild(img);
-	}
-	if (description) {
-		const p = document.createElement("p");
-		p.textContent = description;
-		article.appendChild(p);
 	}
 }
 

@@ -103,24 +103,31 @@ const Route*	Router::findMatchingRoute(const std::string& requestPath, const Ser
 void			Router::routeRequest(Request* request, Response* response)
 {
 	const Route* route = request->getRoute();
-	std::string requestedURL = request->getRequestedURL();
+	std::string requestedURL;
+	// if (route->getRootDirectory() == route->getUploadDirectory())
+	// 	requestedURL = route->getURLPath() + "/" +request->getStringSessionId() + "_";
+	// else
+		requestedURL = request->getRequestedURL();
 
 	validateRequestWithRoute(request, response);
 	if (response->hasError())
 		return;
-
+	//if routeDirectory == _uploadDirectory
 	std::string path;
 	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD)
 	{
+		if (route->getRootDirectory() == route->getUploadDirectory())
+			path += "/" + request->getStringSessionId() + "_" ;
 		path = routeFilePathForGet(requestedURL, route);
 		if (path.empty())
-			response->setError(NOT_FOUND);
+		response->setError(NOT_FOUND);
 		if (!isAllowed(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
 	else
 	{
 		path = routeFilePathForPost(requestedURL, route);
+		path += "/" + request->getStringSessionId() + "_" ;
 	}
 	response->setRoutedUrl(path);
 }
