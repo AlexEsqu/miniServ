@@ -49,7 +49,7 @@ public:
 
 	std::string			formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
 	std::string			formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
-	void				parseQueryParameters(std::map<std::string, std::string> queryParamMap, const std::string& queryString);
+	void				parseQueryParameters(std::map<std::string, std::string>& queryParamMap, const std::string& queryString);
 	void				addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Request& request);
 	void				addQueryParamAsEnvironment(std::vector<std::string>& envAsStrVec, const std::string& queryString);
 	std::vector

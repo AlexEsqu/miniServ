@@ -102,7 +102,7 @@ std::string	Executor::formatKeyValueIntoSingleString(const std::string& key, con
 	return formattedEnvKeyValue;
 }
 
-void	Executor::parseQueryParameters(std::map<std::string, std::string> queryParamMap, const std::string& queryString)
+void	Executor::parseQueryParameters(std::map<std::string, std::string>& queryParamMap, const std::string& queryString)
 {
 	std::istringstream					stream(queryString);
 
@@ -148,13 +148,12 @@ void	Executor::addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Re
 	portAsStream << request.getConf().getPort();
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", portAsStream.str()));
 
-	// query parameters (stored in URI)
-	size_t	questionPosition = request.getRequestedURL().find('?');
-	if (questionPosition != std::string::npos)
+	// query parameters (originally stored in URI)
+	std::string	cgiParam = request.getCgiParam();
+	if (!cgiParam.empty())
 	{
-		std::string queryString = request.getRequestedURL().substr(questionPosition + 1);
-		envAsStrVec.push_back(formatKeyValueIntoSingleString("QUERY_STRING", queryString));
-		addQueryParamAsEnvironment(envAsStrVec, queryString);
+		envAsStrVec.push_back("QUERY_STRING=" + cgiParam);
+		// addQueryParamAsEnvironment(envAsStrVec, cgiParam);
 	}
 }
 

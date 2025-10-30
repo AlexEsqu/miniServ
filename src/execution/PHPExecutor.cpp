@@ -61,6 +61,7 @@ void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
 	const char*		program = "/usr/bin/php";
 	const char*		flag = "-f";
+	std::string		executedFileWithCgi = client->getResponse().getRoutedURL();
 
 	// redirect into pipe
 	close(pipefd[READ]);
@@ -68,20 +69,11 @@ void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 		exit(-1);
 	close(pipefd[WRITE]);
 
-	// expand (if needed ?)
-
-	// unchunk (if needed ?)
-
 	// assemble into an execve approved array of char*, add EOF at end
-	std::vector<const char*> argv(buildArgv(program, flag, client->getResponse().getRoutedURL()));
+	std::vector<const char*> argv(buildArgv(program, flag, executedFileWithCgi));
 	std::vector<const char*> env(buildEnv(client->getRequest()));
 
 	execve(program, (char**)argv.data(), (char**)env.data());
-
-	// error handling
-	perror("execve");
-
-	// clean up
 
 	throw std::runtime_error("exec failed");
 }

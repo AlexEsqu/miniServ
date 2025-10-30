@@ -131,6 +131,7 @@ public:
 	e_methods			getMethodCode() const;
 	std::string			getProtocol() const;
 	std::string			getRequestedURL() const;
+	std::string			getCgiParam() const;
 	const Route*		getRoute() const;
 	std::map
 		<std::string,

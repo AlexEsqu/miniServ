@@ -152,6 +152,11 @@ int Request::getCgiPipe() const
 	return (_readingEndOfCGIPipe);
 }
 
+std::string Request::getCgiParam() const
+{
+	return (_paramCGI);
+}
+
 std::istream &Request::getStreamFromBodyBuffer()
 {
 	return (_requestBodyBuffer.getStream());
