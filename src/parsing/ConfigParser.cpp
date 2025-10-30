@@ -74,7 +74,7 @@ std::string	ConfigParser::extractLocationPath(const std::string &locationLine)
 	size_t end = locationLine.find('{');
 
 	if (start >= end)
-		throw std::runtime_error("Invalid location directive");
+		throw std::invalid_argument("Invalid location directive");
 
 	std::string pathPart = locationLine.substr(start, end - start);
 	trim(pathPart);
@@ -132,7 +132,7 @@ Route	ConfigParser::parseLocationBlock(std::ifstream &configFileStream, const st
 	}
 
 	if (!isClosedCurlyBrace(line))
-		throw std::runtime_error("Invalid location block - missing closing brace");
+		throw std::invalid_argument("Invalid location block - missing closing brace");
 
 	route.setRouteParam(paramMap);
 
@@ -206,18 +206,27 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 
 	// check the server block is closed
 	if (!isClosedCurlyBrace(line))
-		throw std::runtime_error("Invalid config file: no closing curly brace");
+		throw std::invalid_argument("Invalid config file: no closing curly brace");
 
 	ServerConf serverConf(paramMap);
 
 	if (paramMap.find("listen") != paramMap.end())
-		serverConf.setPort(atoi(paramMap["listen"].c_str()));
+	{
+		addPortAndIpAddress(paramMap["listen"], paramMap);
+		serverConf.setPort(atoi(paramMap["port"].c_str()));
+	}
+	else
+		std::invalid_argument("no listening port in server block");
 
 	if (paramMap.find("server_name") != paramMap.end())
 		serverConf.setServerName(paramMap["server_name"]);
+	else
+		std::invalid_argument("no server name in server block");
 
 	if (paramMap.find("root") != paramMap.end())
 		serverConf.setRoot(paramMap["root"]);
+	else
+		serverConf.setRoot("pages"); // set in the same project for demonstration purposes
 
 	#ifdef DEBUG
 	std::cout << "Config block parsed :\n";
@@ -272,7 +281,7 @@ std::vector<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath
 
 	std::ifstream configFileStream(configFilePath);
 	if (!configFileStream)
-		throw std::runtime_error("Failed to read config file");
+		throw std::invalid_argument("Failed to read config file");
 
 	std::string line;
 	while (getline(configFileStream, line))
@@ -293,7 +302,7 @@ std::vector<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath
 	removeInvalidServerConf(configs);
 
 	if (configs.empty())
-		throw std::runtime_error("No valid configurations in config file");
+		throw std::invalid_argument("No valid configurations in config file");
 
 	return configs;
 }
@@ -302,15 +311,93 @@ std::vector<ServerConf>	ConfigParser::parseConfig(int argc, char** argv)
 {
 	if (argc != 2)
 	{
-		throw std::runtime_error("Usage: ./webserv configuration_file");
+		throw std::invalid_argument("Usage: ./webserv configuration_file");
 	}
 
 	std::ifstream configFile(argv[1]);
 	if (!configFile.is_open())
 	{
-		throw std::runtime_error("The configuration file is not valid");
+		throw std::invalid_argument("The configuration file could not be opened");
 	}
 	configFile.close();
 
 	return parseConfigFile(argv[1]);
+}
+
+// check the provided IP address make sense
+bool	ConfigParser::isValidIPAddress(const std::string& ip)
+{
+	std::istringstream ipStream(ip);
+	std::string segment;
+	int count = 0;
+
+	while (std::getline(ipStream, segment, '.'))
+	{
+		if (++count > 4)
+			return false;
+		if (segment.empty() || segment.size() > 3)
+			return false;
+		for (size_t i = 0; i < segment.size(); i++)
+		{
+			if (!isdigit(segment[i]))
+				return false;
+		}
+		int num = std::atoi(segment.c_str());
+		if (num < 0 || num > 255)
+			return false;
+		if (segment[0] == '0' && segment.size() > 1)
+			return false;
+	}
+
+	return (count == 4);
+}
+
+// check the provided port is possible
+bool	ConfigParser::isValidPort(const std::string& portStr)
+{
+	if (portStr.empty() || portStr.size() > 5)
+		return false;
+
+	for (size_t i = 0; i < portStr.size(); i++)
+	{
+		if (!isdigit(portStr[i]))
+			return false;
+	}
+
+	int port = std::atoi(portStr.c_str());
+
+	return port > 0 && port <= 65535;
+}
+
+void	ConfigParser::addPort(std::string line, std::map<std::string, std::string>& paramMap)
+{
+	if (!isValidPort(line))
+		throw std::invalid_argument("Invalid port: '" + line + "'");
+
+	paramMap["port"] = line;
+}
+
+void	ConfigParser::addIpAddress(std::string line, std::map<std::string, std::string>& paramMap)
+{
+	if (!isValidIPAddress(line))
+		throw std::invalid_argument("Invalid IP address: '" + line + "'");
+
+	paramMap["interface"] = line;
+}
+
+// parses, validates and add either the lone port, or an ip address and its port, both as a string to param map
+void	ConfigParser::addPortAndIpAddress(std::string& line, std::map<std::string, std::string>& paramMap)
+{
+	size_t colonPos = line.find(':');
+	if (colonPos == std::string::npos)
+	{
+		addPort(line, paramMap);
+		return;
+	}
+
+	else
+	{
+		addPort(line.substr(colonPos + 1), paramMap);
+		addIpAddress(line.substr(0, colonPos), paramMap);
+	}
 }
