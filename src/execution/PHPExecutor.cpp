@@ -30,13 +30,15 @@ PHPExecutor& PHPExecutor::operator=(const PHPExecutor&)
 
 std::vector<const char*>	PHPExecutor::buildEnv(Request& request)
 {
-	std::vector<std::string>	envAsStr = generateEnvStrVec(request);
+	_envAsStr.clear();
+
+	_envAsStr = generateEnvStrVec(request);
 
 	std::vector<const char*>	env;
-	env.reserve(envAsStr.size() + 1);
-	for (size_t i = 0; i != envAsStr.size(); i++)
+	env.reserve(_envAsStr.size() + 1);
+	for (size_t i = 0; i != _envAsStr.size(); i++)
 	{
-		env.push_back(envAsStr[i].c_str());
+		env.push_back(_envAsStr[i].c_str());
 	}
 	env.push_back(NULL);
 

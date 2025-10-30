@@ -302,9 +302,9 @@ std::vector<ServerConf>	ConfigParser::parseArg(int argc, char** argv)
 // check the provided IP address make sense
 bool	ConfigParser::isValidIPAddress(const std::string& ip)
 {
-	std::istringstream ipStream(ip);
-	std::string segment;
-	int count = 0;
+	std::istringstream	ipStream(ip);
+	std::string			segment;
+	int					count = 0;
 
 	while (std::getline(ipStream, segment, '.'))
 	{
@@ -339,7 +339,7 @@ bool	ConfigParser::isValidPort(const std::string& portStr)
 			return false;
 	}
 
-	int port = std::atoi(portStr.c_str());
+	int	port = std::atoi(portStr.c_str());
 
 	return port > 0 && port <= 65535;
 }
@@ -363,7 +363,7 @@ void	ConfigParser::addIpAddress(std::string line, std::map<std::string, std::str
 // parses, validates and add either the lone port, or an ip address and its port, both as a string to param map
 void	ConfigParser::addPortAndIpAddress(std::string& line, std::map<std::string, std::string>& paramMap)
 {
-	size_t colonPos = line.find(':');
+	size_t	colonPos = line.find(':');
 	if (colonPos == std::string::npos)
 		addPort(line, paramMap);
 	else

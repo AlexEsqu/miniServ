@@ -6,6 +6,8 @@ class PythonExecutor : public Executor
 {
 private:
 
+	std::vector<std::string>	_envAsStr;
+
 	std::vector<const char*>	buildArgv(const char* program, const std::string& filePath);
 	std::vector<const char*>	buildEnv(Request& request);
 	void						execFileWithFork(ClientSocket* client, int* pipefd);
