@@ -3,8 +3,8 @@
 //--------------------------- CONSTRUCTORS ----------------------------------//
 
 ServerConf::ServerConf()
-	: _maxSizeClientRequestBody(__INT_MAX__)
-	, _port(8080)
+	: _port(DEFAULT_PORT)
+	, _maxSizeClientRequestBody(DEFAULT_MAX_BODY_SIZE)
 {
 
 #ifdef DEBUG
@@ -13,13 +13,14 @@ ServerConf::ServerConf()
 }
 
 ServerConf::ServerConf(std::map<std::string, std::string> paramMap)
-	: _maxSizeClientRequestBody(__INT_MAX__)
-	, _port(8080)
+	: _port(DEFAULT_PORT)
+	, _maxSizeClientRequestBody(DEFAULT_MAX_BODY_SIZE)
 	, _paramMap(paramMap)
 {
-	if (_paramMap.find("listen") != _paramMap.end()) {
-		_port = atoi(_paramMap["listen"].c_str());
-	}
+	setPort(paramMap["port"]);
+	setServerName(paramMap["server_name"]);
+	setRoot(paramMap["root"]);
+	setMaxBodySize(paramMap["client_max_body_size"]);
 
 #ifdef DEBUG
 	std::cout << "ServerConf Custom Constructor called" << std::endl;
@@ -27,10 +28,10 @@ ServerConf::ServerConf(std::map<std::string, std::string> paramMap)
 }
 
 ServerConf::ServerConf(const ServerConf &copy)
-	: _maxSizeClientRequestBody(copy._maxSizeClientRequestBody)
-	, _port(copy._port)
+	: _port(copy._port)
 	, _serverName(copy._serverName)
 	, _root(copy._root)
+	, _maxSizeClientRequestBody(copy._maxSizeClientRequestBody)
 	, _paramMap(copy._paramMap)
 {
 	_routes.clear();
@@ -58,11 +59,10 @@ ServerConf&		ServerConf::operator=(const ServerConf &other)
 {
 	if (this != &other)
 	{
-		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
-
 		_port = other._port;
 		_serverName = other._serverName;
 		_root = other._root;
+		_maxSizeClientRequestBody = other._maxSizeClientRequestBody;
 
 		_paramMap = other._paramMap;
 
@@ -113,25 +113,45 @@ std::map<size_t, Session>& ServerConf::getSessionMap()
 
 //---------------------------- SETTERS --------------------------------------//
 
-void			ServerConf::setPort(int portNum)
+void			ServerConf::setPort(const std::string& portString)
 {
-	_port = portNum;
+	if (portString.empty())
+		std::invalid_argument("no port in server block");
+	_port = atoi(portString.c_str());
 }
 
-void			ServerConf::setRoot(std::string root)
+void			ServerConf::setRoot(const std::string& root)
 {
-	_root = root;
+	if (root.empty())
+		_root = DEFAULT_ROOT;
+	else
+		_root = root;
 }
 
-void			ServerConf::setParamMap(std::map<std::string, std::string>& paramMap)
+void			ServerConf::setServerName(const std::string& serverName)
 {
-	_paramMap = paramMap;
-}
-
-void			ServerConf::setServerName(std::string serverName)
-{
+	if (serverName.empty())
+		std::invalid_argument("no server name in server block");
 	_serverName = serverName;
 }
+
+void			ServerConf::setMaxBodySize(const std::string& maxBodySize)
+{
+	if (maxBodySize.empty())
+		_maxSizeClientRequestBody = DEFAULT_MAX_BODY_SIZE;
+	else
+		_maxSizeClientRequestBody = atoi(maxBodySize.c_str());
+}
+
+// void			ServerConf::setParamMap(std::map<std::string, std::string>& paramMap)
+// {
+// 	_paramMap = paramMap;
+
+// 	setPort(paramMap["port"]);
+// 	setServerName(paramMap["server_name"]);
+// 	setRoot(paramMap["root"]);
+// 	setMaxBodySize(paramMap["client_max_body_size"]);
+// }
 
 void			ServerConf::addRoute(Route route)
 {
@@ -140,14 +160,3 @@ void			ServerConf::addRoute(Route route)
 
 //------------------------ MEMBER FUNCTIONS ---------------------------------//
 
-bool	doesFileExist(std::string &requestedFile)
-{
-	std::ifstream input(requestedFile.c_str()); // opening the file as the content for the response
-	std::stringstream content;
-	if (!input.is_open())
-	{
-		std::cerr << RED << "Could not open file " << requestedFile << STOP_COLOR << std::endl;
-		return (false);
-	}
-	return (true);
-}

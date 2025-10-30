@@ -13,20 +13,28 @@
 
 class Route;
 
+#define	DEFAULT_ROOT "pages"
+#define DEFAULT_MAX_BODY_SIZE 1
+#define DEFAULT_DEFAULT_PAGE "index.html"
+#define DEFAULT_PORT 8080
+
 class ServerConf
 {
 
 private:
 
-	unsigned int		_maxSizeClientRequestBody;
-
 	unsigned int		_port;
 	std::string			_serverName;
 	std::string			_root;
+	unsigned int		_maxSizeClientRequestBody;
 
 	std::vector<Route>	_routes;
-	std::map<std::string, std::string>	_paramMap;
-	std::map<size_t, Session>	_sessionMap;
+	std::map
+		<std::string,
+		std::string>	_paramMap;
+	std::map
+		<size_t,
+		Session>		_sessionMap;
 
 public:
 
@@ -51,14 +59,17 @@ public:
 	unsigned int				getMaxSizeClientRequestBody() const;
 	const std::vector<Route>&	getRoutes() const;
 	const std::string&			getRoot() const;
-	const std::map<std::string, std::string>	&getParamMap() const;
+	const std::map
+		<std::string,
+		std::string>&			getParamMap() const;
 	std::map<size_t, Session>&	getSessionMap();
 
 	//------------------- SETTERS ------------------------//
 
-	void						setPort(int portNum);
-	void						setServerName(std::string serverName);
-	void						setRoot(std::string root);
+	void						setPort(const std::string& port);
+	void						setServerName(const std::string& serverName);
+	void						setMaxBodySize(const std::string& maxBodySize);
+	void						setRoot(const std::string& root);
 	void						setParamMap(std::map<std::string, std::string> &paramMap);
 	void						addRoute(Route route);
 

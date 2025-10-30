@@ -67,27 +67,27 @@ std::vector<std::string>	Executor::generateEnvStrVec(Request& request)
 
 std::string	Executor::formatAsHTTPVariable(const std::string& key, const std::string& value)
 {
-	std::string	formattedEnvKeyValue = "";
+	std::string	formattedEnvKeyValue;
 
-	// Replace hyphens with underscores and convert to uppercase
+	// replacing hyphens with underscores and converting to uppercase
 	std::string	formattedKey = key;
-	for (size_t i = 0; i < key.length(); ++i) {
-		if (key[i] == '-' || key[i] == ' ') {
+	for (size_t i = 0; i < key.length(); ++i)
+	{
+		if (key[i] == '-' || key[i] == ' ')
 			formattedKey[i] = '_';
-		}
 	}
 	strToUpper(formattedKey);
 
 	std::string	formattedValue = value;
-	for (size_t i = 0; i < value.length(); ++i) {
-		if (value[i] == '-' || value[i] == ' ') {
+	for (size_t i = 0; i < value.length(); ++i)
+	{
+		if (value[i] == '-' || value[i] == ' ')
 			formattedValue[i] = '_';
-		}
-		// TO DO : add encoding for non variable compliant characters such as ", ', % ....
+		// TO DO : add encoding for non compliant characters like ", ', % ....
 	}
 	strToUpper(formattedValue);
 
-	// Convert HTTP headers to CGI format: HTTP_HEADER_NAME
+	// convertint HTTP headers to CGI format: HTTP_HEADER_NAME except for Content Type and Length
 	if (formattedKey == "CONTENT_TYPE" || formattedKey == "CONTENT_LENGTH")
 		formattedEnvKeyValue = formattedKey + "=" + formattedValue;
 	else
@@ -104,13 +104,13 @@ std::string	Executor::formatKeyValueIntoSingleString(const std::string& key, con
 
 void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request)
 {
-	// Standard CGI variables
+	// standard CGI variables
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethodAsString()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_URI", request.getRequestedURL()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PROTOCOL", request.getProtocol()));
 	// TO DO : add query string (but CGI is unchunking on his own)
 
-	// Server information
+	// server information
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", "localhost"));		// or from config
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
 }

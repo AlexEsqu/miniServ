@@ -208,25 +208,9 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 	if (!isClosedCurlyBrace(line))
 		throw std::invalid_argument("Invalid config file: no closing curly brace");
 
+	addPortAndIpAddress(paramMap["listen"], paramMap);
+
 	ServerConf serverConf(paramMap);
-
-	if (paramMap.find("listen") != paramMap.end())
-	{
-		addPortAndIpAddress(paramMap["listen"], paramMap);
-		serverConf.setPort(atoi(paramMap["port"].c_str()));
-	}
-	else
-		std::invalid_argument("no listening port in server block");
-
-	if (paramMap.find("server_name") != paramMap.end())
-		serverConf.setServerName(paramMap["server_name"]);
-	else
-		std::invalid_argument("no server name in server block");
-
-	if (paramMap.find("root") != paramMap.end())
-		serverConf.setRoot(paramMap["root"]);
-	else
-		serverConf.setRoot("pages"); // set in the same project for demonstration purposes
 
 	#ifdef DEBUG
 	std::cout << "Config block parsed :\n";
