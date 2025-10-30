@@ -115,7 +115,7 @@ void			Router::routeRequest(Request* request, Response* response)
 		path = routeFilePathForGet(requestedURL, route);
 		if (path.empty())
 			response->setError(NOT_FOUND);
-		if (!isAllowed(path.c_str()))
+		else if (!isAllowed(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
 	else
