@@ -3,8 +3,8 @@
 #include <iostream>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <cstdio>
+#include <cstdlib>
 
 #include "Response.hpp"
 #include "Request.hpp"
@@ -49,7 +49,9 @@ public:
 
 	std::string			formatKeyValueIntoSingleString(const std::string& key, const std::string& value);
 	std::string			formatAsHTTPVariable(const std::string& headerKey, const std::string& headerValue);
-	void				addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request);
+	void				parseQueryParameters(std::map<std::string, std::string> queryParamMap, const std::string& queryString);
+	void				addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Request& request);
+	void				addQueryParamAsEnvironment(std::vector<std::string>& envAsStrVec, const std::string& queryString);
 	std::vector
 		<std::string>	generateEnvStrVec(Request& request);
 

@@ -102,17 +102,60 @@ std::string	Executor::formatKeyValueIntoSingleString(const std::string& key, con
 	return formattedEnvKeyValue;
 }
 
-void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request)
+void	Executor::parseQueryParameters(std::map<std::string, std::string> queryParamMap, const std::string& queryString)
+{
+	std::istringstream					stream(queryString);
+
+	std::string keyValuePairString;
+	while (std::getline(stream, keyValuePairString, '&'))
+	{
+		size_t equalPos = keyValuePairString.find('=');
+		if (equalPos != std::string::npos)
+		{
+			std::string key = parseUrlEncoding(keyValuePairString.substr(0, equalPos));
+			std::string value = parseUrlEncoding(keyValuePairString.substr(equalPos + 1));
+			queryParamMap[key] = value;
+		}
+		else
+		{
+			std::string key = parseUrlEncoding(keyValuePairString);
+			queryParamMap[key] = "";
+		}
+	}
+}
+
+void	Executor::addQueryParamAsEnvironment(std::vector<std::string>& envAsStrVec, const std::string& queryString)
+{
+	std::map<std::string, std::string> queryParamMap;
+
+	parseQueryParameters(queryParamMap, queryString);
+	for (std::map<std::string, std::string>::iterator i = queryParamMap.begin(); i != queryParamMap.end(); i++)
+	{
+		envAsStrVec.push_back(formatKeyValueIntoSingleString(i->first, i->second));
+	}
+}
+
+void	Executor::addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Request& request)
 {
 	// standard CGI variables
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethodAsString()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_URI", request.getRequestedURL()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PROTOCOL", request.getProtocol()));
-	// TO DO : add query string (but CGI is unchunking on his own)
 
 	// server information
-	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", "localhost"));		// or from config
-	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", request.getConf().getServerName()));
+	std::stringstream	portAsStream;
+	portAsStream << request.getConf().getPort();
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", portAsStream.str()));
+
+	// query parameters (stored in URI)
+	size_t	questionPosition = request.getRequestedURL().find('?');
+	if (questionPosition != std::string::npos)
+	{
+		std::string queryString = request.getRequestedURL().substr(questionPosition + 1);
+		envAsStrVec.push_back(formatKeyValueIntoSingleString("QUERY_STRING", queryString));
+		addQueryParamAsEnvironment(envAsStrVec, queryString);
+	}
 }
 
 void	Executor::executeFile(ClientSocket* client)

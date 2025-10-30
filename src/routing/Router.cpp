@@ -151,7 +151,7 @@ std::string		Router::routeFilePathForGetAsDirectory(std::string routedURL, const
 	if (!routedURL.empty() && !hasTrailingSlash(routedURL))
 		routedURL += '/';
 
-	// if it is not a directory tho, GET is impossible
+	// if it is not a file and not a directory tho, GET is impossible
 	if (!isDirectory(routedURL))
 		return "";
 

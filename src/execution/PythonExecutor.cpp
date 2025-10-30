@@ -56,7 +56,6 @@ std::vector<const char*> PythonExecutor::buildArgv(const char* program, const st
 	return argv;
 }
 
-
 void	PythonExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
 	const char*		program = "/usr/bin/python3";
