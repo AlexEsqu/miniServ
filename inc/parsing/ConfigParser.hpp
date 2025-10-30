@@ -30,7 +30,7 @@ public:
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
-	static std::vector<ServerConf>	parseConfig(int argc, char** argv);
+	static std::vector<ServerConf>	parseArg(int argc, char** argv);
 	static std::vector<ServerConf>	parseConfigFile(const char* configFilePath);
 
 	static ServerConf	parseServerBlock(std::ifstream& configFileStream);

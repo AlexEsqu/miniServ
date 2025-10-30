@@ -178,11 +178,11 @@ void	ConfigParser::addDefaultRoute(ServerConf &serverConf)
 
 ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 {
-	std::map<std::string, std::string> paramMap;
-	std::vector<Route> routes;
+	std::map<std::string, std::string>	paramMap;
+	std::vector<Route>					routes;
 
 	// goes through the server config block until the closing bracket
-	std::string line;
+	std::string							line;
 	while (getline(configFileStream, line) && !isClosedCurlyBrace(line))
 	{
 		// Remove whitespace
@@ -207,6 +207,9 @@ ServerConf ConfigParser::parseServerBlock(std::ifstream &configFileStream)
 	// check the server block is closed
 	if (!isClosedCurlyBrace(line))
 		throw std::invalid_argument("Invalid config file: no closing curly brace");
+
+	if (paramMap.find("server_name") == paramMap.end())
+		throw std::invalid_argument("Invalid server name: empty");
 
 	addPortAndIpAddress(paramMap["listen"], paramMap);
 
@@ -255,19 +258,13 @@ void					ConfigParser::removeInvalidServerConf(std::vector<ServerConf>& configs)
 
 std::vector<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath)
 {
-	std::vector<ServerConf> configs;
+	std::vector<ServerConf>	configs;
 
-	if (!configFilePath)
-	{
-		configs.push_back(ServerConf());
-		return configs;
-	}
-
-	std::ifstream configFileStream(configFilePath);
+	std::ifstream			configFileStream(configFilePath);
 	if (!configFileStream)
 		throw std::invalid_argument("Failed to read config file");
 
-	std::string line;
+	std::string				line;
 	while (getline(configFileStream, line))
 	{
 		line = trim(line);
@@ -278,31 +275,25 @@ std::vector<ServerConf>	ConfigParser::parseConfigFile(const char *configFilePath
 
 		// if a line starts with server and ends with {, initiate parse server block
 		if (line.rfind("server", 0) != std::string::npos && line[line.size() - 1] == '{')
-		{
 			configs.push_back(parseServerBlock(configFileStream));
-		}
 	}
 
 	removeInvalidServerConf(configs);
-
 	if (configs.empty())
 		throw std::invalid_argument("No valid configurations in config file");
 
 	return configs;
 }
 
-std::vector<ServerConf>	ConfigParser::parseConfig(int argc, char** argv)
+std::vector<ServerConf>	ConfigParser::parseArg(int argc, char** argv)
 {
 	if (argc != 2)
-	{
 		throw std::invalid_argument("Usage: ./webserv configuration_file");
-	}
 
 	std::ifstream configFile(argv[1]);
 	if (!configFile.is_open())
-	{
 		throw std::invalid_argument("The configuration file could not be opened");
-	}
+
 	configFile.close();
 
 	return parseConfigFile(argv[1]);
@@ -374,11 +365,7 @@ void	ConfigParser::addPortAndIpAddress(std::string& line, std::map<std::string, 
 {
 	size_t colonPos = line.find(':');
 	if (colonPos == std::string::npos)
-	{
 		addPort(line, paramMap);
-		return;
-	}
-
 	else
 	{
 		addPort(line.substr(colonPos + 1), paramMap);

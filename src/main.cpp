@@ -8,7 +8,7 @@ int main(int argc, char**argv)
 	std::vector<ServerConf> serversConfs;
 	try
 	{
-		serversConfs = ConfigParser::parseConfig(argc, argv);
+		serversConfs = ConfigParser::parseArg(argc, argv);
 	}
 	catch (const std::exception& e)
 	{
