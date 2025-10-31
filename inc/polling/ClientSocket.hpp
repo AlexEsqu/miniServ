@@ -44,6 +44,7 @@ private:
 
 	e_clientState		_clientState;
 	time_t				_lastEventTime;
+	bool				_hasTimedOut;
 	// size_t				_sessionId;
 
 public:
@@ -59,6 +60,7 @@ public:
 	//----------------------- SETTER ---------------------//
 
 	void				setClientState(e_clientState state);
+	void				setTimedOut(bool value);
 
 	//----------------------- GETTER ---------------------//
 
@@ -77,6 +79,7 @@ public:
 	time_t				getLastEventTime() const;
 	e_clientState		getClientState() const;
 	bool				isReadingFromPipe() const;
+	bool				hasTimedOut() const;
 
 	//----------------- MEMBER FUNCTION ------------------//
 

@@ -86,12 +86,12 @@ void	ContentFetcher::addCgiResultToResponse(Response &response, Buffer& buffer)
 	std::string	allContent = buffer.getAllContent();
 
 	// annoyingly, cgi provides http headers to have fun with
-	size_t headerEnd = allContent.find("\n");
+	size_t headerEnd = allContent.find("\n\n");
 	if (headerEnd != std::string::npos)
 	{
 		std::string headers = allContent.substr(0, headerEnd);
 		trim(headers);
-		std::string body = allContent.substr(headerEnd + 1);
+		std::string body = allContent.substr(headerEnd + 2);
 
 		// std::cout << "\nparsing headers [" << headers << "]" << std::endl;
 		parseCgiHeader(response, headers);

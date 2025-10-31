@@ -150,6 +150,11 @@ int Request::getCgiPipe() const
 	return (_readingEndOfCGIPipe);
 }
 
+int Request::getCgiForkPid() const
+{
+	return (_CgiForkPid);
+}
+
 std::string Request::getCgiParam() const
 {
 	return (_paramCGI);
@@ -252,6 +257,14 @@ void	Request::setContentLength(std::string &lengthAsStr)
 		_contentLength = contentLength;
 }
 
+void	Request::setKeepAlive(bool value)
+{
+	if (value)
+		_requestHeaderMap["connection"] = "keep-alive";
+	else
+		_requestHeaderMap["connection"] = "close";
+}
+
 void Request::setRoute(const Route *route)
 {
 	_route = route;
@@ -342,6 +355,11 @@ void Request::setStatus(e_status statusCode)
 void Request::setCgiPipe(int pipeFd)
 {
 	_readingEndOfCGIPipe = pipeFd;
+}
+
+void Request::setCgiForkPid(int forkPid)
+{
+	_CgiForkPid = forkPid;
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//

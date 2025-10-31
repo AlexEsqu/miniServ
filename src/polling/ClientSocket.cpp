@@ -11,6 +11,7 @@ ClientSocket::ClientSocket(ServerSocket &server)
 	, _isReadingFromPipe(false)
 	, _clientState(CLIENT_CONNECTED)
 	, _lastEventTime(std::time(NULL))
+	, _hasTimedOut(false)
 {
 	// #ifdef DEBUG
 	// 	std::cerr << "ClientSocket Constructor called" << std::endl;
@@ -60,6 +61,11 @@ void ClientSocket::setClientState(e_clientState state)
 {
 	_clientState = state;
 	updateLastEventTime();
+}
+
+void	ClientSocket::setTimedOut(bool value)
+{
+	_hasTimedOut = value;
 }
 
 //------------------------------ GETTER --------------------------------------//
@@ -154,6 +160,11 @@ bool			ClientSocket::isReadingFromPipe() const
 	return _isReadingFromPipe;
 }
 
+bool			ClientSocket::hasTimedOut() const
+{
+	return _hasTimedOut;
+}
+
 //------------------------- MEMBER FUNCTIONS --------------------------------//
 
 void			ClientSocket::handleConnection(epoll_event event)
@@ -169,7 +180,6 @@ void			ClientSocket::startReadingPipe(int pipeFd)
 	std::cout << "Adding CGI pipe to epoll: " << pipeFd << std::endl;
 #endif
 
-	updateLastEventTime();
 	_readingEndOfCgiPipe = pipeFd;
 	getServer().getEpoll().addPipe(this, pipeFd);
 	_isReadingFromPipe = true;
@@ -184,6 +194,8 @@ void			ClientSocket::stopReadingPipe()
 	_isReadingFromPipe = false;
 	getServer().getEpoll().removePipe(this, _readingEndOfCgiPipe);
 	_readingEndOfCgiPipe = -1;
+	if (kill(getRequest().getCgiForkPid(), SIGKILL) == -1)
+		perror("kill");
 }
 
 void			ClientSocket::checkForReadError(int valread)

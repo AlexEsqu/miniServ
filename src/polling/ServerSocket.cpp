@@ -114,6 +114,9 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 // but may also read from an internal pipe CGI being executed for a response
 void			ServerSocket::receiveAndParseData(ClientSocket* client)
 {
+	if (client->hasTimedOut())
+		return ;
+
 	// special case when the CGI is being executed, requires specific functions
 	if (client->isReadingFromPipe())
 		_cf->readCGIChunk(client);
@@ -187,18 +190,27 @@ void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 		socket->updateLastEventTime();
 		_poller.setPollingMode(READING, socket);
 	}
+	else if (socket->hasTimedOut())
+	{
+		;
+	}
 	else
 		removeConnection(socket);
 }
 
 void		ServerSocket::timeoutRequest(ClientSocket& client)
 {
-	client.stopReadingPipe();
 	client.getCgiBuffer().clearBuffer();
+	client.getResponse().reset();
 	client.getRequest().setError(REQUEST_TIMEOUT);
+	client.setTimedOut(true);
+	client.getRequest().setKeepAlive(false);
 	client.getResponse().createHTTPHeaders();
 	client.setClientState(CLIENT_HAS_FILLED);
-	_poller.setPollingMode(WRITING, &client);
+	if (client.isReadingFromPipe())
+		client.stopReadingPipe();
+	else
+		_poller.setPollingMode(WRITING, &client);
 }
 
 // checks all client sockets, remove the one who did not set off any events in a while

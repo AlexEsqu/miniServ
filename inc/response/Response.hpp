@@ -64,6 +64,7 @@ public:
 
 	void			setContentType(std::string type);
 	void			setContentLength(int length);
+	void			setConnection(const std::string& type);
 
 	//-------------------- GETTERS -----------------------//
 

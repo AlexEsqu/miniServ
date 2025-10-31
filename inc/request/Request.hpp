@@ -82,6 +82,7 @@ private:
 	std::string			_unparsedBuffer;	// may store chunks of request header
 
 	int					_readingEndOfCGIPipe;	// if CGI is needed, fd to read the result in
+	int					_CgiForkPid;
 
 	// CONFIGURATION APPLICABLE TO THE REQUEST
 
@@ -113,9 +114,11 @@ public:
 	void				setURI(std::string& uri);
 	void				setRequestLine(std::string& requestLine);
 	void				setContentLength(std::string &lengthAsStr);
+	void				setKeepAlive(bool value);
 
 	void				setRoute(const Route* route);
 	void				setCgiPipe(int pipeFd);
+	void				setCgiForkPid(int forkPid);
 
 	void				addAsHeaderVar(std::string& keyValueString);
 	void				setContentType(std::string string);
@@ -132,6 +135,7 @@ public:
 	std::string			getProtocol() const;
 	std::string			getRequestedURL() const;
 	std::string			getCgiParam() const;
+	int					getCgiForkPid() const;
 	const Route*		getRoute() const;
 	std::map
 		<std::string,
