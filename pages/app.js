@@ -1,7 +1,6 @@
 const tablistButtons = document.getElementsByClassName("tablist-button");
 const presentationArticles = document.getElementsByClassName("presentation-article");
 let formSubmitted = false;
-	localStorage.setItem("formSubmitted", "false");
 
 function updateArticleVisibility(clickedButton) {
 	Array.from(presentationArticles).forEach((article) => {
@@ -129,6 +128,7 @@ async function getFormInfo(endpoint, responseType = "text") {
 
 async function getFormData() {
 	let name, description, picture;
+	const article = document.getElementById("add-yourself-article");
 	try {
 		name = await getFormInfo("name", "text");
 		description = await getFormInfo("description", "text");
@@ -142,8 +142,6 @@ async function getFormData() {
 			}
 			document.getElementById("form-button-ok").style.display = "none";
 			document.getElementById("form-button-cancel").style.display = "none";
-		}
-
 		if (picture) {
 			const img = document.createElement("img");
 			img.src = imageUrl;
@@ -154,6 +152,8 @@ async function getFormData() {
 			p.textContent = description;
 			article.appendChild(p);
 		}
+		}
+
 	} catch (error) {
 		localStorage.setItem("formSubmitted", "false");
 		console.error(error);
