@@ -152,7 +152,7 @@ void	Executor::addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Re
 	std::string	cgiParam = request.getCgiParam();
 	if (!cgiParam.empty())
 	{
-		envAsStrVec.push_back("QUERY_STRING=" + cgiParam);
+		envAsStrVec.push_back(formatKeyValueIntoSingleString("QUERY_STRING", cgiParam));
 		// addQueryParamAsEnvironment(envAsStrVec, cgiParam);
 	}
 }
