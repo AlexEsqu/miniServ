@@ -95,16 +95,27 @@ const Route *Router::findMatchingRoute(const std::string &requestPath, const Ser
 	return result;
 }
 
+bool isUploadPathInRoutedUrl(std::string url, std::string uploadDirectory)
+{
+	if (url.find(uploadDirectory) != std::string::npos)
+		return true;
+	return false;
+}
+
+std::string redirectCorrectPathWithSessionId(Request *request, const Route *route)
+{
+	std::string requestedURL;
+	std::string filename = request->getRequestedURL().substr(requestedURL.find_last_of("/") + 1);
+
+	requestedURL = route->getUploadDirectory() + "/" + request->getStringSessionId() + "_";
+	requestedURL.append(filename);
+	return requestedURL;
+}
+
 void Router::routeRequest(Request *request, Response *response)
 {
 	const Route *route = request->getRoute();
-	std::string requestedURL;
-	if (route->getRootDirectory() == route->getUploadDirectory())
-	{
-		requestedURL = route->getURLPath() + "/" + request->getStringSessionId() + "_";
-	}
-	else
-		requestedURL = request->getRequestedURL();
+	std::string requestedURL = request->getRequestedURL();
 
 	validateRequestWithRoute(request, response);
 	if (response->hasError())
@@ -112,10 +123,11 @@ void Router::routeRequest(Request *request, Response *response)
 	std::string path;
 	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD)
 	{
-		std::string filename = request->getRequestedURL().substr(requestedURL.find_last_of("/") + 1);
-		if (route->getRootDirectory() == route->getUploadDirectory())
-			requestedURL.append(filename);
 		path = routeFilePathForGet(requestedURL, route);
+		if (isUploadPathInRoutedUrl(path, route->getUploadDirectory()))
+			requestedURL = redirectCorrectPathWithSessionId(request, route);
+		else
+			requestedURL = path;
 		if (path.empty())
 			response->setError(NOT_FOUND);
 		else if (!isAllowedRead(path.c_str()))
@@ -123,11 +135,12 @@ void Router::routeRequest(Request *request, Response *response)
 	}
 	else
 	{
-		std::string filename = request->getRequestedURL().substr(requestedURL.find_last_of("/") + 1);
-		if (route->getRootDirectory() == route->getUploadDirectory())
-			requestedURL.append(filename);
 		path = routeFilePathForPost(requestedURL, route);
-		if (!path.empty() && !isAllowedWrite(path.c_str()))
+		if (isUploadPathInRoutedUrl(path, route->getUploadDirectory()))
+			requestedURL = redirectCorrectPathWithSessionId(request, route);
+		else
+			requestedURL = path;
+		if (!isAllowedRead(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
 	response->setRoutedUrl(path);
@@ -205,7 +218,7 @@ bool Router::isExisting(const char *path)
 	return (stat(path, &path_stat) == 0);
 }
 
-bool			Router::isValidGetFilePath(const std::string& path)
+bool Router::isValidGetFilePath(const std::string &path)
 {
 	std::ifstream in(path.c_str(), std::ios::binary);
 	if (in.is_open() && !isDirectory(path))
@@ -213,25 +226,21 @@ bool			Router::isValidGetFilePath(const std::string& path)
 	return false;
 }
 
-bool			Router::isAllowedRead(const char* path)
+bool Router::isAllowedRead(const char *path)
 {
 	if (!path)
 		return (false);
 	return (access(path, R_OK) == 0);
 }
 
-bool			Router::isAllowedWrite(const char* path)
+bool Router::isAllowedWrite(const char *path)
 {
 	if (!path)
 		return (false);
-
-	if (access(path, F_OK) != 0)
-		return (true);
-
 	return (access(path, W_OK) == 0);
 }
 
-bool			Router::isAllowedExecute(const char* path)
+bool Router::isAllowedExecute(const char *path)
 {
 	if (!path)
 		return (false);
