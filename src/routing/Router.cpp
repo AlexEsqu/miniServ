@@ -109,7 +109,6 @@ void Router::routeRequest(Request *request, Response *response)
 	validateRequestWithRoute(request, response);
 	if (response->hasError())
 		return;
-	// if routeDirectory == _uploadDirectory
 	std::string path;
 	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD)
 	{
@@ -125,7 +124,6 @@ void Router::routeRequest(Request *request, Response *response)
 	else
 	{
 		path = routeFilePathForPost(requestedURL, route);
-		// path += "/" + request->getStringSessionId() + "_" ;
 	}
 	response->setRoutedUrl(path);
 }
