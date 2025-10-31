@@ -11,4 +11,4 @@ tmp/
 *.tmp
 *.tmp
 pages/upload/*
-./*.pdf
+*.pdf
