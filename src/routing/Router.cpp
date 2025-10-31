@@ -95,6 +95,23 @@ const Route *Router::findMatchingRoute(const std::string &requestPath, const Ser
 	return result;
 }
 
+bool isUploadPathInRoutedUrl(std::string url, std::string uploadDirectory)
+{
+	if (url.find(uploadDirectory) != std::string::npos)
+		return true;
+	return false;
+}
+
+std::string redirectCorrectPathWithSessionId(Request *request, const Route *route)
+{
+	std::string requestedURL;
+	std::string filename = request->getRequestedURL().substr(requestedURL.find_last_of("/") + 1);
+
+	requestedURL = route->getUploadDirectory() + "/" + request->getStringSessionId() + "_";
+	requestedURL.append(filename);
+	return requestedURL;
+}
+
 void Router::routeRequest(Request *request, Response *response)
 {
 	const Route *route = request->getRoute();
@@ -105,18 +122,20 @@ void Router::routeRequest(Request *request, Response *response)
 		return;
 
 	std::string path;
-	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD)
+	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD || request->getMethodCode() == DELETE)
 	{
 		path = routeFilePathForGet(requestedURL, *request);
 		if (path.empty())
 			response->setError(NOT_FOUND);
-		else if (!isAllowedRead(path.c_str()))
+		else if (request->getMethodCode() != DELETE && !isAllowedRead(path.c_str()))
+			response->setError(FORBIDDEN);
+		else if (request->getMethodCode() == DELETE && !isAllowedWrite(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
 	else
 	{
 		path = routeFilePathForPost(requestedURL, route);
-		if (!path.empty() && !isAllowedWrite(path.c_str()))
+		if (!isAllowedRead(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
 
@@ -149,34 +168,19 @@ std::string Router::addSessionIdPrefixToGet(const std::string& url, Request& req
 	return (path);
 }
 
-// std::string Router::addSessionIdPrefixToPost(const std::string& url, Request& request)
-// {
-// 	const Route*	route = request.getRoute();
-// 	std::string		path = url;
-
-// 	if (!route->getUploadDirectory().empty() && url.find(route->getUploadDirectory()) != std::string::npos)
-// 	{
-// 		std::string	filepath = url.substr(0, url.find_last_of("/") + 1);
-// 		std::string	filename = url.substr(url.find_last_of("/") + 1, url.size());
-
-// 		path = filepath + request.getStringSessionId() + "_" + filename;
-// 	}
-
-// 	return (path);
-// }
-
 std::string Router::routeFilePathForGet(const std::string &url, Request& request)
 {
 	if (request.getRoute() == NULL)
 		return "";
 
 	std::string routedURL = replaceRoutePathByRootDirectory(url, request.getRoute());
-	std::string directory = routedURL.substr(0, routedURL.find_last_of("/"));
-	std::string filename = routedURL.substr(routedURL.find_last_of("/") + 1);
 
 	// if the file exist, it is the valid routed path
 	if (isValidGetFilePath(routedURL))
 		return routedURL;
+
+	std::string directory = routedURL.substr(0, routedURL.find_last_of("/"));
+	std::string filename = routedURL.substr(routedURL.find_last_of("/") + 1);
 
 	std::string	sessionPrefix = addSessionIdPrefixToGet(routedURL, request);
 	if (isValidGetFilePath(sessionPrefix))
@@ -244,7 +248,7 @@ bool Router::isExisting(const char *path)
 	return (stat(path, &path_stat) == 0);
 }
 
-bool			Router::isValidGetFilePath(const std::string& path)
+bool Router::isValidGetFilePath(const std::string &path)
 {
 	std::ifstream in(path.c_str(), std::ios::binary);
 	if (in.is_open() && !isDirectory(path))
@@ -252,25 +256,21 @@ bool			Router::isValidGetFilePath(const std::string& path)
 	return false;
 }
 
-bool			Router::isAllowedRead(const char* path)
+bool Router::isAllowedRead(const char *path)
 {
 	if (!path)
 		return (false);
 	return (access(path, R_OK) == 0);
 }
 
-bool			Router::isAllowedWrite(const char* path)
+bool Router::isAllowedWrite(const char *path)
 {
 	if (!path)
 		return (false);
-
-	if (access(path, F_OK) != 0)
-		return (true);
-
 	return (access(path, W_OK) == 0);
 }
 
-bool			Router::isAllowedExecute(const char* path)
+bool Router::isAllowedExecute(const char *path)
 {
 	if (!path)
 		return (false);

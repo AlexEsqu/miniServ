@@ -233,7 +233,7 @@ void ContentFetcher::fillResponse(ClientSocket *client)
 {
 	Router::routeRequest(&(client->getRequest()), &(client->getResponse()));
 
-	verboseLog("Filling request to: " + client->getResponse().getRoutedURL());
+	std::cout << ">> " << client->getResponse().getRoutedURL();
 
 	// if an error has been caught when parsing, no need to fetch content
 	if (client->getRequest().hasError())

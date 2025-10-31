@@ -53,7 +53,6 @@ std::string ContentFetcher::findFileInDirectory(std::string directory, std::stri
 void ContentFetcher::serveStatic(ClientSocket *client)
 {
 	std::string		fileURL(client->getResponse().getRoutedURL());
-	std::cout << fileURL;
 
 	size_t			filenamePos = fileURL.find_last_of('/');
 	std::string		filename;
@@ -86,8 +85,6 @@ void	ContentFetcher::addCgiResultToResponse(Response &response, Buffer& buffer)
 {
 	std::string	allContent = buffer.getAllContent();
 
-	// std::cout << "[" << allContent << "]" << std::endl;
-
 	// annoyingly, cgi provides http headers to have fun with
 	size_t headerEnd = allContent.find("\n");
 	if (headerEnd != std::string::npos)
@@ -96,7 +93,7 @@ void	ContentFetcher::addCgiResultToResponse(Response &response, Buffer& buffer)
 		trim(headers);
 		std::string body = allContent.substr(headerEnd + 1);
 
-		std::cout << "\nparsing headers [" << headers << "]" << std::endl;
+		// std::cout << "\nparsing headers [" << headers << "]" << std::endl;
 		parseCgiHeader(response, headers);
 		response.addToContent(body);
 	}
