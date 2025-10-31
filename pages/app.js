@@ -142,18 +142,17 @@ async function getFormData() {
 			}
 			document.getElementById("form-button-ok").style.display = "none";
 			document.getElementById("form-button-cancel").style.display = "none";
-		if (picture) {
-			const img = document.createElement("img");
-			img.src = imageUrl;
-			article.appendChild(img);
+			if (picture) {
+				const img = document.createElement("img");
+				img.src = imageUrl;
+				article.appendChild(img);
+			}
+			if (description) {
+				const p = document.createElement("p");
+				p.textContent = description;
+				article.appendChild(p);
+			}
 		}
-		if (description) {
-			const p = document.createElement("p");
-			p.textContent = description;
-			article.appendChild(p);
-		}
-		}
-
 	} catch (error) {
 		localStorage.setItem("formSubmitted", "false");
 		console.error(error);

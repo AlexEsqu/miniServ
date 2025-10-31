@@ -14,8 +14,28 @@ body {
 
 #presentation-window
 {
-	width: 40vw;
+	width: 50vh;
 	top: 100px;
+}
+
+
+#presentation-window .window-body
+{
+	width: 100%;
+}
+
+.presentation-article
+{
+	height: 100%;
+	width:  90%;
+
+}	
+.presentation-article img
+{
+	max-height: fit-content;
+	object-fit: contain;
+	width: 100%;
+	max-height: 500px;
 }
 
 #article-window-1
@@ -24,10 +44,6 @@ body {
 	top: 10%;
 	left: 50%;
 	font-size: 15px;
-}
-
-article img {
-	width: 100%;
 }
 
 .field-row-stacked {
