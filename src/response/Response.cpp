@@ -184,7 +184,7 @@ void Response::createHTTPHeaders()
 	_contentLength = _responsePage.getBufferSize();
 	std::stringstream contentLength;
 	contentLength << _contentLength;
-	addHttpHeader(_request.getProtocol(), getStatus().getStringStatusCode());
+	_HTTPHeaders += _request.getProtocol() + " " + getStatus().getStringStatusCode() + "\r\n";
 	addHttpHeader("Content-Type", _contentType);
 	addHttpHeader("Content-Length", contentLength.str());
 	addHttpHeader("Connection", (_request.isKeepAlive() ? "keep-alive" : "close"));
