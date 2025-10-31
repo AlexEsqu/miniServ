@@ -99,12 +99,18 @@ bool				FileHandler::isWriting() const
 
 std::string FileHandler::generateTempFileName(const std::string& prefix)
 {
+	// should use rand but not explicitly accepted so hacky solution ;_;
 	static size_t counter = 0;
 
 	std::stringstream oss;
 	oss << prefix << "_"
 		<< std::time(0)
-		<< (counter++) << ".tmp";
+		<< counter << ".tmp";
+
+	counter++;
+	if (counter == __INT16_MAX__)
+		counter = 0;
+
 	return oss.str();
 }
 
