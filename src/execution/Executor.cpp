@@ -32,68 +32,6 @@ Executor::~Executor()
 
 //---------------- MEMBER FUNCTION -------------------//
 
-void	Executor::addResultToContent(Response &response, int fd)
-{
-	std::string	s = "";
-
-	char	buff;
-	while (read(fd, &buff, 1) > 0)
-	{
-		if (buff != 0)
-			s.push_back(buff);
-	}
-	// #ifdef DEBUG
-	// 	std::cout << "Pipe read was : [" << s << "]\n";
-	// #endif
-
-	// annoyingly, cgi provides http headers to have fun with
-	size_t headerEnd = s.find("\r\n\r\n");
-	if (headerEnd != std::string::npos)
-	{
-		std::string headers = s.substr(0, headerEnd);
-		std::string body = s.substr(headerEnd + 4);
-
-		parseCgiHeader(response, headers);
-		response.addToContent(body);
-	}
-	else
-		response.addToContent(s);
-
-}
-
-void	Executor::parseCgiHeader(Response &response, std::string& headers)
-{
-	std::istringstream headerStream(headers);
-	std::string headerLine;
-
-	while (std::getline(headerStream, headerLine))
-	{
-		size_t colonPos = headerLine.find(':');
-		if (colonPos != std::string::npos)
-		{
-			std::string key = headerLine.substr(0, colonPos);
-			std::string value = headerLine.substr(colonPos + 1);
-			response.setHeader(key, value);
-		}
-		else if (headerLine.find("Status") == 0)
-		{
-			size_t spacePos = headerLine.find(' ');
-			if (spacePos != std::string::npos)
-			{
-				try
-				{
-					int statusCode = std::atoi(headerLine.substr(spacePos + 1).c_str());
-					response.getRequest().setStatus(static_cast<e_status>(statusCode));
-				}
-				catch (...)
-				{
-					response.getRequest().setError(INTERNAL_SERVER_ERROR);
-				}
-			}
-		}
-	}
-}
-
 std::vector<std::string>	Executor::generateEnvStrVec(Request& request)
 {
 	std::vector<std::string>	envAsStrVec;

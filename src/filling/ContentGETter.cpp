@@ -83,6 +83,24 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	verboseLog("Filling done");
 }
 
+void	ContentFetcher::addCgiResultToResponse(Response &response, Buffer& buffer)
+{
+	std::string	allContent = buffer.getAllContent();
+
+	// annoyingly, cgi provides http headers to have fun with
+	size_t headerEnd = allContent.find("\r\n\r\n");
+	if (headerEnd != std::string::npos)
+	{
+		std::string headers = allContent.substr(0, headerEnd);
+		std::string body = allContent.substr(headerEnd + 4);
+
+		parseCgiHeader(response, headers);
+		response.addToContent(body);
+	}
+	else
+		response.addToContent(allContent);
+}
+
 e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 {
 	char buffer[4096];
@@ -97,6 +115,8 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 	{
 		client->stopReadingPipe();
 		// wrap response content / error page with HTTP headers
+		addCgiResultToResponse(client->getResponse(), client->getCgiBuffer());
+		client->getCgiBuffer().clearBuffer();
 		client->getResponse().createHTTPHeaders();
 		client->setClientState(CLIENT_HAS_FILLED);
 		return RECEIVED_ALL;
@@ -117,7 +137,8 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 	}
 
 	std::string stringBuffer(buffer, bytesRead);
-	client->getResponse().addToContent(stringBuffer);
+
+	client->getCgiBuffer().writeToBuffer(stringBuffer);
 
 	return WAITING_FOR_MORE;
 }

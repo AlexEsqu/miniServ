@@ -37,6 +37,7 @@ private:
 	Status				_status;
 	Request				_request;
 	Response			_response;
+	Buffer				_cgiBuffer;
 
 	bool				_isReadingFromPipe;
 	int					_readingEndOfCgiPipe;
@@ -65,6 +66,7 @@ public:
 	Response&			getResponse();
 	Status&				getStatus();
 	ServerSocket&		getServer();
+	Buffer&				getCgiBuffer();
 	std::map
 		<size_t,
 		Session>&		getSessionMap();
