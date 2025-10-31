@@ -90,13 +90,13 @@ void	Response::setHeader(std::string key, std::string value)
 // sets status code but does not raise error flag in request
 void	Response::setStatus(e_status status)
 {
-	_status.setStatusCode(status);
+	_request.setStatus(status);
 }
 
 // sets status code and raises error flag in request
 void Response::setError(e_status status)
 {
-	_status.setError(status);
+	_request.setError(status);
 }
 
 void Response::setRoutedUrl(std::string url)

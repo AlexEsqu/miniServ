@@ -1,5 +1,7 @@
 #include "Poller.hpp"
 
+volatile sig_atomic_t g_running = 1;
+
 Poller::Poller()
 {
 	_epollFd = epoll_create(1);
@@ -9,6 +11,7 @@ Poller::Poller()
 
 Poller::~Poller()
 {
+	closeServers();
 	close(getEpoll());
 }
 
@@ -16,6 +19,29 @@ int		Poller::getEpoll() const
 {
 	return _epollFd;
 }
+
+void	Poller::openServersAndAddToWatchList(std::vector<ServerConf>& serversConfs)
+{
+	for (std::vector<ServerConf>::iterator i = serversConfs.begin(); i != serversConfs.end(); i++)
+	{
+		ServerSocket* newServer = NULL;
+		try
+		{
+			newServer = new ServerSocket(*this, *i);
+		}
+		catch (const Sockette::failedSocketBinding& e)
+		{
+			std::cout << "Port unavailable at " << i->getPort() << ", server cannot be opened\n";
+			delete newServer;
+		}
+		catch (...)
+		{
+			std::cout << "Failed to open server " << i->getServerName() << " at port " << i->getPort() << "\n";
+			delete newServer;
+		}
+	}
+}
+
 
 void	Poller::addSocket(Sockette& socket)
 {
@@ -147,12 +173,23 @@ void	Poller::processEvents()
 
 void	Poller::launchEpollListenLoop()
 {
-	// std::cout << CGI_FORMAT("\n+++++++ Waiting for new request +++++++\n");
-	waitForEvents();
-	processEvents();
+	while (g_running)
+	{
+		waitForEvents();
+		processEvents();
 
+		for (size_t i = 0; i < _serverList.size(); i++)
+			_serverList[i]->timeoutIdleClients();
+	}
+}
+
+void	Poller::closeServers()
+{
 	for (size_t i = 0; i < _serverList.size(); i++)
-		_serverList[i]->timeoutIdleClients();
+	{
+		if (_serverList[i])
+			delete _serverList[i];
+	}
 }
 
 //--------------------------- EXCEPTIONS ------------------------------------//

@@ -170,6 +170,39 @@ std::string ContentFetcher::getExtensionFromType(const std::string &type)
 	return extension;
 }
 
+void	ContentFetcher::parseCgiHeader(Response &response, std::string& headers)
+{
+	std::istringstream headerStream(headers);
+	std::string headerLine;
+
+	while (std::getline(headerStream, headerLine))
+	{
+		size_t colonPos = headerLine.find(':');
+		if (colonPos != std::string::npos)
+		{
+			std::string key = headerLine.substr(0, colonPos);
+			std::string value = headerLine.substr(colonPos + 1);
+			response.setHeader(key, value);
+		}
+		else if (headerLine.find("Status") == 0)
+		{
+			size_t spacePos = headerLine.find(' ');
+			if (spacePos != std::string::npos)
+			{
+				try
+				{
+					int statusCode = std::atoi(headerLine.substr(spacePos + 1).c_str());
+					response.getRequest().setStatus(static_cast<e_status>(statusCode));
+				}
+				catch (...)
+				{
+					response.getRequest().setError(INTERNAL_SERVER_ERROR);
+				}
+			}
+		}
+	}
+}
+
 size_t	ContentFetcher::getSizeOfFile(const std::string& filename)
 {
 	struct stat	path_stat;
@@ -219,4 +252,6 @@ void ContentFetcher::fillResponse(ClientSocket *client)
 		postItemFromServer(client);
 	else if (client->getRequest().getMethodCode() == HEAD)
 		getItemFromServer(client);
+	else
+		client->getRequest().setError(METHOD_NOT_ALLOWED);
 }

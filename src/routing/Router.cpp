@@ -118,12 +118,14 @@ void Router::routeRequest(Request *request, Response *response)
 		path = routeFilePathForGet(requestedURL, route);
 		if (path.empty())
 			response->setError(NOT_FOUND);
-		if (!isAllowed(path.c_str()))
+		else if (!isAllowedRead(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
 	else
 	{
 		path = routeFilePathForPost(requestedURL, route);
+		if (!isAllowedRead(path.c_str()))
+			response->setError(FORBIDDEN);
 	}
 	response->setRoutedUrl(path);
 }
@@ -152,7 +154,7 @@ std::string Router::routeFilePathForGetAsDirectory(std::string routedURL, const 
 	if (!routedURL.empty() && !hasTrailingSlash(routedURL))
 		routedURL += '/';
 
-	// if it is not a directory tho, GET is impossible
+	// if it is not a file and not a directory tho, GET is impossible
 	if (!isDirectory(routedURL))
 		return "";
 
@@ -200,23 +202,33 @@ bool Router::isExisting(const char *path)
 	return (stat(path, &path_stat) == 0);
 }
 
-bool Router::isAllowed(const char *path)
+bool			Router::isValidGetFilePath(const std::string& path)
+{
+	std::ifstream in(path.c_str(), std::ios::binary);
+	if (in.is_open() && !isDirectory(path))
+		return true;
+	return false;
+}
+
+bool			Router::isAllowedRead(const char* path)
 {
 	if (!path)
 		return (false);
 	return (access(path, R_OK) == 0);
 }
 
-bool Router::isValidGetFilePath(const std::string &path)
+bool			Router::isAllowedWrite(const char* path)
 {
-	std::ifstream in(path.c_str(), std::ios::binary);
-	if (in.is_open() && !isDirectory(path))
-		return true;
+	if (!path)
+		return (false);
+	return (access(path, W_OK) == 0);
+}
 
-	// std::cout << MAGENTA << "Found the file in the directory: " << findFileInDirectory(path) << STOP_COLOR << std::endl;
-
-	// else if ()
-	return false;
+bool			Router::isAllowedExecute(const char* path)
+{
+	if (!path)
+		return (false);
+	return (access(path, X_OK) == 0);
 }
 
 bool Router::isRootPath(const std::string &uri)

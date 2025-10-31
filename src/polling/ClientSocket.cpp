@@ -95,6 +95,11 @@ char*			ClientSocket::getBuffer()
 	return (_buffer);
 }
 
+Buffer&			ClientSocket::getCgiBuffer()
+{
+	return (_cgiBuffer);
+}
+
 int				ClientSocket::getCgiPipeFd()
 {
 	return (_readingEndOfCgiPipe);
@@ -265,25 +270,3 @@ void			ClientSocket::updateLastEventTime()
 {
 	_lastEventTime = std::time(NULL);
 }
-
-// size_t			ClientSocket::generateRandomNumber()
-// {
-// 	std::ifstream file("/dev/random", std::ios_base::in | std::ios_base::binary);
-// 	if (!file)
-// 	{
-// 		std::cerr << "Failed to open /dev/random" << std::endl;
-// 		return 1;
-// 	}
-
-// 	// Create a stream buffer to read from the file
-// 	std::streambuf *buffer = file.rdbuf();
-
-// 	// Generate a random number from the read data
-// 	size_t randomNumber = 0;
-// 	char ch;
-// 	while (buffer->sgetn(&ch, 1) > 0)
-// 	{
-// 		randomNumber = (randomNumber << 8) + ch;
-// 	}
-// 	return (randomNumber);
-// }

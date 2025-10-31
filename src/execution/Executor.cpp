@@ -32,23 +32,6 @@ Executor::~Executor()
 
 //---------------- MEMBER FUNCTION -------------------//
 
-void	Executor::addResultToContent(Response &response, int fd)
-{
-	std::string	s = "";
-
-	char	buff;
-	while (read(fd, &buff, 1) > 0)
-	{
-		if (buff != 0)
-			s.push_back(buff);
-	}
-	// #ifdef DEBUG
-	// 	std::cout << "Pipe read was : [" << s << "]\n";
-	// #endif
-
-	response.addToContent(s);
-}
-
 std::vector<std::string>	Executor::generateEnvStrVec(Request& request)
 {
 	std::vector<std::string>	envAsStrVec;
@@ -67,27 +50,27 @@ std::vector<std::string>	Executor::generateEnvStrVec(Request& request)
 
 std::string	Executor::formatAsHTTPVariable(const std::string& key, const std::string& value)
 {
-	std::string	formattedEnvKeyValue = "";
+	std::string	formattedEnvKeyValue;
 
-	// Replace hyphens with underscores and convert to uppercase
+	// replacing hyphens with underscores and converting to uppercase
 	std::string	formattedKey = key;
-	for (size_t i = 0; i < key.length(); ++i) {
-		if (key[i] == '-' || key[i] == ' ') {
+	for (size_t i = 0; i < key.length(); ++i)
+	{
+		if (key[i] == '-' || key[i] == ' ')
 			formattedKey[i] = '_';
-		}
 	}
 	strToUpper(formattedKey);
 
 	std::string	formattedValue = value;
-	for (size_t i = 0; i < value.length(); ++i) {
-		if (value[i] == '-' || value[i] == ' ') {
+	for (size_t i = 0; i < value.length(); ++i)
+	{
+		if (value[i] == '-' || value[i] == ' ')
 			formattedValue[i] = '_';
-		}
-		// TO DO : add encoding for non variable compliant characters such as ", ', % ....
+		// TO DO : add encoding for non compliant characters like ", ', % ....
 	}
 	strToUpper(formattedValue);
 
-	// Convert HTTP headers to CGI format: HTTP_HEADER_NAME
+	// convertint HTTP headers to CGI format: HTTP_HEADER_NAME except for Content Type and Length
 	if (formattedKey == "CONTENT_TYPE" || formattedKey == "CONTENT_LENGTH")
 		formattedEnvKeyValue = formattedKey + "=" + formattedValue;
 	else
@@ -102,17 +85,63 @@ std::string	Executor::formatKeyValueIntoSingleString(const std::string& key, con
 	return formattedEnvKeyValue;
 }
 
-void Executor::addCGIEnvironment(std::vector<std::string> envAsStrVec, const Request& request)
+void	Executor::parseQueryParameters(std::map<std::string, std::string>& queryParamMap, const std::string& queryString)
 {
-	// Standard CGI variables
+	std::istringstream					stream(queryString);
+
+	std::string keyValuePairString;
+	while (std::getline(stream, keyValuePairString, '&'))
+	{
+		size_t equalPos = keyValuePairString.find('=');
+		if (equalPos != std::string::npos)
+		{
+			std::string key = parseUrlEncoding(keyValuePairString.substr(0, equalPos));
+			std::string value = parseUrlEncoding(keyValuePairString.substr(equalPos + 1));
+			queryParamMap[key] = value;
+		}
+		else
+		{
+			std::string key = parseUrlEncoding(keyValuePairString);
+			queryParamMap[key] = "";
+		}
+	}
+}
+
+void	Executor::addQueryParamAsEnvironment(std::vector<std::string>& envAsStrVec, const std::string& queryString)
+{
+	std::map<std::string, std::string> queryParamMap;
+
+	parseQueryParameters(queryParamMap, queryString);
+	for (std::map<std::string, std::string>::iterator i = queryParamMap.begin(); i != queryParamMap.end(); i++)
+	{
+		envAsStrVec.push_back(formatKeyValueIntoSingleString(i->first, i->second));
+	}
+}
+
+void	Executor::addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Request& request)
+{
+	// standard CGI variables
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_METHOD", request.getMethodAsString()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("REQUEST_URI", request.getRequestedURL()));
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PROTOCOL", request.getProtocol()));
-	// TO DO : add query string (but CGI is unchunking on his own)
 
-	// Server information
-	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", "localhost"));		// or from config
-	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", "8080"));			// or from config
+	// server information
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_NAME", request.getConf().getServerName()));
+	std::stringstream	portAsStream;
+	portAsStream << request.getConf().getPort();
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", portAsStream.str()));
+
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SCRIPT_NAME", request.getRequestedURL()));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SCRIPT_FILENAME", Router::joinPaths(request.getConf().getRoot(), request.getRequestedURL())));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("REDIRECT_STATUS", "200"));
+
+	// query parameters (originally stored in URI)
+	std::string	cgiParam = request.getCgiParam();
+	if (!cgiParam.empty())
+	{
+		envAsStrVec.push_back(formatKeyValueIntoSingleString("QUERY_STRING", cgiParam));
+		// addQueryParamAsEnvironment(envAsStrVec, cgiParam);
+	}
 }
 
 void	Executor::executeFile(ClientSocket* client)

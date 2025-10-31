@@ -21,7 +21,10 @@ Sockette::Sockette(const Sockette &other)
 Sockette::~Sockette()
 {
 	if (_socketFd >= 0)
+	{
 		close(_socketFd);
+		_socketFd = -1;
+	}
 }
 
 //---------------------------- OPERATORS ------------------------------------//

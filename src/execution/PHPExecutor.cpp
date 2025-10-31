@@ -30,13 +30,15 @@ PHPExecutor& PHPExecutor::operator=(const PHPExecutor&)
 
 std::vector<const char*>	PHPExecutor::buildEnv(Request& request)
 {
-	std::vector<std::string>	envAsStr = generateEnvStrVec(request);
+	_envAsStr.clear();
+
+	_envAsStr = generateEnvStrVec(request);
 
 	std::vector<const char*>	env;
-	env.reserve(envAsStr.size() + 1);
-	for (size_t i = 0; i != envAsStr.size(); i++)
+	env.reserve(_envAsStr.size() + 1);
+	for (size_t i = 0; i != _envAsStr.size(); i++)
 	{
-		env.push_back(envAsStr[i].c_str());
+		env.push_back(_envAsStr[i].c_str());
 	}
 	env.push_back(NULL);
 
@@ -57,8 +59,11 @@ std::vector<const char*> PHPExecutor::buildArgv(const char* program, const char*
 
 void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
-	const char*		program = "/usr/bin/php";
+	const char*		program = "/usr/bin/php-cgi";
 	const char*		flag = "-f";
+	std::string		executedFile = client->getResponse().getRoutedURL();
+
+
 
 	// redirect into pipe
 	close(pipefd[READ]);
@@ -66,20 +71,20 @@ void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 		exit(-1);
 	close(pipefd[WRITE]);
 
-	// expand (if needed ?)
-
-	// unchunk (if needed ?)
+	// // redirecting to the body buffer if post request
+	// if (client->getRequest().getMethodCode() == POST)
+	// {
+	// 	int bodyFd = client->getRequest().getStreamFromBodyBuffer();
+	// 	if (dup2(bodyFd, STDIN_FILENO) == -1)
+	// 		exit(-1);
+	// 	close(bodyFd);
+	// }
 
 	// assemble into an execve approved array of char*, add EOF at end
-	std::vector<const char*> argv(buildArgv(program, flag, client->getResponse().getRoutedURL()));
+	std::vector<const char*> argv(buildArgv(program, flag, executedFile));
 	std::vector<const char*> env(buildEnv(client->getRequest()));
 
 	execve(program, (char**)argv.data(), (char**)env.data());
-
-	// error handling
-	perror("execve");
-
-	// clean up
 
 	throw std::runtime_error("exec failed");
 }

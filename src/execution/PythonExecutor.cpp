@@ -30,13 +30,15 @@ PythonExecutor& PythonExecutor::operator=(const PythonExecutor&)
 
 std::vector<const char*>	PythonExecutor::buildEnv(Request& request)
 {
-	std::vector<std::string>	envAsStr = generateEnvStrVec(request);
+	_envAsStr.clear();
+
+	_envAsStr = generateEnvStrVec(request);
 
 	std::vector<const char*>	env;
-	env.reserve(envAsStr.size() + 1);
-	for (size_t i = 0; i != envAsStr.size(); i++)
+	env.reserve(_envAsStr.size() + 1);
+	for (size_t i = 0; i != _envAsStr.size(); i++)
 	{
-		env.push_back(envAsStr[i].c_str());
+		env.push_back(_envAsStr[i].c_str());
 	}
 	env.push_back(NULL);
 
@@ -46,18 +48,21 @@ std::vector<const char*>	PythonExecutor::buildEnv(Request& request)
 std::vector<const char*> PythonExecutor::buildArgv(const char* program, const std::string& filePath)
 {
 	std::vector<const char*> argv;
+	_filePath = filePath;
 
 	argv.push_back(program);
-	// argv.push_back(flag);
-	argv.push_back(filePath.c_str());
+	argv.push_back(_filePath.c_str());
 	argv.push_back(NULL);
 	return argv;
 }
 
-
 void	PythonExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
 	const char*		program = "/usr/bin/python3";
+
+	std::cerr << "Python executor starting..." << std::endl;
+	std::cerr << "Program: " << program << std::endl;
+	std::cerr << "Script: " << client->getResponse().getRoutedURL() << std::endl;
 
 	// redirect into pipe
 	close(pipefd[READ]);
