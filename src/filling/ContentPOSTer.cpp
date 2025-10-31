@@ -104,7 +104,7 @@ std::string generateFilename(ClientSocket *client, std::istream &bodyReader, std
 		client->getResponse().setError(BAD_REQUEST);
 		return("");
 	}
-	
+
 	uploadFilePath += filename;
 	if (extension != "")
 		uploadFilePath += extension;

@@ -123,8 +123,11 @@ void Router::routeRequest(Request *request, Response *response)
 	}
 	else
 	{
+		std::string filename = request->getRequestedURL().substr(requestedURL.find_last_of("/") + 1);
+		if (route->getRootDirectory() == route->getUploadDirectory())
+			requestedURL.append(filename);
 		path = routeFilePathForPost(requestedURL, route);
-		if (!isAllowedRead(path.c_str()))
+		if (!path.empty() && !isAllowedWrite(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
 	response->setRoutedUrl(path);
@@ -221,6 +224,10 @@ bool			Router::isAllowedWrite(const char* path)
 {
 	if (!path)
 		return (false);
+
+	if (access(path, F_OK) != 0)
+		return (true);
+
 	return (access(path, W_OK) == 0);
 }
 
