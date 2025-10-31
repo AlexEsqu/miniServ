@@ -46,7 +46,52 @@ void	Executor::addResultToContent(Response &response, int fd)
 	// 	std::cout << "Pipe read was : [" << s << "]\n";
 	// #endif
 
-	response.addToContent(s);
+	// annoyingly, cgi provides http headers to have fun with
+	size_t headerEnd = s.find("\r\n\r\n");
+	if (headerEnd != std::string::npos)
+	{
+		std::string headers = s.substr(0, headerEnd);
+		std::string body = s.substr(headerEnd + 4);
+
+		parseCgiHeader(response, headers);
+		response.addToContent(body);
+	}
+	else
+		response.addToContent(s);
+
+}
+
+void	Executor::parseCgiHeader(Response &response, std::string& headers)
+{
+	std::istringstream headerStream(headers);
+	std::string headerLine;
+
+	while (std::getline(headerStream, headerLine))
+	{
+		size_t colonPos = headerLine.find(':');
+		if (colonPos != std::string::npos)
+		{
+			std::string key = headerLine.substr(0, colonPos);
+			std::string value = headerLine.substr(colonPos + 1);
+			response.setHeader(key, value);
+		}
+		else if (headerLine.find("Status") == 0)
+		{
+			size_t spacePos = headerLine.find(' ');
+			if (spacePos != std::string::npos)
+			{
+				try
+				{
+					int statusCode = std::atoi(headerLine.substr(spacePos + 1).c_str());
+					response.getRequest().setStatus(static_cast<e_status>(statusCode));
+				}
+				catch (...)
+				{
+					response.getRequest().setError(INTERNAL_SERVER_ERROR);
+				}
+			}
+		}
+	}
 }
 
 std::vector<std::string>	Executor::generateEnvStrVec(Request& request)
@@ -147,6 +192,10 @@ void	Executor::addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Re
 	std::stringstream	portAsStream;
 	portAsStream << request.getConf().getPort();
 	envAsStrVec.push_back(formatKeyValueIntoSingleString("SERVER_PORT", portAsStream.str()));
+
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SCRIPT_NAME", request.getRequestedURL()));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("SCRIPT_FILENAME", Router::joinPaths(request.getConf().getRoot(), request.getRequestedURL())));
+	envAsStrVec.push_back(formatKeyValueIntoSingleString("REDIRECT_STATUS", "200"));
 
 	// query parameters (originally stored in URI)
 	std::string	cgiParam = request.getCgiParam();

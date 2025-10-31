@@ -58,6 +58,7 @@ public:
 	// read result from other end of pipe, put it into response content
 
 	void				addResultToContent(Response &response, int fd);
+	void				parseCgiHeader(Response &response, std::string& headers);
 
 	//-------------- ABSTRACT FUNCTIONS --------------------//
 

@@ -59,7 +59,7 @@ std::vector<const char*> PHPExecutor::buildArgv(const char* program, const char*
 
 void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
-	const char*		program = "/usr/bin/php";
+	const char*		program = "/usr/bin/php-cgi";
 	const char*		flag = "-f";
 	std::string		executedFileWithCgi = client->getResponse().getRoutedURL();
 
