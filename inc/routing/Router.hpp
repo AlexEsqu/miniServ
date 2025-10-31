@@ -44,7 +44,7 @@ public:
 
 	static bool			isDirectory(const std::string& path);
 	static bool			isExisting(const char* path);
-	
+
 	static bool			isAllowedRead(const char* path);
 	static bool			isAllowedWrite(const char* path);
 	static bool			isAllowedExecute(const char* path);
@@ -58,13 +58,16 @@ public:
 	static std::string	joinPaths(const std::string& base, const std::string& path) ;
 	static std::string	replaceRoutePathByRootDirectory(const std::string& url, const Route* route) ;
 	static std::string	replaceRoutePathByUploadDirectory(const std::string& url, const Route* route) ;
+	static std::string	addSessionIdPrefixToGet(const std::string& url, Request& request);
+	static std::string	addSessionIdPrefixToPost(const std::string& url, Request& request);
+
 
 	// File path resolution methods
 
 	static const Route*	findMatchingRoute(const std::string& requestPath, const ServerConf& conf) ;
 	static void			routeRequest(Request* request, Response* response);
 	static void			validateRequestWithRoute(Request* request, Response* response);
-	static std::string	routeFilePathForGet(const std::string& url, const Route* route) ;
+	static std::string	routeFilePathForGet(const std::string& url, Request& request) ;
 	static std::string	routeFilePathForGetAsDirectory(std::string routedPath, const Route* route) ;
 	static std::string	routeFilePathForPost(const std::string& url, const Route* route) ;
 	static std::string	findFileInDirectoryWithExtension(std::string directory, std::string filename);

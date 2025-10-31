@@ -203,10 +203,10 @@ void Request::setMethod(std::string &method)
 	_methodAsString = method;
 	if (_methodAsString == "GET")
 		_method = GET;
-	else if (_methodAsString == "PUT")
-		_method = PUT;
-	else if (_methodAsString == "HEAD")
-		_method = HEAD;
+	// else if (_methodAsString == "PUT")
+	// 	_method = PUT;
+	// else if (_methodAsString == "HEAD")
+	// 	_method = HEAD;
 	else if (_methodAsString == "DELETE")
 		_method = DELETE;
 	else if (_methodAsString == "POST")
@@ -547,7 +547,7 @@ e_dataProgress Request::assembleUnChunkedBody(std::string &chunk)
 
 	// check received content is correct length or wait for more
 	// std::cout << "buffer size is [" << _requestBodyBuffer.getBufferSize() << "]\n";
-	if (_requestBodyBuffer.getBufferSize() < _contentLength)
+	if (_requestBodyBuffer.getBufferSize() < _contentLength && _requestBodyBuffer.getBufferSize() < _conf.getMaxSizeClientRequestBody())
 		return WAITING_FOR_MORE;
 	else
 	{

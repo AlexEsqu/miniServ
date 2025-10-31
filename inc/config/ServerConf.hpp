@@ -14,7 +14,7 @@
 class Route;
 
 #define	DEFAULT_ROOT "pages"
-#define DEFAULT_MAX_BODY_SIZE 1
+#define DEFAULT_MAX_BODY_SIZE 1000000
 #define DEFAULT_DEFAULT_PAGE "index.html"
 #define DEFAULT_PORT 8080
 

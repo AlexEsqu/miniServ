@@ -89,7 +89,7 @@ std::string generateFilename(ClientSocket *client, std::istream &bodyReader, std
 	{
 		size_t filenameEnd = disposition.find("\"", filenamePos + 10);
 		filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
-		size_t extensionPos = filename.find('.');
+		size_t extensionPos = filename.find_last_of('.');
 		extension = filename.substr(extensionPos);
 		filename = "";
 	}

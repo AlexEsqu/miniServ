@@ -98,24 +98,16 @@ const Route *Router::findMatchingRoute(const std::string &requestPath, const Ser
 void Router::routeRequest(Request *request, Response *response)
 {
 	const Route *route = request->getRoute();
-	std::string requestedURL;
-	if (route->getRootDirectory() == route->getUploadDirectory())
-	{
-		requestedURL = route->getURLPath() + "/" + request->getStringSessionId() + "_";
-	}
-	else
-		requestedURL = request->getRequestedURL();
+	std::string requestedURL = request->getRequestedURL();
 
 	validateRequestWithRoute(request, response);
 	if (response->hasError())
 		return;
+
 	std::string path;
 	if (request->getMethodCode() == GET || request->getMethodCode() == HEAD)
 	{
-		std::string filename = request->getRequestedURL().substr(requestedURL.find_last_of("/") + 1);
-		if (route->getRootDirectory() == route->getUploadDirectory())
-			requestedURL.append(filename);
-		path = routeFilePathForGet(requestedURL, route);
+		path = routeFilePathForGet(requestedURL, *request);
 		if (path.empty())
 			response->setError(NOT_FOUND);
 		else if (!isAllowedRead(path.c_str()))
@@ -123,32 +115,79 @@ void Router::routeRequest(Request *request, Response *response)
 	}
 	else
 	{
-		std::string filename = request->getRequestedURL().substr(requestedURL.find_last_of("/") + 1);
-		if (route->getRootDirectory() == route->getUploadDirectory())
-			requestedURL.append(filename);
 		path = routeFilePathForPost(requestedURL, route);
 		if (!path.empty() && !isAllowedWrite(path.c_str()))
 			response->setError(FORBIDDEN);
 	}
+
 	response->setRoutedUrl(path);
 }
 
-std::string Router::routeFilePathForGet(const std::string &url, const Route *route)
+std::string Router::addSessionIdPrefixToGet(const std::string& url, Request& request)
 {
-	if (route == NULL)
+	const Route*	route = request.getRoute();
+	std::string		path = url;
+
+	// Session ID must be appended to obtained user submitted images in upload directory
+	if (!route->getUploadDirectory().empty() && !Router::isDirectory(url)
+		&& url.find(route->getUploadDirectory()) != std::string::npos)
+	{
+		std::string	filepath = url.substr(0, url.find_last_of("/") + 1);
+		std::string	filename = url.substr(url.find_last_of("/") + 1, url.size());
+
+		filename = request.getStringSessionId() + "_" + filename;
+
+		path = filepath + filename;
+
+		if (isValidGetFilePath(path))
+			return (path);
+
+		std::string mimedPath = findFileInDirectoryWithExtension(filepath, filename);
+		if (isValidGetFilePath(mimedPath))
+			return (mimedPath);
+	}
+	return (path);
+}
+
+// std::string Router::addSessionIdPrefixToPost(const std::string& url, Request& request)
+// {
+// 	const Route*	route = request.getRoute();
+// 	std::string		path = url;
+
+// 	if (!route->getUploadDirectory().empty() && url.find(route->getUploadDirectory()) != std::string::npos)
+// 	{
+// 		std::string	filepath = url.substr(0, url.find_last_of("/") + 1);
+// 		std::string	filename = url.substr(url.find_last_of("/") + 1, url.size());
+
+// 		path = filepath + request.getStringSessionId() + "_" + filename;
+// 	}
+
+// 	return (path);
+// }
+
+std::string Router::routeFilePathForGet(const std::string &url, Request& request)
+{
+	if (request.getRoute() == NULL)
 		return "";
 
-	std::string routedURL = replaceRoutePathByRootDirectory(url, route);
+	std::string routedURL = replaceRoutePathByRootDirectory(url, request.getRoute());
 	std::string directory = routedURL.substr(0, routedURL.find_last_of("/"));
 	std::string filename = routedURL.substr(routedURL.find_last_of("/") + 1);
+
 	// if the file exist, it is the valid routed path
 	if (isValidGetFilePath(routedURL))
 		return routedURL;
-	else if (!findFileInDirectoryWithExtension(directory, filename).empty()) // test by looking for filename with an extension in directory
-		return (findFileInDirectoryWithExtension(directory, filename));
+
+	std::string	sessionPrefix = addSessionIdPrefixToGet(routedURL, request);
+	if (isValidGetFilePath(sessionPrefix))
+		return sessionPrefix;
+
+	std::string	sessionPrefixAndGuessedExtension = findFileInDirectoryWithExtension(directory, sessionPrefix);
+	if (isValidGetFilePath(sessionPrefixAndGuessedExtension)) // test by looking for filename with an extension in directory
+		return (sessionPrefixAndGuessedExtension);
 
 	// else if might be a directory, so check if default file or auto index exist
-	return routeFilePathForGetAsDirectory(routedURL, route);
+	return routeFilePathForGetAsDirectory(routedURL, request.getRoute());
 }
 
 std::string Router::routeFilePathForGetAsDirectory(std::string routedURL, const Route *route)

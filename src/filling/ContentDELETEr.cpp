@@ -4,9 +4,7 @@ void ContentFetcher::deleteItemFromServer(ClientSocket *client)
 {
 	verboseLog("Processing DELETE request to: " + client->getResponse().getRoutedURL());
 
-	const Route *route = client->getRequest().getRoute();
-
-	std::string path = Router::routeFilePathForGet(client->getRequest().getRequestedURL(), route);
+	std::string path = Router::routeFilePathForGet(client->getRequest().getRequestedURL(), client->getRequest());
 	if (path.empty() || !Router::isExisting(path.c_str()))
 	{
 		serveErrorPage(client, NOT_FOUND);

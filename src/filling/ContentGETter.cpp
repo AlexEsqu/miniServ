@@ -93,9 +93,10 @@ void	ContentFetcher::addCgiResultToResponse(Response &response, Buffer& buffer)
 	if (headerEnd != std::string::npos)
 	{
 		std::string headers = allContent.substr(0, headerEnd);
+		trim(headers);
 		std::string body = allContent.substr(headerEnd + 1);
 
-		std::cout << "parsing headers [" << headers << "]" << std::endl;
+		std::cout << "\nparsing headers [" << headers << "]" << std::endl;
 		parseCgiHeader(response, headers);
 		response.addToContent(body);
 	}
@@ -277,9 +278,7 @@ void ContentFetcher::headItemFromServer(ClientSocket *client)
 {
 	verboseLog("Processing HEAD request to: " + client->getResponse().getRoutedURL());
 
-	const Route *route = client->getRequest().getRoute();
-
-	std::string path = Router::routeFilePathForGet(client->getRequest().getRequestedURL(), route);
+	std::string path = Router::routeFilePathForGet(client->getRequest().getRequestedURL(), client->getRequest());
 	if (path.empty() || !Router::isExisting(path.c_str()) || Router::isDirectory(path.c_str()))
 	{
 		serveErrorPage(client, NOT_FOUND);

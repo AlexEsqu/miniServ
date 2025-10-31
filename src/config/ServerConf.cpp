@@ -140,7 +140,7 @@ void			ServerConf::setMaxBodySize(const std::string& maxBodySize)
 	if (maxBodySize.empty())
 		_maxSizeClientRequestBody = DEFAULT_MAX_BODY_SIZE;
 	else
-		_maxSizeClientRequestBody = atoi(maxBodySize.c_str());
+		_maxSizeClientRequestBody = atoi(maxBodySize.c_str()) * 1000000;
 }
 
 // void			ServerConf::setParamMap(std::map<std::string, std::string>& paramMap)

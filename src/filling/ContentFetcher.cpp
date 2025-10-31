@@ -248,10 +248,10 @@ void ContentFetcher::fillResponse(ClientSocket *client)
 	}
 	else if (client->getRequest().getMethodCode() == DELETE)
 		deleteItemFromServer(client);
-	else if (client->getRequest().getMethodCode() == PUT)
-		postItemFromServer(client);
-	else if (client->getRequest().getMethodCode() == HEAD)
-		getItemFromServer(client);
+	// else if (client->getRequest().getMethodCode() == PUT)
+	// 	postItemFromServer(client);
+	// else if (client->getRequest().getMethodCode() == HEAD)
+	// 	getItemFromServer(client);
 	else
 		client->getRequest().setError(METHOD_NOT_ALLOWED);
 }

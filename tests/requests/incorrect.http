@@ -1,4 +1,4 @@
-####
+#### Wrong Filepath
 
 GET http://localhost:8080/../src/main.cpp
 content-type: text/plain
@@ -10,7 +10,7 @@ content-type: text/plain
 ###
 
 POST http://localhost:8080/post/beep2.txt
-content-type: text/plain
+content-type: plain/text
 
 {
   "body": "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -20,6 +20,16 @@ content-type: text/plain
 ###
 
 POST http://localhost:8080/upload/beep.txt
+content-type: text/html
+
+{
+  "body": "<!DOCTYPE html><html><body><h1>My First Heading</h1><p>My first paragraph.</p></body></html>",
+  "extra": "this should be ignored"
+}
+
+###
+
+LAUNCH http://localhost:8080/upload/beep.txt
 content-type: text/html
 
 {
