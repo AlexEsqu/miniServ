@@ -192,6 +192,16 @@ void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 		removeConnection(socket);
 }
 
+void		ServerSocket::timeoutRequest(ClientSocket& client)
+{
+	client.stopReadingPipe();
+	client.getCgiBuffer().clearBuffer();
+	client.getRequest().setError(REQUEST_TIMEOUT);
+	client.getResponse().createHTTPHeaders();
+	client.setClientState(CLIENT_HAS_FILLED);
+	_poller.setPollingMode(WRITING, &client);
+}
+
 // checks all client sockets, remove the one who did not set off any events in a while
 void		ServerSocket::timeoutIdleClients()
 {
@@ -207,21 +217,13 @@ void		ServerSocket::timeoutIdleClients()
 		ClientSocket* client = it->second;
 		time_t idleTime = currentTime - client->getLastEventTime();
 
-		// std::cout << "Client " << client->getSocketFd()
-		// 			<< " idle for " << idleTime
-		// 			<< " seconds." << std::endl;
-
 		if (idleTime > TIMEOUT_CONNECTION && client->hasStartedRequest()
 			&& (client->getClientState() == CLIENT_FILLING || client->getClientState() == CLIENT_PARSING))
 		{
 			std::cout << "Timeout: " << TIMEOUT_CONNECTION << std::endl;
-			std::cout << "Removing stuck socket " << std::endl;
-			clientsToRemove.push_back(client);
+			timeoutRequest(*client);
 		}
 	}
-	// remove in separate vector to avoid iterator decay (took me two segfault...)
-	for (size_t i = 0; i < clientsToRemove.size(); ++i)
-		removeConnection(clientsToRemove[i]);
 }
 
 // socket is ready to receive data or hanging up (recv 0 byte)

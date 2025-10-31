@@ -60,6 +60,7 @@ public:
 
 	void				closeConnectionOrCleanAndKeepAlive(ClientSocket* client);
 	void				timeoutIdleClients();
+	void				timeoutRequest(ClientSocket& client);
 
 	void				receiveAndParseData(ClientSocket* client);
 	void				sendDataIfComplete(ClientSocket* client);
@@ -70,6 +71,4 @@ public:
 	bool				socketIsHangingUp(epoll_event& event);
 
 
-	static std::vector
-		<ServerSocket *>	OpenAndTrackServer(std::list<ServerConf>& serversConfs, Poller& poller);
 };

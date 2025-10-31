@@ -99,10 +99,12 @@ bool				FileHandler::isWriting() const
 
 std::string FileHandler::generateTempFileName(const std::string& prefix)
 {
-	// TO DO: remove time and rand cuz forbidden
+	static size_t counter = 0;
+
 	std::stringstream oss;
 	oss << prefix << "_"
-		<< std::time(0) << ".tmp";
+		<< std::time(0)
+		<< (counter++) << ".tmp";
 	return oss.str();
 }
 

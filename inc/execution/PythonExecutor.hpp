@@ -7,6 +7,7 @@ class PythonExecutor : public Executor
 private:
 
 	std::vector<std::string>	_envAsStr;
+	std::string					_filePath;
 
 	std::vector<const char*>	buildArgv(const char* program, const std::string& filePath);
 	std::vector<const char*>	buildEnv(Request& request);

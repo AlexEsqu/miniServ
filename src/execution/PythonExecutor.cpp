@@ -48,10 +48,10 @@ std::vector<const char*>	PythonExecutor::buildEnv(Request& request)
 std::vector<const char*> PythonExecutor::buildArgv(const char* program, const std::string& filePath)
 {
 	std::vector<const char*> argv;
+	_filePath = filePath;
 
 	argv.push_back(program);
-	// argv.push_back(flag);
-	argv.push_back(filePath.c_str());
+	argv.push_back(_filePath.c_str());
 	argv.push_back(NULL);
 	return argv;
 }
@@ -59,6 +59,10 @@ std::vector<const char*> PythonExecutor::buildArgv(const char* program, const st
 void	PythonExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 {
 	const char*		program = "/usr/bin/python3";
+
+	std::cerr << "Python executor starting..." << std::endl;
+	std::cerr << "Program: " << program << std::endl;
+	std::cerr << "Script: " << client->getResponse().getRoutedURL() << std::endl;
 
 	// redirect into pipe
 	close(pipefd[READ]);
