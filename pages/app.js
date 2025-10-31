@@ -166,6 +166,7 @@ form.addEventListener("submit", async function (e) {
 	e.preventDefault(); // Prevents the default form submission behavior
 	localStorage.setItem("formSubmitted", "true");
 	sendForm();
+	form.reset();
 	getFormData();
 });
 
