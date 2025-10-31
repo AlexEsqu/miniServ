@@ -10,6 +10,7 @@ Request::Request(ServerConf &conf, Status &status)
 	  _requestState(EMPTY),
 	  _status(status),
 	  _method(UNSUPPORTED),
+	  _contentLength(0),
 	  _sessionId(0)
 {
 }
@@ -40,6 +41,7 @@ Request &Request::operator=(const Request &other)
 		_methodAsString = other._methodAsString;
 		_protocol = other._protocol;
 		_URI = other._URI;
+		_contentLength = other._contentLength;
 		_requestHeaderMap = other._requestHeaderMap;
 		_route = other._route;
 		_requestBodyBuffer = other._requestBodyBuffer;
@@ -482,9 +484,8 @@ void Request::setIfAssemblingBody()
 		_requestState = PARSING_BODY;
 		_isChunked = true;
 	}
-	else if (_requestHeaderMap.find("content-length") != _requestHeaderMap.end())
+	else if (_contentLength)
 	{
-		_contentLength = atoi(_requestHeaderMap["content-length"].c_str());
 		_requestState = PARSING_BODY;
 		_isChunked = false;
 	}
@@ -495,6 +496,8 @@ void Request::setIfAssemblingBody()
 // Making sure the body has been received in full, whether chunked or with Content-Length
 e_dataProgress Request::assembleBody(std::string &chunk)
 {
+	std::cout << "\nContent length is " << _contentLength << "\n";
+
 	if (_isChunked)
 		return assembleChunkedBody(chunk);
 	else
@@ -539,7 +542,9 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 		// extracting a chunk into the Buffer
 		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize - 2);
 		// std::cout << "chunk data [" << chunkData << "]\n";
-		_requestBodyBuffer.writeToBuffer(chunkData);
+
+		size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+		_requestBodyBuffer.writeToBuffer(chunkData.substr(0, remainderToRead));
 
 		// move on the the next chunk which may be in the same buffer
 		offset += chunkSize + 2;
