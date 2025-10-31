@@ -114,9 +114,14 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 	if (bytesRead == 0)
 	{
 		client->stopReadingPipe();
-		// wrap response content / error page with HTTP headers
+
+		// parsing the CGI response into headers and body
 		addCgiResultToResponse(client->getResponse(), client->getCgiBuffer());
+
+		// cleaning up the buffer (try commenting it for the clock.py script, is cute)
 		client->getCgiBuffer().clearBuffer();
+
+		// wrapping in headers and signaling the CGI is complete !
 		client->getResponse().createHTTPHeaders();
 		client->setClientState(CLIENT_HAS_FILLED);
 		return RECEIVED_ALL;
@@ -138,6 +143,8 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 
 	std::string stringBuffer(buffer, bytesRead);
 
+	// writing to a buffer cuz there may be headers to parse later on
+	// could be optimized by having a named pipe and reading from it twice?
 	client->getCgiBuffer().writeToBuffer(stringBuffer);
 
 	return WAITING_FOR_MORE;
