@@ -87,13 +87,16 @@ void	ContentFetcher::addCgiResultToResponse(Response &response, Buffer& buffer)
 {
 	std::string	allContent = buffer.getAllContent();
 
+	// std::cout << "[" << allContent << "]" << std::endl;
+
 	// annoyingly, cgi provides http headers to have fun with
-	size_t headerEnd = allContent.find("\r\n\r\n");
+	size_t headerEnd = allContent.find("\n");
 	if (headerEnd != std::string::npos)
 	{
 		std::string headers = allContent.substr(0, headerEnd);
-		std::string body = allContent.substr(headerEnd + 4);
+		std::string body = allContent.substr(headerEnd + 1);
 
+		std::cout << "parsing headers [" << headers << "]" << std::endl;
 		parseCgiHeader(response, headers);
 		response.addToContent(body);
 	}
@@ -139,11 +142,9 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 		}
 	}
 
-	std::string stringBuffer(buffer, bytesRead);
-
 	// writing to a buffer cuz there may be headers to parse later on
 	// could be optimized by having a named pipe and reading from it twice?
-	client->getCgiBuffer().writeToBuffer(stringBuffer);
+	client->getCgiBuffer().writeToBuffer(buffer, bytesRead);
 
 	return WAITING_FOR_MORE;
 }
