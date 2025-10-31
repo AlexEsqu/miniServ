@@ -19,7 +19,8 @@ void ContentFetcher::parseBodyDataAndUpload(ClientSocket *client)
 	{
 		parseMultiPartBody(client);
 	}
-	else if (client->getRequest().getContentType().find("text/plain") != std::string::npos)
+	else if (client->getRequest().getContentType().find("text/plain") != std::string::npos
+		|| client->getRequest().getContentType().find("plain/text") != std::string::npos)
 		parsePlainBody(client);
 	else
 		client->getRequest().setError(UNSUPPORTED_MEDIA_TYPE);
@@ -190,17 +191,31 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 
 void ContentFetcher::parsePlainBody(ClientSocket *client)
 {
-	std::string body = client->getRequest().getBody();
-	if (body.empty())
+	std::istream &bodyReader = client->getRequest().getStreamFromBodyBuffer();
+	if (!bodyReader)
+	{
+		client->getRequest().setError(INTERNAL_SERVER_ERROR);
 		return;
+	}
 
 	std::string uploadPath = client->getResponse().getRoutedURL();
+	if (Router::isDirectory(uploadPath))
+	{
+		uploadPath = FileHandler::generateRandomFileName(uploadPath + "/") + ".txt";
+	}
+
+	if (uploadPath.empty())
+		client->getRequest().setError(NOT_FOUND);
+	else if (!Router::isAllowedWrite(uploadPath.c_str()))
+		client->getRequest().setError(FORBIDDEN);
+	if (client->getRequest().hasError())
+		return;
 
 	// Write body as-is to file
-	FileHandler fh(uploadPath);
 	try
 	{
-		fh.writeToFile(body);
+		FileHandler fh(uploadPath);
+		fh.writeToFile(client->getRequest().getBody());
 	}
 	catch (...)
 	{
@@ -222,21 +237,4 @@ void ContentFetcher::createPostResponsePage(ClientSocket *client)
 	client->getRequest().setStatus(CREATED);
 	client->getResponse().createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);
-}
-
-void ContentFetcher::openSessionDirectory(ClientSocket *client)
-{
-	std::string url = client->getResponse().getRoutedURL();
-	size_t sessionId = client->getRequest().getSessionId();
-	std::stringstream fullSessionPath;
-	fullSessionPath << url << "/" << sessionId << "/";
-	DIR *dir = opendir(fullSessionPath.str().c_str());
-	if (dir == NULL)
-	{
-		std::cerr << ERROR_FORMAT("Cannot open session directory") << std::endl;
-		client->getRequest().setStatus(INTERNAL_SERVER_ERROR);
-	}
-	std::cout << MAGENTA << fullSessionPath.str() << std::endl
-			  << STOP_COLOR;
-	closedir(dir);
 }
