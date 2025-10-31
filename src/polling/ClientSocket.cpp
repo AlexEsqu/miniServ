@@ -212,15 +212,20 @@ void			ClientSocket::readRequest()
 	updateLastEventTime();
 
 	int valread = recv(getSocketFd(), _buffer, BUFFSIZE, 0);
+
 	checkForReadError(valread);
 
-	// since some data can be interspeced with \0, creating a string of valread size
-	std::string requestChunk(_buffer, valread);
+	// size_t	toRead = BUFFSIZE;
+	// if (getRequest().getParsingState() == PARSING_BODY)
+	// 	toRead = getRequest().getConf().getMaxSizeClientRequestBody() - getRequest().getBodyBuffer().getBufferSize();
+
+	// since some data can be interspeced with \0, creating a string of toRead size
+	std::string requestChunk(_buffer, BUFFSIZE);
+
+	_request.addRequestChunk(requestChunk);
 
 	// clear buffer for further use
 	memset(_buffer, '\0', sizeof(_buffer));
-
-	_request.addRequestChunk(requestChunk);
 }
 
 void			ClientSocket::sendResponse()

@@ -131,22 +131,14 @@ std::string Request::getStringSessionId() const
 
 std::string Request::getBody() const
 {
-	// std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
-	// std::cout << "Buffer using file: " << _requestBodyBuffer.isUsingFile() << std::endl;
-	// std::cout << "Buffer size: " << _requestBodyBuffer.getBufferSize() << std::endl;
-
 	if (_requestBodyBuffer.isUsingFile())
 	{
-		// std::cout << "Reading from file buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getAllContent();
-		// std::cout << "File content size: " << content.size() << std::endl;
 		return content;
 	}
 	else
 	{
-		// std::cout << "Reading from memory buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getMemoryBuffer();
-		// std::cout << "Memory content size: " << content.size() << std::endl;
 		return content;
 	}
 }
@@ -159,6 +151,16 @@ int Request::getCgiPipe() const
 std::string Request::getCgiParam() const
 {
 	return (_paramCGI);
+}
+
+size_t		Request::getContentLength() const
+{
+	return (_contentLength);
+}
+
+Buffer&		Request::getBodyBuffer()
+{
+	return (_requestBodyBuffer);
 }
 
 std::istream &Request::getStreamFromBodyBuffer()
@@ -238,6 +240,16 @@ void Request::setProtocol(std::string &protocol)
 		setError(HTTP_VERSION_NOT_SUPPORTED);
 }
 
+void	Request::setContentLength(std::string &lengthAsStr)
+{
+	size_t	contentLength = std::atoi(lengthAsStr.c_str());
+
+	if (getConf().getMaxSizeClientRequestBody() < contentLength)
+		_contentLength = getConf().getMaxSizeClientRequestBody();
+	else
+		_contentLength = contentLength;
+}
+
 void Request::setRoute(const Route *route)
 {
 	_route = route;
@@ -302,6 +314,9 @@ void Request::addAsHeaderVar(std::string &keyValueString)
 
 		if (key == "content-type")
 			setContentType(value);
+
+		if (key == "content-length")
+			setContentLength(value);
 
 		verboseLog("Header: [" + key + "] = [" + value + "]");
 	}
@@ -539,10 +554,13 @@ e_dataProgress Request::assembleUnChunkedBody(std::string &chunk)
 	// copy all leftover from the parsing into the buffer
 	if (!_unparsedBuffer.empty())
 	{
-		_requestBodyBuffer.writeToBuffer(_unparsedBuffer);
+		_requestBodyBuffer.writeToBuffer(_unparsedBuffer.substr(0, getContentLength()));
 		_unparsedBuffer.clear();
 	}
-	_requestBodyBuffer.writeToBuffer(chunk);
+
+	size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+
+	_requestBodyBuffer.writeToBuffer(chunk.substr(0, remainderToRead));
 	chunk.clear();
 
 	// check received content is correct length or wait for more

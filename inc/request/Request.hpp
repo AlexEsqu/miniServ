@@ -112,6 +112,7 @@ public:
 	void				setProtocol(std::string& protocol);
 	void				setURI(std::string& uri);
 	void				setRequestLine(std::string& requestLine);
+	void				setContentLength(std::string &lengthAsStr);
 
 	void				setRoute(const Route* route);
 	void				setCgiPipe(int pipeFd);
@@ -136,6 +137,8 @@ public:
 		<std::string,
 		std::string>&	getAdditionalHeaderInfo();
 	std::string			getContentType() const;
+	size_t				getContentLength() const;
+	Buffer&				getBodyBuffer();
 
 	const ServerConf&	getConf() const;
 	std::map
