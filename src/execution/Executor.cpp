@@ -151,9 +151,6 @@ void	Executor::executeFile(ClientSocket* client)
 	if (pipe(pipeFd) != 0)
 		throw std::runtime_error("pipe failed");
 
-	Sockette::setFdAsClosingOnExecution(pipeFd[0]);
-	Sockette::setFdAsClosingOnExecution(pipeFd[1]);
-
 	int forkPid = fork();
 	client->getRequest().setCgiForkPid(forkPid);
 	if (forkPid < 0)
@@ -167,6 +164,7 @@ void	Executor::executeFile(ClientSocket* client)
 	else
 	{
 		close(pipeFd[WRITE]);
+		Sockette::setFdAsClosingOnExecution(pipeFd[READ]);
 		client->startReadingPipe(pipeFd[READ]);
 	}
 }
