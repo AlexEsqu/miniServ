@@ -63,8 +63,6 @@ void	PHPExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 	const char*		flag = "-f";
 	std::string		executedFile = client->getResponse().getRoutedURL();
 
-
-
 	// redirect into pipe
 	close(pipefd[READ]);
 	if (dup2(pipefd[WRITE], STDOUT_FILENO) == -1)

@@ -26,7 +26,8 @@ ServerSocket::ServerSocket(Poller& poller, ServerConf& conf)
 	// set serv sock to listen for incomming connections with max incomming
 	setListenMode(10);
 
-	// fcntl(getSocketFd(), F_SETFL, O_NONBLOCK);
+	//fcntl(getSocketFd(), F_SETFL, O_NONBLOCK);
+	Sockette::setFdAsClosingOnExecution(getSocketFd());
 
 	_poller.addServerSocket(*this);
 }
@@ -88,6 +89,8 @@ void			ServerSocket::acceptNewConnection()
 		throw std::runtime_error("Epoll ctl() failed");
 	}
 	_clients[Connecting->getSocketFd()] = Connecting;
+
+	setFdAsClosingOnExecution(Connecting->getSocketFd());
 
 	#ifdef DEBUG
 		std::cout << CONNEX_FORMAT("\n++++ Accepted Connection on Socket ";
@@ -211,6 +214,12 @@ void		ServerSocket::timeoutRequest(ClientSocket& client)
 		client.stopReadingPipe();
 	else
 		_poller.setPollingMode(WRITING, &client);
+	if (client.getRequest().getCgiForkPid() > 0)
+	{
+		if (kill(client.getRequest().getCgiForkPid(), SIGKILL) == -1)
+			perror("kill");
+		client.getRequest().setCgiForkPid(0);
+	}
 }
 
 // checks all client sockets, remove the one who did not set off any events in a while

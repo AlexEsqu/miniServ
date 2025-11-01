@@ -146,10 +146,13 @@ void	Executor::addCGIEnvironment(std::vector<std::string>& envAsStrVec, const Re
 
 void	Executor::executeFile(ClientSocket* client)
 {
-	int	pipefd[2];
+	int	pipeFd[2];
 
-	if (pipe(pipefd) != 0)
+	if (pipe(pipeFd) != 0)
 		throw std::runtime_error("pipe failed");
+
+	Sockette::setFdAsClosingOnExecution(pipeFd[0]);
+	Sockette::setFdAsClosingOnExecution(pipeFd[1]);
 
 	int forkPid = fork();
 	client->getRequest().setCgiForkPid(forkPid);
@@ -158,12 +161,12 @@ void	Executor::executeFile(ClientSocket* client)
 
 	if (forkPid == 0)
 	{
-		execFileWithFork(client, pipefd);
+		execFileWithFork(client, pipeFd);
 		throw std::runtime_error("execve failed");
 	}
 	else
 	{
-		close(pipefd[1]);
-		client->startReadingPipe(pipefd[0]);
+		close(pipeFd[WRITE]);
+		client->startReadingPipe(pipeFd[READ]);
 	}
 }

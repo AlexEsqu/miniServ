@@ -7,6 +7,8 @@ Poller::Poller()
 	_epollFd = epoll_create(1);
 	if (_epollFd == -1)
 		throw failedEpollCreate();
+
+	Sockette::setFdAsClosingOnExecution(_epollFd);
 }
 
 Poller::~Poller()
