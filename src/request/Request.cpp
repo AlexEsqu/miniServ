@@ -250,9 +250,14 @@ void Request::setProtocol(std::string &protocol)
 void	Request::setContentLength(std::string &lengthAsStr)
 {
 	size_t	contentLength = std::atoi(lengthAsStr.c_str());
+	size_t	max = getConf().getMaxSizeClientRequestBody();
 
-	if (getConf().getMaxSizeClientRequestBody() < contentLength)
+	if (contentLength > max)
+	{
 		_contentLength = getConf().getMaxSizeClientRequestBody();
+		setError(PAYLOAD_TOO_LARGE);
+		_requestState = PARSING_DONE;
+	}
 	else
 		_contentLength = contentLength;
 }
@@ -446,13 +451,13 @@ e_dataProgress Request::parseHeaderLine(std::string &chunk)
 // and returns if the current parsed item (header, body...) is not finished
 void Request::addRequestChunk(std::string chunk)
 {
+	if (_requestState == EMPTY)
+		_requestState = PARSING_REQUEST_LINE;
+
 	while (_requestState != PARSING_DONE)
 	{
 		switch (_requestState)
 		{
-		case EMPTY:
-		{
-		}
 		case PARSING_REQUEST_LINE:
 		{
 			if (parseRequestLine(chunk) == WAITING_FOR_MORE)
@@ -559,7 +564,8 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 		// std::cout << "chunk data [" << chunkData << "]\n";
 
 		size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
-		if (chunkData.size() > remainderToRead)
+		size_t	newSize = _requestBodyBuffer.getBufferSize() + chunkData.size();
+		if (newSize > getConf().getMaxSizeClientRequestBody())
 		{
 			setError(PAYLOAD_TOO_LARGE);
 			_requestState = PARSING_DONE;
@@ -578,13 +584,6 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 e_dataProgress Request::assembleUnChunkedBody(std::string &chunk)
 {
 	size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
-	if (remainderToRead > getConf().getMaxSizeClientRequestBody()
-		|| _unparsedBuffer.size() + chunk.size() > getConf().getMaxSizeClientRequestBody())
-	{
-		setError(PAYLOAD_TOO_LARGE);
-		_requestState = PARSING_DONE;
-		return RECEIVED_ALL;
-	}
 
 	// copy all leftover from the parsing into the buffer
 	if (!_unparsedBuffer.empty())
@@ -594,13 +593,20 @@ e_dataProgress Request::assembleUnChunkedBody(std::string &chunk)
 	}
 
 	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+	size_t	newSize = _requestBodyBuffer.getBufferSize() + _requestBodyBuffer.getBufferSize();
+	if (newSize > getConf().getMaxSizeClientRequestBody())
+	{
+		setError(PAYLOAD_TOO_LARGE);
+		_requestState = PARSING_DONE;
+		return RECEIVED_ALL;
+	}
 
 	_requestBodyBuffer.writeToBuffer(chunk.substr(0, remainderToRead));
 	chunk.clear();
 
 	// check received content is correct length or wait for more
 	// std::cout << "buffer size is [" << _requestBodyBuffer.getBufferSize() << "]\n";
-	if (_requestBodyBuffer.getBufferSize() < _contentLength && _requestBodyBuffer.getBufferSize() < _conf.getMaxSizeClientRequestBody())
+	if (_requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
 	else
 	{
