@@ -282,7 +282,6 @@ void Request::setRequestLine(std::string &requestLine)
 	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
 	{
-		std::cout << "Invalid line format";
 		setError(BAD_REQUEST);
 		return;
 	}
@@ -514,8 +513,6 @@ void Request::setIfAssemblingBody()
 // Making sure the body has been received in full, whether chunked or with Content-Length
 e_dataProgress Request::assembleBody(std::string &chunk)
 {
-	std::cout << "\nContent length is " << _contentLength << "\n";
-
 	if (_isChunked)
 		return assembleChunkedBody(chunk);
 	else
@@ -562,6 +559,12 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 		// std::cout << "chunk data [" << chunkData << "]\n";
 
 		size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+		if (chunkData.size() > remainderToRead)
+		{
+			setError(PAYLOAD_TOO_LARGE);
+			_requestState = PARSING_DONE;
+			return RECEIVED_ALL;
+		}
 		_requestBodyBuffer.writeToBuffer(chunkData.substr(0, remainderToRead));
 
 		// move on the the next chunk which may be in the same buffer
@@ -574,14 +577,23 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 // Made for large single request, so making use of the temporary file buffer object
 e_dataProgress Request::assembleUnChunkedBody(std::string &chunk)
 {
+	size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+	if (remainderToRead > getConf().getMaxSizeClientRequestBody()
+		|| _unparsedBuffer.size() + chunk.size() > getConf().getMaxSizeClientRequestBody())
+	{
+		setError(PAYLOAD_TOO_LARGE);
+		_requestState = PARSING_DONE;
+		return RECEIVED_ALL;
+	}
+
 	// copy all leftover from the parsing into the buffer
 	if (!_unparsedBuffer.empty())
 	{
-		_requestBodyBuffer.writeToBuffer(_unparsedBuffer.substr(0, getContentLength()));
+		_requestBodyBuffer.writeToBuffer(_unparsedBuffer.substr(0, remainderToRead));
 		_unparsedBuffer.clear();
 	}
 
-	size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
 
 	_requestBodyBuffer.writeToBuffer(chunk.substr(0, remainderToRead));
 	chunk.clear();

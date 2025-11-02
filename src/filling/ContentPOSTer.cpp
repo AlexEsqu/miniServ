@@ -121,6 +121,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 {
 	if (client->getRequest().getContentType().empty())
 	{
+		verboseLog("no content type : ");
 		client->getRequest().setError(BAD_REQUEST);
 		return;
 	}
@@ -131,6 +132,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 	// if the boundary has not been extracted, should trigger here
 	if (client->getRequest().hasError())
 	{
+		verboseLog("has no boundary");
 		client->getRequest().setError(BAD_REQUEST);
 		return;
 	}
@@ -147,6 +149,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 			// wrong syntax if first line of a block has no boundary
 			if (line.find(boundary) == std::string::npos)
 			{
+				verboseLog("no boundary on " + line);
 				client->getResponse().setError(BAD_REQUEST);
 				return;
 			}
@@ -187,6 +190,7 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 	// the last line should contain the boundary
 	if (line == client->getResponse().getBoundary() + "--")
 	{
+		verboseLog("no boundary on last line");
 		client->getResponse().setError(BAD_REQUEST);
 	}
 }
