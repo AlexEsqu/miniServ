@@ -67,7 +67,9 @@ void extractMultiPartHeaderBlock(std::istream &bodyReader, std::map<std::string,
 		if (colonPos != std::string::npos)
 		{
 			std::string headerName = line.substr(0, colonPos);
-			std::string headerValue = line.substr(colonPos + 1, line.size() - 1); // removing larst \r
+			std::string headerValue = line.substr(colonPos + 1, line.size()); // removing last \r
+			headerName = trim(headerName);
+			headerValue = trim(headerValue);
 			multiPartHeaderMap[headerName] = trim(headerValue);
 		}
 		std::getline(bodyReader, line);
@@ -82,18 +84,18 @@ std::string generateFilename(ClientSocket *client, std::istream &bodyReader, std
 	// trying to find a name for the posted result
 	std::string disposition = multiPartHeaderMap["Content-Disposition"];
 	std::string uploadFilePath = client->getRequest().getRoute()->getUploadDirectory() + "/" + client->getRequest().getStringSessionId() + "_" ;
-	size_t filenamePos = disposition.find("filename=\"");
+	// size_t filenamePos = disposition.find("filename=\"");
 	size_t namePos = disposition.find("name=\"");
 	std::string filename;
 	std::string extension;
-	if (filenamePos != std::string::npos) // getting the filename extension to append it later to the name
-	{
-		size_t filenameEnd = disposition.find("\"", filenamePos + 10);
-		filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
-		size_t extensionPos = filename.find_last_of('.');
-		extension = filename.substr(extensionPos);
-		filename = "";
-	}
+	// if (filenamePos != std::string::npos) // getting the filename extension to append it later to the name
+	// {
+	// 	size_t filenameEnd = disposition.find("\"", filenamePos + 10);
+	// 	filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
+	// 	size_t extensionPos = filename.find_last_of('.');
+	// 	extension = filename.substr(extensionPos);
+	// 	filename = "";
+	// }
 	if (namePos != std::string::npos) // otherwise if no filename was provided, just get the name as name of file
 	{
 		namePos = disposition.find("name=\"");
@@ -102,7 +104,7 @@ std::string generateFilename(ClientSocket *client, std::istream &bodyReader, std
 	}
 	else
 	{
-		client->getResponse().setError(BAD_REQUEST);
+		client->getResponse().setError(BAD_GATEWAY);
 		return("");
 	}
 

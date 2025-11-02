@@ -40,7 +40,8 @@ ServerSocket::~ServerSocket()
 		removeConnection(_clients.begin()->second);
 	}
 
-	_poller.removeSocket(this);
+	if (getSocketFd() >= 0)
+		_poller.removeSocket(this);
 
 	delete _cf;
 }
@@ -187,16 +188,18 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 
 void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 {
-	if (socket->getRequest().isKeepAlive())
+	if (socket->hasTimedOut())
+	{
+		removeConnection(socket);
+	}
+
+	else if (socket->getRequest().isKeepAlive())
 	{
 		socket->resetContent();
 		socket->updateLastEventTime();
 		_poller.setPollingMode(READING, socket);
 	}
-	else if (socket->hasTimedOut())
-	{
-		;
-	}
+
 	else
 		removeConnection(socket);
 }
@@ -205,7 +208,7 @@ void		ServerSocket::timeoutRequest(ClientSocket& client)
 {
 	client.getCgiBuffer().clearBuffer();
 	client.getResponse().reset();
-	client.getRequest().setError(REQUEST_TIMEOUT);
+	client.getRequest().setError(BAD_GATEWAY);
 	client.setTimedOut(true);
 	client.getRequest().setKeepAlive(false);
 	client.getResponse().createHTTPHeaders();

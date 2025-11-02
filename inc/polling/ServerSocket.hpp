@@ -11,7 +11,7 @@
 #include "Poller.hpp"
 #include "Session.hpp"
 
-static const time_t	TIMEOUT_CONNECTION = 10;
+static const time_t	TIMEOUT_CONNECTION = 5;
 
 class ClientSocket;
 
