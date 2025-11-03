@@ -306,17 +306,17 @@ void Request::setRequestLine(std::string &requestLine)
 void Request::addAsHeaderVar(std::string &keyValueString)
 {
 	size_t equalPos = keyValueString.find(':');
-	bool persist = false;
+	bool wantsSession = false;
 	if (equalPos != std::string::npos)
 	{
 		std::string key = keyValueString.substr(0, equalPos);
 		std::string value = keyValueString.substr(equalPos + 1);
 		key = trim(key);
 		value = trim(value);
-		if (key == "Prefer")
+		if (key == "Session")
 		{
-			if (value == "persist")
-				persist = true;
+			if (value == "yes")
+				wantsSession = true;
 		}
 		if (key == "Cookie")
 		{
@@ -327,7 +327,7 @@ void Request::addAsHeaderVar(std::string &keyValueString)
 				return;
 			}
 		}
-		else if (hasSessionId() == false && persist == true) // if it doesnt have a session_id and prefer=persist
+		else if (hasSessionId() == false && wantsSession == true) // if it doesnt have a session_id and user wantsSession
 		{
 			// assign a pseudo random number to session_id if it doesn't exist
 			_sessionId = Session::generatePseudoRandomNumber();

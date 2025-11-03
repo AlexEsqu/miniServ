@@ -111,8 +111,7 @@ async function getFormInfo(endpoint, responseType = "text") {
 	return new Promise((resolve, reject) => {
 		const req = new XMLHttpRequest();
 		req.open("GET", "http://localhost:8080/post/" + endpoint);
-		req.setRequestHeader("Prefer", "persist");
-
+		req.setRequestHeader("Session", "yes");
 		req.responseType = responseType;
 		req.onload = () => {
 			if (req.readyState == 4 && req.status >= 200 && req.status < 300) {
