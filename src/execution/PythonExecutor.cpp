@@ -70,9 +70,14 @@ void	PythonExecutor::execFileWithFork(ClientSocket* client, int* pipefd)
 		exit(-1);
 	close(pipefd[WRITE]);
 
-	// expand (if needed ?)
-
-	// unchunk (if needed ?)
+	// redirecting to the body buffer if post request
+	if (client->getRequest().getMethodCode() == POST)
+	{
+		int bodyFd = client->getRequest().getBodyBuffer().getReadableFd();
+		if (dup2(bodyFd, STDIN_FILENO) == -1)
+			exit(-1);
+		close(bodyFd);
+	}
 
 	// assemble into an execve approved array of char*, add EOF at end
 	std::vector<const char*> argv(buildArgv(program, client->getResponse().getRoutedURL()));

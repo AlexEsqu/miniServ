@@ -110,6 +110,8 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 	// parsing the CGI response into headers and body
 	client->getResponse().addCGIChunk(bufferAsString);
 
+	std::cout << "reading from pipe : [" << bufferAsString << "]\n";
+
 	// If there is nothing the read in the buffer, reached the end of the CGI output
 	if (bytesRead == 0)
 	{
