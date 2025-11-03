@@ -267,7 +267,7 @@ void	Request::setContentLength(std::string &lengthAsStr)
 	{
 		_contentLength = getConf().getMaxSizeClientRequestBody();
 		setError(PAYLOAD_TOO_LARGE);
-		_requestState = PARSING_DONE;
+		// _requestState = PARSING_DONE;
 	}
 	else
 		_contentLength = contentLength;
