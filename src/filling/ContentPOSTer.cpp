@@ -172,23 +172,33 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 		if (parsingState == MP_HEADERS)
 		{
 
+			std::string previousLine;
+			bool isFirstLine = true;
+
 			// create the file
 			FileHandler multiPartBlock(generateFilename(client, bodyReader,line));
 
 			// read the damn file
-			// without getline to avoid corruption by removal of random \n
 			while (std::getline(bodyReader, line))
 			{
-				// Stop reading if we encounter the next boundary
+				// stop reading if next boundary
 				if (line.find(boundary) != std::string::npos)
 				{
+					// Write the last content line without \n
+					if (!isFirstLine)
+						multiPartBlock.writeToFile(previousLine);
+
 					if (line == boundary + "--\r")
 						return;
 					break;
 				}
-				line.append("\n");
 
-				multiPartBlock.writeToFile(line);
+				// write previous line with \n (except first iteration)
+				if (!isFirstLine)
+					multiPartBlock.writeToFile(previousLine + "\n");
+
+				previousLine = line;
+				isFirstLine = false;
 			}
 		}
 	}
