@@ -26,7 +26,7 @@ DIR_ROU				=	routing
 
 FUNC_FILL			=	ContentFetcher.cpp ContentPOSTer.cpp \
 						ContentDELETEr.cpp ContentGETter.cpp
-FUNC_ENCOD			=	Response.cpp Status.cpp
+FUNC_ENCOD			=	Response.cpp Status.cpp cgiParsing.cpp
 FUNC_DECOD			=	Request.cpp
 FUNC_PARS			=	parsing.cpp ConfigParser.cpp
 FUNC_EXEC			=	Executor.cpp PHPExecutor.cpp PythonExecutor.cpp

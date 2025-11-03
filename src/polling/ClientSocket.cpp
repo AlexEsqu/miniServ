@@ -101,11 +101,6 @@ char*			ClientSocket::getBuffer()
 	return (_buffer);
 }
 
-Buffer&			ClientSocket::getCgiBuffer()
-{
-	return (_cgiBuffer);
-}
-
 int				ClientSocket::getCgiPipeFd()
 {
 	return (_readingEndOfCgiPipe);

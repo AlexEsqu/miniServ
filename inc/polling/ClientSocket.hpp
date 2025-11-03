@@ -37,7 +37,6 @@ private:
 	Status				_status;
 	Request				_request;
 	Response			_response;
-	Buffer				_cgiBuffer;
 
 	bool				_isReadingFromPipe;
 	int					_readingEndOfCgiPipe;
@@ -45,7 +44,6 @@ private:
 	e_clientState		_clientState;
 	time_t				_lastEventTime;
 	bool				_hasTimedOut;
-	// size_t				_sessionId;
 
 public:
 
@@ -68,7 +66,7 @@ public:
 	Response&			getResponse();
 	Status&				getStatus();
 	ServerSocket&		getServer();
-	Buffer&				getCgiBuffer();
+	
 	std::map
 		<size_t,
 		Session>&		getSessionMap();

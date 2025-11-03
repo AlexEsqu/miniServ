@@ -200,7 +200,6 @@ void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 
 void		ServerSocket::timeoutRequest(ClientSocket& client)
 {
-	client.getCgiBuffer().clearBuffer();
 	client.getResponse().reset();
 	client.getRequest().setError(REQUEST_TIMEOUT);
 	client.setTimedOut(true);
@@ -221,7 +220,6 @@ void		ServerSocket::timeoutRequest(ClientSocket& client)
 
 void		ServerSocket::timeoutCgi(ClientSocket& client)
 {
-	client.getCgiBuffer().clearBuffer();
 	client.getResponse().reset();
 	client.getRequest().setError(BAD_GATEWAY);
 	client.setTimedOut(true);
