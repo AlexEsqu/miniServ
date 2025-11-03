@@ -246,7 +246,7 @@ void			ClientSocket::sendResponse()
 		std::cout << RED;
 	else
 		std::cout << GREEN;
-	std::cout << " " << getStatus().getStatusCode() << "\n\n" << STOP_COLOR;
+	std::cout << " " << getStatus().getStatusCode() << " " << getStatus().getStatusMessage() << "\n\n" << STOP_COLOR;
 
 	verboseLog("First 100 chars: [" + response.substr(0, 100) + "]");
 
