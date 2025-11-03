@@ -210,32 +210,17 @@ void		ServerSocket::timeoutRequest(ClientSocket& client)
 		client.stopReadingPipe();
 	else
 		_poller.setPollingMode(WRITING, &client);
-	if (client.getRequest().getCgiForkPid() > 0)
-	{
-		if (kill(client.getRequest().getCgiForkPid(), SIGKILL) == -1)
-			perror("kill");
-		client.getRequest().setCgiForkPid(0);
-	}
 }
 
 void		ServerSocket::timeoutCgi(ClientSocket& client)
 {
+	client.stopReadingPipe();
 	client.getResponse().reset();
 	client.getRequest().setError(BAD_GATEWAY);
 	client.setTimedOut(true);
 	client.getRequest().setKeepAlive(false);
 	client.getResponse().createHTTPHeaders();
 	client.setClientState(CLIENT_HAS_FILLED);
-	if (client.isReadingFromPipe())
-		client.stopReadingPipe();
-	else
-		_poller.setPollingMode(WRITING, &client);
-	if (client.getRequest().getCgiForkPid() > 0)
-	{
-		if (kill(client.getRequest().getCgiForkPid(), SIGKILL) == -1)
-			perror("kill");
-		client.getRequest().setCgiForkPid(0);
-	}
 }
 
 // checks all client sockets, remove the one who did not set off any events in a while
