@@ -113,3 +113,12 @@ footer .title-bar
 #delete-button:not(:disabled):active {
 	background: rgb(173, 0, 0);
 }
+#article-window
+{
+	font-size: 18px;
+	width: 700px;
+}
+#article-window img
+{
+	width: 100%;
+}
