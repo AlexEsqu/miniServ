@@ -111,6 +111,8 @@ async function getFormInfo(endpoint, responseType = "text") {
 	return new Promise((resolve, reject) => {
 		const req = new XMLHttpRequest();
 		req.open("GET", "http://localhost:8080/post/" + endpoint);
+		req.setRequestHeader("Prefer", "persist");
+
 		req.responseType = responseType;
 		req.onload = () => {
 			if (req.readyState == 4 && req.status >= 200 && req.status < 300) {
@@ -125,7 +127,6 @@ async function getFormInfo(endpoint, responseType = "text") {
 		req.send();
 	});
 }
-
 async function getFormData() {
 	let name, description, picture;
 	const article = document.getElementById("add-yourself-article");
@@ -156,7 +157,6 @@ async function getFormData() {
 	} catch (error) {
 		localStorage.setItem("formSubmitted", "false");
 		console.error(error);
-		console.log("form set to false");
 		return;
 	}
 }
@@ -170,8 +170,10 @@ form.addEventListener("submit", async function (e) {
 });
 
 window.addEventListener("load", async (event) => {
-	if (localStorage.getItem("formSubmitted") == "true") {
+	try {
 		getFormData();
+	} catch (error) {
+		console.log(error);
 	}
 });
 
