@@ -215,7 +215,6 @@ void Request::reset()
 	_route = NULL;
 	_paramCGI.clear();
 	_cgiStartTime = -1;
-	_sessionId = 0;
 	_requestState = EMPTY;
 }
 

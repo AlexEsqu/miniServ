@@ -4,6 +4,17 @@ void ContentFetcher::postItemFromServer(ClientSocket *client)
 {
 	verboseLog("Processing POST request to: " + client->getResponse().getRoutedURL());
 
+	for (size_t i = 0; i < _executors.size(); i++)
+	{
+		if (_executors[i]->canExecuteFile(client->getResponse().getRoutedURL()))
+		{
+			std::cout << CGI_FORMAT(" CGI ") << client->getResponse().getRoutedURL();
+			_executors[i]->executeFile(client);
+			client->setClientState(CLIENT_FILLING);
+			return;
+		}
+	}
+
 	parseBodyDataAndUpload(client);
 
 	createPostResponsePage(client);

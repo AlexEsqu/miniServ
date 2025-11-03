@@ -13,9 +13,6 @@ ClientSocket::ClientSocket(ServerSocket &server)
 	, _lastEventTime(std::time(NULL))
 	, _hasTimedOut(false)
 {
-	// #ifdef DEBUG
-	// 	std::cerr << "ClientSocket Constructor called" << std::endl;
-	// #endif
 
 	int addrlen = sizeof(server.getSocketAddr());
 

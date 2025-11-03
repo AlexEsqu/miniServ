@@ -1,5 +1,6 @@
 #include "ContentFetcher.hpp"
 
+
 void ContentFetcher::getItemFromServer(ClientSocket *client)
 {
 	verboseLog("Processing GET request to: " + client->getResponse().getRoutedURL());

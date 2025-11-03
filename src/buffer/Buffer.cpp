@@ -81,6 +81,26 @@ std::istream&	Buffer::getStream()
 	}
 }
 
+// creates a FD to the body, or fakes one using pipes (ugly, I know, but needed for POST cgi)
+int Buffer::getReadableFd()
+{
+	if (_usingFile)
+	{
+		int fd = open(_fileBuffer.getFilePath().c_str(), O_RDONLY);
+		return fd;
+	}
+	else
+	{
+		if (pipe(_tempPipeFd) == -1)
+			throw std::runtime_error("pipe failed");
+
+		write(_tempPipeFd[1], _memBuffer.c_str(), _memBuffer.length());
+		close(_tempPipeFd[1]);
+
+		return _tempPipeFd[0];
+	}
+}
+
 //------------------------- MEMBER FUNCTIONS ---------------------------------//
 
 void			Buffer::writeToBuffer(const std::string &data)
