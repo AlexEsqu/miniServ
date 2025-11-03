@@ -61,12 +61,6 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 		filename = fileURL.substr(filenamePos);
 	std::ifstream	input(fileURL.c_str(), std::ios::binary);
 
-	if (!input.is_open() || Router::isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
-	{
-		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest().getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
-		//then try to open findFileInDirectory
-	}
-
 	// if the file is a directory and not routed to a default file
 	// serve auto index instead of static page
 	if (Router::isDirectory(fileURL.c_str()))
@@ -110,8 +104,6 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 	// parsing the CGI response into headers and body
 	client->getResponse().addCGIChunk(bufferAsString);
 
-	std::cout << "reading from pipe : [" << bufferAsString << "]\n";
-
 	// If there is nothing the read in the buffer, reached the end of the CGI output
 	if (bytesRead == 0)
 	{
@@ -119,8 +111,6 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 
 		// wrapping in headers and signaling the CGI is complete !
 		client->getResponse().createHTTPHeaders();
-
-		std::cout << client->getResponse().getHTTPResponse() << "\n";
 
 		client->setClientState(CLIENT_HAS_FILLED);
 		return RECEIVED_ALL;
@@ -134,7 +124,6 @@ void	ContentFetcher::serveDirectoryListing(ClientSocket* client, std::string& fi
 	// Gets the route to check if autoindex is enabled
 	const Route* route = client->getRequest().getRoute();
 
-	std::cout << "is autoindex = " << route->isAutoIndex() << "\n";
 	if (route && route->isAutoIndex())
 	{
 		std::string requestUri = client->getRequest().getRequestedURL();

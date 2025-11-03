@@ -12,14 +12,12 @@
 // 	*this = original;
 // }
 
-
 //----------------- DESTRUCTOR -----------------------//
 
 Executor::~Executor()
 {
 
 }
-
 
 // //------------------- OPERATORS ----------------------//
 
@@ -66,7 +64,6 @@ std::string	Executor::formatAsHTTPVariable(const std::string& key, const std::st
 	{
 		if (value[i] == '-' || value[i] == ' ')
 			formattedValue[i] = '_';
-		// TO DO : add encoding for non compliant characters like ", ', % ....
 	}
 	strToUpper(formattedValue);
 

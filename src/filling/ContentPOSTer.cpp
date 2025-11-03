@@ -52,12 +52,10 @@ void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 
 	while (1)
 	{
-		std::cout << "finding = : " << body.find("=", i) << "\n";
 		std::string key = body.substr(i, body.find("=", i) - i);
 		i += key.size() + 1;
 		std::string value = body.substr(i, body.find("&") - i);
 		i += value.size() + 1;
-		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
 		// create file with the name key, put value in it
 		std::string pathToUploadFile = client->getResponse().getRoutedURL() + "/" + key;

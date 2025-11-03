@@ -187,18 +187,3 @@ std::string		Buffer::getAllContent() const
 	else
 		return (_memBuffer);
 }
-
-// size_t		Buffer::findInBuffer(const std::string& signature) const
-// {
-// 	if (_usingFile)
-// 	{
-// 		// inefficient as hell
-// 		// TO DO: need better logic / checking when appending
-// 		std::ifstream file(_fileBuffer.getFilePath().c_str(), std::ios::binary);
-// 		std::string temp((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-// 		return temp.find(signature);
-// 	} else
-// 	{
-// 		return _memBuffer.find(signature);
-// 	}
-// }

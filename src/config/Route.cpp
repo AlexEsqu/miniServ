@@ -183,7 +183,7 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 void	Route::setRootDirectory(std::string path)
 {
 	_rootDirectory = path;
-} // TO DO : sat root of server or parent if none given
+}
 
 void	Route::setUploadDirectory(std::string path)
 {
