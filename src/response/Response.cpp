@@ -223,16 +223,12 @@ std::string Response::createErrorPageContent(const Status &num)
 		std::cerr << RED << "Response::createErrorPageContent: Could not open error file: " << errorFile << STOP_COLOR << std::endl;
 		return ("");
 	}
-	/* Could be a better implementation with finding the string
-	 in the line instead of matching exactly because if i add anything
-	 like an other space in the error.html well it wont find int anymore */
 	while (getline(inputErrorFile, line))
 	{
-		if (line == "    <h1></h1>")
-			line.insert(8, num.getStringStatusCode() + " " + num.getStatusMessage());
-		if (line == "    <title></title>")
-			line.insert(11, num.getStringStatusCode() + num.getStatusMessage());
-
+		if (line.find("<h1>") != std::string::npos&& line.find("</h1>") != std::string::npos)
+			line.insert(line.find("<h1>") + 4, num.getStringStatusCode() + " " + num.getStatusMessage());
+		if (line.find("<title>") != std::string::npos && line.find("</title>") != std::string::npos)
+			line.insert(line.find("<title>") + 7, num.getStringStatusCode() + " " + num.getStatusMessage());
 		outputString << line;
 	}
 	inputErrorFile.close();
