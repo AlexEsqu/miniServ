@@ -153,6 +153,7 @@ void	Executor::executeFile(ClientSocket* client)
 
 	int forkPid = fork();
 	client->getRequest().setCgiForkPid(forkPid);
+	client->getRequest().setCgiStartTime();
 	if (forkPid < 0)
 		throw std::runtime_error("fork failed");
 

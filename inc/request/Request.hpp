@@ -120,7 +120,7 @@ public:
 
 	void				setRoute(const Route* route);
 
-	void				setCgiStartTime(time_t start);
+	void				setCgiStartTime();
 	void				setCgiPipe(int pipeFd);
 	void				setCgiForkPid(int forkPid);
 

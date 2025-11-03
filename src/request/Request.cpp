@@ -371,9 +371,11 @@ void Request::setCgiForkPid(int forkPid)
 	_cgiForkPid = forkPid;
 }
 
-void Request::setCgiStartTime(time_t start)
+void Request::setCgiStartTime()
 {
-	_cgiStartTime = start;
+	_cgiStartTime = std::time(0);
+	if (_cgiStartTime < 0)
+		throw std::runtime_error("Failed call to std::time()");
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
