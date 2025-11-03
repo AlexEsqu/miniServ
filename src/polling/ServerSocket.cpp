@@ -188,23 +188,38 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 
 void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 {
-	if (socket->hasTimedOut())
-	{
-		removeConnection(socket);
-	}
-
-	else if (socket->getRequest().isKeepAlive())
+	if (socket->getRequest().isKeepAlive() && !socket->hasTimedOut())
 	{
 		socket->resetContent();
 		socket->updateLastEventTime();
 		_poller.setPollingMode(READING, socket);
 	}
-
 	else
 		removeConnection(socket);
 }
 
 void		ServerSocket::timeoutRequest(ClientSocket& client)
+{
+	client.getCgiBuffer().clearBuffer();
+	client.getResponse().reset();
+	client.getRequest().setError(REQUEST_TIMEOUT);
+	client.setTimedOut(true);
+	client.getRequest().setKeepAlive(false);
+	client.getResponse().createHTTPHeaders();
+	client.setClientState(CLIENT_HAS_FILLED);
+	if (client.isReadingFromPipe())
+		client.stopReadingPipe();
+	else
+		_poller.setPollingMode(WRITING, &client);
+	if (client.getRequest().getCgiForkPid() > 0)
+	{
+		if (kill(client.getRequest().getCgiForkPid(), SIGKILL) == -1)
+			perror("kill");
+		client.getRequest().setCgiForkPid(0);
+	}
+}
+
+void		ServerSocket::timeoutCgi(ClientSocket& client)
 {
 	client.getCgiBuffer().clearBuffer();
 	client.getResponse().reset();
@@ -237,15 +252,21 @@ void		ServerSocket::timeoutIdleClients()
 	for (std::map<int, ClientSocket*>::iterator it = _clients.begin();
 		it != _clients.end(); ++it)
 	{
-		ClientSocket* client = it->second;
-		time_t idleTime = currentTime - client->getLastEventTime();
+		ClientSocket*	client = it->second;
+		time_t			idleTime = currentTime - client->getLastEventTime();
 
-		if (idleTime > TIMEOUT_CONNECTION && client->hasStartedRequest()
-			&& (client->getClientState() == CLIENT_FILLING || client->getClientState() == CLIENT_PARSING))
+		// if the client is reading from a pipe, it is awaiting a CGI execution which may be timeout
+		// but with a BAD_GETAWAY error to signify the CGI cannot be executed and need not be resent
+		if (client->isReadingFromPipe())
 		{
-			std::cout << "Timeout: " << TIMEOUT_CONNECTION << std::endl;
-			timeoutRequest(*client);
+			time_t			cgiTime = currentTime - client->getRequest().getCgiStartTime();
+			if (cgiTime > TIMEOUT_CGI)
+				timeoutCgi(*client);
 		}
+
+		// otherwise it may be stuck for other reasons and need to be put down with a REQUEST TIMEOUT
+		else if (idleTime > TIMEOUT_CONNECTION)
+			timeoutRequest(*client);
 	}
 }
 

@@ -12,6 +12,7 @@
 #include "Session.hpp"
 
 static const time_t	TIMEOUT_CONNECTION = 5;
+static const time_t TIMEOUT_CGI = 5;
 
 class ClientSocket;
 
@@ -60,6 +61,7 @@ public:
 
 	void				closeConnectionOrCleanAndKeepAlive(ClientSocket* client);
 	void				timeoutIdleClients();
+	void				timeoutCgi(ClientSocket& client);
 	void				timeoutRequest(ClientSocket& client);
 
 	void				receiveAndParseData(ClientSocket* client);
