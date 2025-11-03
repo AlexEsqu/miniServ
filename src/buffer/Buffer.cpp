@@ -175,10 +175,7 @@ std::string		Buffer::getAllContent() const
 	{
 		std::ifstream file(_fileBuffer.getFilePath().c_str(), std::ios::binary);
 		if (!file.is_open())
-		{
-			std::cout << "failed to open buffer\n";
 			return ("");
-		}
 
 		std::ostringstream oss;
 		oss << file.rdbuf();
