@@ -184,7 +184,6 @@ std::string ContentFetcher::createDirectoryListing(const std::string& path, cons
 	// reads directory entries
 	while ((entry = readdir(dir)) != NULL)
 		entries.push_back(entry->d_name);
-
 	// sorts entries alphabetically
 	std::sort(entries.begin(), entries.end());
 
@@ -194,7 +193,7 @@ std::string ContentFetcher::createDirectoryListing(const std::string& path, cons
 		<< "<head>\n"
 		<< "	<title>Index of " << requestUri << "</title>\n"
 		<< "	<style>\n"
-		<< "		body { font-family: Arial, sans-serif; margin: 20px; }\n"
+		<< "		body { font-family: Arial, sans-serif; margin: 20px; background-image: url(https://i.redd.it/gmi6v0clwv461.jpg); background-size: cover; background-color: white;}\n"
 		<< "		h1 { border-bottom: 1px solid #ccc; padding-bottom: 10px; }\n"
 		<< "		table { width: 100%; border-collapse: collapse; }\n"
 		<< "		th, td { text-align: left; padding: 8px; }\n"
@@ -204,6 +203,7 @@ std::string ContentFetcher::createDirectoryListing(const std::string& path, cons
 		<< "		.size { text-align: right; }\n"
 		<< "		.date { color: #6a737d; }\n"
 		<< "	</style>\n"
+		<< "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
 		<< "</head>\n"
 		<< "<body>\n"
 		<< "	<h1>Index of " << requestUri << "</h1>\n"
