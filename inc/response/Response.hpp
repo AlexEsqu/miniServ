@@ -8,6 +8,13 @@
 #include "Buffer.hpp"
 #include "Router.hpp"
 
+enum e_cgiState {
+	CGI_PARSING_HEADERS,
+	CGI_PARSING_BODY,
+	CGI_PARSING_DONE
+};
+
+
 class Request;
 
 class Response
@@ -29,6 +36,10 @@ private:
 	std::string			_HTTPHeaders;
 
 	Buffer				_responsePage;
+
+	std::string			_unparsedCgiBuffer;
+	e_cgiState			_cgiParsingState;
+
 	size_t				_byteSent;
 
 	std::string		createErrorPageContent(const Status &num); // in private jail to forbid Alex from using it by mistake
@@ -87,4 +98,9 @@ public:
 	std::string		fetchErrorPageContent(const Status &num);
 	void			addToContent(std::string contentChunk);
 	void			addHttpHeader(std::string key, std::string value);
+	void 			addHttpHeader(std::string keyValue);
+
+	e_dataProgress	parseCGIHeaderLine(std::string &chunk);
+	e_dataProgress	assembleCGIBody(std::string &chunk);
+	void			addCGIChunk(std::string chunk);
 };

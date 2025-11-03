@@ -99,8 +99,6 @@ bool	Route::isAllowedMethod(const std::string& methodAsString) const
 
 bool	Route::isPathMatch(const std::string& requestPath) const
 {
-	// std::cout << "Checking if " << requestPath << " matches " << _urlPath << std::endl;
-
 	if (_urlPath == "/")
 		return true;
 
@@ -183,7 +181,7 @@ void	Route::setRouteParam(std::map<std::string, std::string> paramMap)
 void	Route::setRootDirectory(std::string path)
 {
 	_rootDirectory = path;
-} // TO DO : sat root of server or parent if none given
+}
 
 void	Route::setUploadDirectory(std::string path)
 {

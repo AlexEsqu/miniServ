@@ -13,9 +13,6 @@ ClientSocket::ClientSocket(ServerSocket &server)
 	, _lastEventTime(std::time(NULL))
 	, _hasTimedOut(false)
 {
-	// #ifdef DEBUG
-	// 	std::cerr << "ClientSocket Constructor called" << std::endl;
-	// #endif
 
 	int addrlen = sizeof(server.getSocketAddr());
 
@@ -99,11 +96,6 @@ std::map<size_t, Session>& ClientSocket::getSessionMap()
 char*			ClientSocket::getBuffer()
 {
 	return (_buffer);
-}
-
-Buffer&			ClientSocket::getCgiBuffer()
-{
-	return (_cgiBuffer);
 }
 
 int				ClientSocket::getCgiPipeFd()
@@ -227,12 +219,8 @@ void			ClientSocket::readRequest()
 
 	checkForReadError(valread);
 
-	// size_t	toRead = BUFFSIZE;
-	// if (getRequest().getParsingState() == PARSING_BODY)
-	// 	toRead = getRequest().getConf().getMaxSizeClientRequestBody() - getRequest().getBodyBuffer().getBufferSize();
-
 	// since some data can be interspeced with \0, creating a string of toRead size
-	std::string requestChunk(_buffer, BUFFSIZE);
+	std::string requestChunk(_buffer, valread);
 
 	_request.addRequestChunk(requestChunk);
 
@@ -251,7 +239,7 @@ void			ClientSocket::sendResponse()
 		std::cout << RED;
 	else
 		std::cout << GREEN;
-	std::cout << " " << getStatus().getStatusCode() << "\n\n" << STOP_COLOR;
+	std::cout << " " << getStatus().getStatusCode() << " " << getStatus().getStatusMessage() << "\n\n" << STOP_COLOR;
 
 	verboseLog("First 100 chars: [" + response.substr(0, 100) + "]");
 

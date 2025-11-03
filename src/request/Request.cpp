@@ -11,6 +11,7 @@ Request::Request(ServerConf &conf, Status &status)
 	  _status(status),
 	  _method(UNSUPPORTED),
 	  _contentLength(0),
+	  _cgiStartTime(-1),
 	  _sessionId(0)
 {
 }
@@ -20,6 +21,8 @@ Request::Request(const Request &copy)
 	  _requestState(copy._requestState),
 	  _status(copy._status),
 	  _method(copy.getMethodCode()),
+	  _contentLength(copy._contentLength),
+	  _cgiStartTime(copy._cgiStartTime),
 	  _sessionId(copy.getSessionId())
 {
 	*this = copy;
@@ -47,6 +50,8 @@ Request &Request::operator=(const Request &other)
 		_requestBodyBuffer = other._requestBodyBuffer;
 		_status = other._status;
 		_sessionId = other._sessionId;
+		_cgiStartTime = other._cgiStartTime;
+		_cgiForkPid = other._cgiForkPid;
 	}
 
 	return *this;
@@ -209,6 +214,7 @@ void Request::reset()
 	_readingEndOfCGIPipe = -1;
 	_route = NULL;
 	_paramCGI.clear();
+	_cgiStartTime = -1;
 	_requestState = EMPTY;
 }
 
@@ -261,7 +267,7 @@ void	Request::setContentLength(std::string &lengthAsStr)
 	{
 		_contentLength = getConf().getMaxSizeClientRequestBody();
 		setError(PAYLOAD_TOO_LARGE);
-		_requestState = PARSING_DONE;
+		// _requestState = PARSING_DONE;
 	}
 	else
 		_contentLength = contentLength;
@@ -376,9 +382,11 @@ void Request::setCgiForkPid(int forkPid)
 	_cgiForkPid = forkPid;
 }
 
-void Request::setCgiStartTime(time_t start)
+void Request::setCgiStartTime()
 {
-	_cgiStartTime = start;
+	_cgiStartTime = std::time(0);
+	if (_cgiStartTime < 0)
+		throw std::runtime_error("Failed call to std::time()");
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//

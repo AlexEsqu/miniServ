@@ -10,6 +10,7 @@
 Response::Response(Request& request, Status& status)
 	: _request(request)
 	, _status(status)
+	, _cgiParsingState(CGI_PARSING_HEADERS)
 {
 }
 
@@ -63,6 +64,8 @@ void	Response::reset()
 	_boundary.clear();
 	_HTTPHeaders.clear();
 	_responsePage.clearBuffer();
+	_unparsedCgiBuffer.clear();
+	_cgiParsingState = CGI_PARSING_HEADERS;
 	_byteSent = 0;
 }
 
@@ -210,6 +213,17 @@ void Response::addHttpHeader(std::string key, std::string value)
 	std::stringstream header;
 	header << key << ": " << value << "\r\n";
 	_HTTPHeaders += header.str() ;
+}
+
+void Response::addHttpHeader(std::string keyColonValue)
+{
+	size_t colonPos = keyColonValue.find(':');
+	if (colonPos != std::string::npos)
+	{
+		std::string key = keyColonValue.substr(0, colonPos);
+		std::string value = keyColonValue.substr(colonPos + 1);
+		setHeader(key, value);
+	}
 }
 
 std::string Response::createErrorPageContent(const Status &num)

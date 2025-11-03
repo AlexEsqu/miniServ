@@ -12,14 +12,12 @@
 // 	*this = original;
 // }
 
-
 //----------------- DESTRUCTOR -----------------------//
 
 Executor::~Executor()
 {
 
 }
-
 
 // //------------------- OPERATORS ----------------------//
 
@@ -66,7 +64,6 @@ std::string	Executor::formatAsHTTPVariable(const std::string& key, const std::st
 	{
 		if (value[i] == '-' || value[i] == ' ')
 			formattedValue[i] = '_';
-		// TO DO : add encoding for non compliant characters like ", ', % ....
 	}
 	strToUpper(formattedValue);
 
@@ -153,6 +150,7 @@ void	Executor::executeFile(ClientSocket* client)
 
 	int forkPid = fork();
 	client->getRequest().setCgiForkPid(forkPid);
+	client->getRequest().setCgiStartTime();
 	if (forkPid < 0)
 		throw std::runtime_error("fork failed");
 

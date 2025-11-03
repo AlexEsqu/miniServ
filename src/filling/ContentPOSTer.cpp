@@ -4,6 +4,17 @@ void ContentFetcher::postItemFromServer(ClientSocket *client)
 {
 	verboseLog("Processing POST request to: " + client->getResponse().getRoutedURL());
 
+	for (size_t i = 0; i < _executors.size(); i++)
+	{
+		if (_executors[i]->canExecuteFile(client->getResponse().getRoutedURL()))
+		{
+			std::cout << CGI_FORMAT(" CGI ") << client->getResponse().getRoutedURL();
+			_executors[i]->executeFile(client);
+			client->setClientState(CLIENT_FILLING);
+			return;
+		}
+	}
+
 	parseBodyDataAndUpload(client);
 
 	createPostResponsePage(client);
@@ -41,12 +52,10 @@ void ContentFetcher::parseUrlEncodedBody(ClientSocket *client)
 
 	while (1)
 	{
-		std::cout << "finding = : " << body.find("=", i) << "\n";
 		std::string key = body.substr(i, body.find("=", i) - i);
 		i += key.size() + 1;
 		std::string value = body.substr(i, body.find("&") - i);
 		i += value.size() + 1;
-		std::cout << GREEN << key << " = " << value << STOP_COLOR << std::endl;
 
 		// create file with the name key, put value in it
 		std::string pathToUploadFile = client->getResponse().getRoutedURL() + "/" + key;
@@ -84,23 +93,22 @@ std::string generateFilename(ClientSocket *client, std::istream &bodyReader, std
 	// trying to find a name for the posted result
 	std::string disposition = multiPartHeaderMap["Content-Disposition"];
 	std::string uploadFilePath = client->getRequest().getRoute()->getUploadDirectory() + "/" + client->getRequest().getStringSessionId() + "_" ;
-	// size_t filenamePos = disposition.find("filename=\"");
+	size_t filenamePos = disposition.find("filename=\"");
 	size_t namePos = disposition.find("name=\"");
-	std::string filename;
+	std::string name;
 	std::string extension;
-	// if (filenamePos != std::string::npos) // getting the filename extension to append it later to the name
-	// {
-	// 	size_t filenameEnd = disposition.find("\"", filenamePos + 10);
-	// 	filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
-	// 	size_t extensionPos = filename.find_last_of('.');
-	// 	extension = filename.substr(extensionPos);
-	// 	filename = "";
-	// }
+	if (filenamePos != std::string::npos) // getting the filename extension to append it later to the name
+	{
+		size_t filenameEnd = disposition.find("\"", filenamePos + 10);
+		std::string filename = disposition.substr(filenamePos + 10, filenameEnd - (filenamePos + 10));
+		size_t extensionPos = filename.find_last_of('.');
+		extension = filename.substr(extensionPos);
+	}
 	if (namePos != std::string::npos) // otherwise if no filename was provided, just get the name as name of file
 	{
 		namePos = disposition.find("name=\"");
-		size_t filenameEnd = disposition.find("\"", namePos + 6);
-		filename = disposition.substr(namePos + 6, filenameEnd - (namePos + 6));
+		size_t nameEnd = disposition.find("\"", namePos + 6);
+		name = disposition.substr(namePos + 6, nameEnd - (namePos + 6));
 	}
 	else
 	{
@@ -108,9 +116,7 @@ std::string generateFilename(ClientSocket *client, std::istream &bodyReader, std
 		return("");
 	}
 
-	uploadFilePath += filename;
-	if (extension != "")
-		uploadFilePath += extension;
+	uploadFilePath += name + extension;
 	return(uploadFilePath);
 }
 
@@ -166,23 +172,33 @@ void ContentFetcher::parseMultiPartBody(ClientSocket *client)
 		if (parsingState == MP_HEADERS)
 		{
 
+			std::string previousLine;
+			bool isFirstLine = true;
+
 			// create the file
 			FileHandler multiPartBlock(generateFilename(client, bodyReader,line));
 
 			// read the damn file
-			// without getline to avoid corruption by removal of random \n
 			while (std::getline(bodyReader, line))
 			{
-				// Stop reading if we encounter the next boundary
+				// stop reading if next boundary
 				if (line.find(boundary) != std::string::npos)
 				{
+					// Write the last content line without \n
+					if (!isFirstLine)
+						multiPartBlock.writeToFile(previousLine);
+
 					if (line == boundary + "--\r")
 						return;
 					break;
 				}
-				line.append("\n");
 
-				multiPartBlock.writeToFile(line);
+				// write previous line with \n (except first iteration)
+				if (!isFirstLine)
+					multiPartBlock.writeToFile(previousLine + "\n");
+
+				previousLine = line;
+				isFirstLine = false;
 			}
 		}
 	}
@@ -239,7 +255,6 @@ void ContentFetcher::createPostResponsePage(ClientSocket *client)
 		"<a href='/'>Back to home</a></body></html>";
 
 	client->getResponse().setContentType("text/html");
-	// client->getResponse().addToContent(uploadResponse.c_str());
 	client->getRequest().setStatus(CREATED);
 	client->getResponse().createHTTPHeaders();
 	client->setClientState(CLIENT_HAS_FILLED);

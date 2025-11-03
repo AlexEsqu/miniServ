@@ -1,5 +1,6 @@
 #include "ContentFetcher.hpp"
 
+
 void ContentFetcher::getItemFromServer(ClientSocket *client)
 {
 	verboseLog("Processing GET request to: " + client->getResponse().getRoutedURL());
@@ -60,12 +61,6 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 		filename = fileURL.substr(filenamePos);
 	std::ifstream	input(fileURL.c_str(), std::ios::binary);
 
-	if (!input.is_open() || Router::isDirectory(fileURL.c_str())) // if it has no extension, try to find the full filename in the directory (is still in testing)
-	{
-		std::cerr << MAGENTA << "Found the file in the directory: " << findFileInDirectory(client->getRequest().getRoute()->getUploadDirectory(),filename ) << STOP_COLOR << std::endl;
-		//then try to open findFileInDirectory
-	}
-
 	// if the file is a directory and not routed to a default file
 	// serve auto index instead of static page
 	if (Router::isDirectory(fileURL.c_str()))
@@ -81,26 +76,6 @@ void ContentFetcher::serveStatic(ClientSocket *client)
 	verboseLog("Filling done");
 }
 
-void	ContentFetcher::addCgiResultToResponse(Response &response, Buffer& buffer)
-{
-	std::string	allContent = buffer.getAllContent();
-
-	// annoyingly, cgi provides http headers to have fun with
-	size_t headerEnd = allContent.find("\n\n");
-	if (headerEnd != std::string::npos)
-	{
-		std::string headers = allContent.substr(0, headerEnd);
-		trim(headers);
-		std::string body = allContent.substr(headerEnd + 2);
-
-		// std::cout << "\nparsing headers [" << headers << "]" << std::endl;
-		parseCgiHeader(response, headers);
-		response.addToContent(body);
-	}
-	else
-		response.addToContent(allContent);
-}
-
 e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 {
 	char buffer[4096];
@@ -108,26 +83,10 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 
 	bytesRead = read(client->getCgiPipeFd(), buffer, sizeof(buffer));
 
-	// If there is nothing the read in the buffer, reached the end of the CGI output
-	if (bytesRead == 0)
-	{
-		client->stopReadingPipe();
-
-		// parsing the CGI response into headers and body
-		addCgiResultToResponse(client->getResponse(), client->getCgiBuffer());
-
-		// cleaning up the buffer (try commenting it for the clock.py script, is cute)
-		client->getCgiBuffer().clearBuffer();
-
-		// wrapping in headers and signaling the CGI is complete !
-		client->getResponse().createHTTPHeaders();
-		client->setClientState(CLIENT_HAS_FILLED);
-		return RECEIVED_ALL;
-	}
 	// Encountered a read error
 	if (bytesRead < 0)
 	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
+		if (errno != EAGAIN && errno != EWOULDBLOCK) // unlikely given epoll
 		{
 			verboseLog("nothing in pipe");
 			return WAITING_FOR_MORE;
@@ -139,9 +98,23 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 		}
 	}
 
-	// writing to a buffer cuz there may be headers to parse later on
-	// could be optimized by having a named pipe and reading from it twice?
-	client->getCgiBuffer().writeToBuffer(buffer, bytesRead);
+	// creating a string in case of content containing /0 characters
+	std::string	bufferAsString(buffer, bytesRead);
+
+	// parsing the CGI response into headers and body
+	client->getResponse().addCGIChunk(bufferAsString);
+
+	// If there is nothing the read in the buffer, reached the end of the CGI output
+	if (bytesRead == 0)
+	{
+		client->stopReadingPipe();
+
+		// wrapping in headers and signaling the CGI is complete !
+		client->getResponse().createHTTPHeaders();
+
+		client->setClientState(CLIENT_HAS_FILLED);
+		return RECEIVED_ALL;
+	}
 
 	return WAITING_FOR_MORE;
 }
@@ -151,7 +124,6 @@ void	ContentFetcher::serveDirectoryListing(ClientSocket* client, std::string& fi
 	// Gets the route to check if autoindex is enabled
 	const Route* route = client->getRequest().getRoute();
 
-	std::cout << "is autoindex = " << route->isAutoIndex() << "\n";
 	if (route && route->isAutoIndex())
 	{
 		std::string requestUri = client->getRequest().getRequestedURL();

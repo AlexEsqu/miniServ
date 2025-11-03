@@ -109,7 +109,6 @@ void			Status::reset()
 
 std::map<e_status, std::string>	Status::createStatusLookup()
 {
-	std::cout << "creating a lookup map by hand like a C++98 peasant\n";
 	std::map<e_status, std::string> statusLookup;
 
 	statusLookup[CONTINUE] = "Continue";
