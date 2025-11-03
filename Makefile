@@ -79,7 +79,7 @@ OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 DEP					=	$(OBJ_DIRS) $(HEADER)
 
-CC					=	c++
+CC					=	clang++
 
 FLAGS				=	-Wall -Wextra -Werror -std=c++98
 

@@ -54,12 +54,14 @@ private:
 
 	//------------------ ATTRIBUTES ----------------------//
 
+	// CONFIGURATION APPLICABLE TO THE REQUEST
+
 	ServerConf&			_conf;					// configuration of the server socket
-	Buffer 				_requestBodyBuffer;		// stores the body of the request
+	const Route*		_route;					// route matched through the URI
 
 	// REQUEST CURRENT STATE
 
-	e_requestState		_requestState;			// current state of the request (parsing, fufilling, sending)
+	e_requestState		_requestState;			// parsing state of the request (headers, body...)
 	Status&				_status;				// keeps track of request status code
 
 	// REQUEST DATA
@@ -75,18 +77,19 @@ private:
 	size_t				_contentLength;			// length of the request body to be expected
 	std::string			_contentType;
 
-
-
 	// REQUEST BUFFERS
 
-	std::string			_unparsedBuffer;	// may store chunks of request header
+	std::string			_unparsedBuffer;		// may store chunks of request header
+	Buffer 				_requestBodyBuffer;		// stores the body of the request
 
-	int					_readingEndOfCGIPipe;	// if CGI is needed, fd to read the result in
+	// CGI DATA
 
-	// CONFIGURATION APPLICABLE TO THE REQUEST
-
-	const Route*		_route;					// route matched through the URI
 	std::string			_paramCGI;
+	int					_readingEndOfCGIPipe;	// if CGI is needed, fd to read the result in
+	time_t				_cgiStartTime;
+	int					_cgiForkPid;
+
+
 
 	// SESSION MANAGEMENT
 
@@ -112,9 +115,14 @@ public:
 	void				setProtocol(std::string& protocol);
 	void				setURI(std::string& uri);
 	void				setRequestLine(std::string& requestLine);
+	void				setContentLength(std::string &lengthAsStr);
+	void				setKeepAlive(bool value);
 
 	void				setRoute(const Route* route);
+
+	void				setCgiStartTime(time_t start);
 	void				setCgiPipe(int pipeFd);
+	void				setCgiForkPid(int forkPid);
 
 	void				addAsHeaderVar(std::string& keyValueString);
 	void				setContentType(std::string string);
@@ -126,29 +134,40 @@ public:
 
 	//-------------------- GETTERS -----------------------//
 
+	const ServerConf&	getConf() const;
+	Status&				getStatus();
+
 	std::string			getMethodAsString() const;
 	e_methods			getMethodCode() const;
 	std::string			getProtocol() const;
 	std::string			getRequestedURL() const;
+
 	std::string			getCgiParam() const;
+	int					getCgiForkPid() const;
+	int					getCgiPipe() const;
+	time_t				getCgiStartTime() const;
+
 	const Route*		getRoute() const;
 	std::map
 		<std::string,
 		std::string>&	getAdditionalHeaderInfo();
 	std::string			getContentType() const;
+	size_t				getContentLength() const;
+	Buffer&				getBodyBuffer();
 
-	const ServerConf&	getConf() const;
 	std::map
 		<size_t,
 		Session>&		getSessionMap();
-	Status&				getStatus();
+
 	int					getParsingState() const;
 	bool				hasError() const;
+
 	size_t				getSessionId() const;
 	std::string			getStringSessionId() const;
+
 	std::string			getBody() const;
 	std::istream&		getStreamFromBodyBuffer();
-	int					getCgiPipe() const;
+
 	bool				hasSessionId() const;
 
 	bool				isKeepAlive();

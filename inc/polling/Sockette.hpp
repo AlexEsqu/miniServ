@@ -64,6 +64,8 @@ public:
 	void				acceptConnectionFrom(ClientSocket* client);
 	virtual void		handleConnection(epoll_event event) = 0;
 
+	static void			setFdAsClosingOnExecution(int fd);
+
 	//------------------ EXCEPTIONS ----------------------//
 
 	class failedSocketCreation : public std::exception {

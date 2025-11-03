@@ -140,6 +140,23 @@ void			Sockette::bindToIPAddress()
 	}
 }
 
+void			Sockette::setFdAsClosingOnExecution(int fd)
+{
+	if (fd == -1)
+		return;
+
+	int flags = fcntl(fd, F_GETFD, 0);
+
+	if (flags == -1)
+	{
+		perror("fcntl F_GETFD");
+		return;
+	}
+
+	if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1)
+		perror("fcntl F_SETFD");
+}
+
 void			Sockette::acceptConnectionFrom(ClientSocket* ConnectingSocket)
 {
 	int addrlen = sizeof(ConnectingSocket->getSocketAddr());

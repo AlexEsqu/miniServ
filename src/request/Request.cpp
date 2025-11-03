@@ -10,6 +10,7 @@ Request::Request(ServerConf &conf, Status &status)
 	  _requestState(EMPTY),
 	  _status(status),
 	  _method(UNSUPPORTED),
+	  _contentLength(0),
 	  _sessionId(0)
 {
 }
@@ -40,6 +41,7 @@ Request &Request::operator=(const Request &other)
 		_methodAsString = other._methodAsString;
 		_protocol = other._protocol;
 		_URI = other._URI;
+		_contentLength = other._contentLength;
 		_requestHeaderMap = other._requestHeaderMap;
 		_route = other._route;
 		_requestBodyBuffer = other._requestBodyBuffer;
@@ -131,22 +133,14 @@ std::string Request::getStringSessionId() const
 
 std::string Request::getBody() const
 {
-	// std::cout << "=== REQUEST BODY DEBUG ===" << std::endl;
-	// std::cout << "Buffer using file: " << _requestBodyBuffer.isUsingFile() << std::endl;
-	// std::cout << "Buffer size: " << _requestBodyBuffer.getBufferSize() << std::endl;
-
 	if (_requestBodyBuffer.isUsingFile())
 	{
-		// std::cout << "Reading from file buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getAllContent();
-		// std::cout << "File content size: " << content.size() << std::endl;
 		return content;
 	}
 	else
 	{
-		// std::cout << "Reading from memory buffer..." << std::endl;
 		std::string content = _requestBodyBuffer.getMemoryBuffer();
-		// std::cout << "Memory content size: " << content.size() << std::endl;
 		return content;
 	}
 }
@@ -156,9 +150,29 @@ int Request::getCgiPipe() const
 	return (_readingEndOfCGIPipe);
 }
 
+int Request::getCgiForkPid() const
+{
+	return (_cgiForkPid);
+}
+
 std::string Request::getCgiParam() const
 {
 	return (_paramCGI);
+}
+
+time_t Request::getCgiStartTime() const
+{
+	return _cgiStartTime;
+}
+
+size_t		Request::getContentLength() const
+{
+	return (_contentLength);
+}
+
+Buffer&		Request::getBodyBuffer()
+{
+	return (_requestBodyBuffer);
 }
 
 std::istream &Request::getStreamFromBodyBuffer()
@@ -238,6 +252,29 @@ void Request::setProtocol(std::string &protocol)
 		setError(HTTP_VERSION_NOT_SUPPORTED);
 }
 
+void	Request::setContentLength(std::string &lengthAsStr)
+{
+	size_t	contentLength = std::atoi(lengthAsStr.c_str());
+	size_t	max = getConf().getMaxSizeClientRequestBody();
+
+	if (contentLength > max)
+	{
+		_contentLength = getConf().getMaxSizeClientRequestBody();
+		setError(PAYLOAD_TOO_LARGE);
+		_requestState = PARSING_DONE;
+	}
+	else
+		_contentLength = contentLength;
+}
+
+void	Request::setKeepAlive(bool value)
+{
+	if (value)
+		_requestHeaderMap["connection"] = "keep-alive";
+	else
+		_requestHeaderMap["connection"] = "close";
+}
+
 void Request::setRoute(const Route *route)
 {
 	_route = route;
@@ -255,7 +292,6 @@ void Request::setRequestLine(std::string &requestLine)
 	std::vector<std::string> splitRequestLine = split(requestLine, ' ');
 	if (splitRequestLine.size() != 3)
 	{
-		std::cout << "Invalid line format";
 		setError(BAD_REQUEST);
 		return;
 	}
@@ -303,6 +339,9 @@ void Request::addAsHeaderVar(std::string &keyValueString)
 		if (key == "content-type")
 			setContentType(value);
 
+		if (key == "content-length")
+			setContentLength(value);
+
 		verboseLog("Header: [" + key + "] = [" + value + "]");
 	}
 }
@@ -325,6 +364,16 @@ void Request::setStatus(e_status statusCode)
 void Request::setCgiPipe(int pipeFd)
 {
 	_readingEndOfCGIPipe = pipeFd;
+}
+
+void Request::setCgiForkPid(int forkPid)
+{
+	_cgiForkPid = forkPid;
+}
+
+void Request::setCgiStartTime(time_t start)
+{
+	_cgiStartTime = start;
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
@@ -412,13 +461,13 @@ e_dataProgress Request::parseHeaderLine(std::string &chunk)
 // and returns if the current parsed item (header, body...) is not finished
 void Request::addRequestChunk(std::string chunk)
 {
+	if (_requestState == EMPTY)
+		_requestState = PARSING_REQUEST_LINE;
+
 	while (_requestState != PARSING_DONE)
 	{
 		switch (_requestState)
 		{
-		case EMPTY:
-		{
-		}
 		case PARSING_REQUEST_LINE:
 		{
 			if (parseRequestLine(chunk) == WAITING_FOR_MORE)
@@ -467,9 +516,8 @@ void Request::setIfAssemblingBody()
 		_requestState = PARSING_BODY;
 		_isChunked = true;
 	}
-	else if (_requestHeaderMap.find("content-length") != _requestHeaderMap.end())
+	else if (_contentLength)
 	{
-		_contentLength = atoi(_requestHeaderMap["content-length"].c_str());
 		_requestState = PARSING_BODY;
 		_isChunked = false;
 	}
@@ -524,7 +572,16 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 		// extracting a chunk into the Buffer
 		std::string chunkData = _unparsedBuffer.substr(offset, chunkSize - 2);
 		// std::cout << "chunk data [" << chunkData << "]\n";
-		_requestBodyBuffer.writeToBuffer(chunkData);
+
+		size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+		size_t	newSize = _requestBodyBuffer.getBufferSize() + chunkData.size();
+		if (newSize > getConf().getMaxSizeClientRequestBody())
+		{
+			setError(PAYLOAD_TOO_LARGE);
+			_requestState = PARSING_DONE;
+			return RECEIVED_ALL;
+		}
+		_requestBodyBuffer.writeToBuffer(chunkData.substr(0, remainderToRead));
 
 		// move on the the next chunk which may be in the same buffer
 		offset += chunkSize + 2;
@@ -536,18 +593,30 @@ e_dataProgress Request::assembleChunkedBody(std::string &chunk)
 // Made for large single request, so making use of the temporary file buffer object
 e_dataProgress Request::assembleUnChunkedBody(std::string &chunk)
 {
+	size_t	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+
 	// copy all leftover from the parsing into the buffer
 	if (!_unparsedBuffer.empty())
 	{
-		_requestBodyBuffer.writeToBuffer(_unparsedBuffer);
+		_requestBodyBuffer.writeToBuffer(_unparsedBuffer.substr(0, remainderToRead));
 		_unparsedBuffer.clear();
 	}
-	_requestBodyBuffer.writeToBuffer(chunk);
+
+	remainderToRead = getContentLength() - _requestBodyBuffer.getBufferSize();
+	size_t	newSize = _requestBodyBuffer.getBufferSize() + _requestBodyBuffer.getBufferSize();
+	if (newSize > getConf().getMaxSizeClientRequestBody())
+	{
+		setError(PAYLOAD_TOO_LARGE);
+		_requestState = PARSING_DONE;
+		return RECEIVED_ALL;
+	}
+
+	_requestBodyBuffer.writeToBuffer(chunk.substr(0, remainderToRead));
 	chunk.clear();
 
 	// check received content is correct length or wait for more
 	// std::cout << "buffer size is [" << _requestBodyBuffer.getBufferSize() << "]\n";
-	if (_requestBodyBuffer.getBufferSize() < _contentLength && _requestBodyBuffer.getBufferSize() < _conf.getMaxSizeClientRequestBody())
+	if (_requestBodyBuffer.getBufferSize() < _contentLength)
 		return WAITING_FOR_MORE;
 	else
 	{

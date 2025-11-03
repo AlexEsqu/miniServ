@@ -28,3 +28,8 @@ content-type: text/plain
 
 
 ###
+
+GET http://localhost:8080/infiniteLoop.php
+content-type: text/plain
+
+###

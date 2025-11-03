@@ -26,7 +26,8 @@ ServerSocket::ServerSocket(Poller& poller, ServerConf& conf)
 	// set serv sock to listen for incomming connections with max incomming
 	setListenMode(10);
 
-	// fcntl(getSocketFd(), F_SETFL, O_NONBLOCK);
+	//fcntl(getSocketFd(), F_SETFL, O_NONBLOCK);
+	Sockette::setFdAsClosingOnExecution(getSocketFd());
 
 	_poller.addServerSocket(*this);
 }
@@ -39,7 +40,8 @@ ServerSocket::~ServerSocket()
 		removeConnection(_clients.begin()->second);
 	}
 
-	_poller.removeSocket(this);
+	if (getSocketFd() >= 0)
+		_poller.removeSocket(this);
 
 	delete _cf;
 }
@@ -89,6 +91,8 @@ void			ServerSocket::acceptNewConnection()
 	}
 	_clients[Connecting->getSocketFd()] = Connecting;
 
+	setFdAsClosingOnExecution(Connecting->getSocketFd());
+
 	#ifdef DEBUG
 		std::cout << CONNEX_FORMAT("\n++++ Accepted Connection on Socket ";
 		std::cout  << Connecting->getSocketFd() << " ++++ \n");
@@ -114,6 +118,9 @@ void			ServerSocket::removeConnection(ClientSocket* clientSocket)
 // but may also read from an internal pipe CGI being executed for a response
 void			ServerSocket::receiveAndParseData(ClientSocket* client)
 {
+	if (client->hasTimedOut())
+		return ;
+
 	// special case when the CGI is being executed, requires specific functions
 	if (client->isReadingFromPipe())
 		_cf->readCGIChunk(client);
@@ -181,24 +188,41 @@ void			ServerSocket::handleExistingConnection(ClientSocket* client, epoll_event 
 
 void		ServerSocket::closeConnectionOrCleanAndKeepAlive(ClientSocket* socket)
 {
-	if (socket->getRequest().isKeepAlive())
+	if (socket->hasTimedOut())
+	{
+		removeConnection(socket);
+	}
+
+	else if (socket->getRequest().isKeepAlive())
 	{
 		socket->resetContent();
 		socket->updateLastEventTime();
 		_poller.setPollingMode(READING, socket);
 	}
+
 	else
 		removeConnection(socket);
 }
 
 void		ServerSocket::timeoutRequest(ClientSocket& client)
 {
-	client.stopReadingPipe();
 	client.getCgiBuffer().clearBuffer();
-	client.getRequest().setError(REQUEST_TIMEOUT);
+	client.getResponse().reset();
+	client.getRequest().setError(BAD_GATEWAY);
+	client.setTimedOut(true);
+	client.getRequest().setKeepAlive(false);
 	client.getResponse().createHTTPHeaders();
 	client.setClientState(CLIENT_HAS_FILLED);
-	_poller.setPollingMode(WRITING, &client);
+	if (client.isReadingFromPipe())
+		client.stopReadingPipe();
+	else
+		_poller.setPollingMode(WRITING, &client);
+	if (client.getRequest().getCgiForkPid() > 0)
+	{
+		if (kill(client.getRequest().getCgiForkPid(), SIGKILL) == -1)
+			perror("kill");
+		client.getRequest().setCgiForkPid(0);
+	}
 }
 
 // checks all client sockets, remove the one who did not set off any events in a while

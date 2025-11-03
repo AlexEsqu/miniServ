@@ -1,5 +1,7 @@
 <?php
-set_time_limit(0);
+header("Content-Type: text/plain");
+
+set_time_limit(100);
 
 echo "Starting infinite wait script...\n";
 flush();

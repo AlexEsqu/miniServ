@@ -267,7 +267,11 @@ bool Router::isAllowedWrite(const char *path)
 {
 	if (!path)
 		return (false);
-	return (access(path, W_OK) == 0);
+
+	if (isExisting(path) && (access(path, W_OK) != 0))
+		return (false);
+
+	return (true);
 }
 
 bool Router::isAllowedExecute(const char *path)

@@ -58,6 +58,7 @@ public:
 	//----------------- MEMBER FUNCTION ------------------//
 
 	void				createFile();
+	static std::string	generateRandomFileName(const std::string& prefix);
 	std::string			generateTempFileName(const std::string& prefix);
 	void				createFile(std::string& filePath);
 	void				clearFile();

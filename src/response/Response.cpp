@@ -182,9 +182,11 @@ void Response::createHTTPHeaders()
 	if (getStatus().getStatusCode() >= 400) // if its an error
 		setContent(fetchErrorPageContent(getStatus()));
 	_contentLength = _responsePage.getBufferSize();
+	if (_contentType.empty())
+		setContentType("text/html");
 	std::stringstream contentLength;
 	contentLength << _contentLength;
-	addHttpHeader(_request.getProtocol(), getStatus().getStringStatusCode());
+	_HTTPHeaders += _request.getProtocol() + " " + getStatus().getStringStatusCode() + " " + getStatus().getStatusMessage() + "\r\n";
 	addHttpHeader("Content-Type", _contentType);
 	addHttpHeader("Content-Length", contentLength.str());
 	addHttpHeader("Connection", (_request.isKeepAlive() ? "keep-alive" : "close"));
