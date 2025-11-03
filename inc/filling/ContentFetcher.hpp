@@ -91,7 +91,5 @@ public:
 
 	void			addExecutor(Executor* executor);
 	e_dataProgress	readCGIChunk(ClientSocket* client);
-	void			parseCgiHeader(Response &response, std::string& headers);
-	void			addCgiResultToResponse(Response &response, Buffer& buffer);
 
 };

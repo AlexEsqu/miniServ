@@ -7,21 +7,20 @@ e_dataProgress	Response::parseCGIHeaderLine(std::string &chunk)
 	size_t lineEnd = chunk.find("\r\n");
 	if (lineEnd == std::string::npos)
 	{
-		_unparsedBuffer.append(chunk);
+		_unparsedCgiBuffer.append(chunk);
 		return WAITING_FOR_MORE;
 	}
 
 	// create request line out of chunk and possible unparsed leftover
-	std::string headerLine = _unparsedBuffer + chunk.substr(0, lineEnd);
-	_unparsedBuffer.clear();
+	std::string headerLine = _unparsedCgiBuffer + chunk.substr(0, lineEnd);
+	_unparsedCgiBuffer.clear();
 
 	// either add the header line as variable to the header map of variable
 	if (!headerLine.empty())
 		addHttpHeader(headerLine);
-	// or if it's empty, I reached the end of the headers and can set if
-	// parsing the body is necessary, which will update the parsing state
+	// or if it's empty, I reached the end of the headers and can go to body
 	else
-		assembleCGIBody();
+		_cgiParsingState = CGI_PARSING_BODY;
 
 	// erase data used from the chunk, store the rest
 	chunk.erase(0, lineEnd + 2);
@@ -32,43 +31,42 @@ e_dataProgress	Response::parseCGIHeaderLine(std::string &chunk)
 e_dataProgress	Response::assembleCGIBody(std::string &chunk)
 {
 	// copy all leftover from the parsing into the buffer
-	if (!_unparsedBuffer.empty())
+	if (!_unparsedCgiBuffer.empty())
 	{
-		_requestBodyBuffer.writeToBuffer(_unparsedBuffer.substr(0, getRequest().getContentLength()));
-		_unparsedBuffer.clear();
+		_responsePage.writeToBuffer(_unparsedCgiBuffer.substr(0, getRequest().getContentLength()));
+		_unparsedCgiBuffer.clear();
 	}
 
-	size_t	remainderToRead = getRequest().getContentLength() - _requestBodyBuffer.getBufferSize();
-
-	_requestBodyBuffer.writeToBuffer(chunk.substr(0, remainderToRead));
+	_responsePage.writeToBuffer(chunk);
 	chunk.clear();
 
 	// check received content is correct length or wait for more
-	// std::cout << "buffer size is [" << _requestBodyBuffer.getBufferSize() << "]\n";
-	if (_requestBodyBuffer.getBufferSize() < _contentLength && _requestBodyBuffer.getBufferSize() < _conf.getMaxSizeClientRequestBody())
-		return WAITING_FOR_MORE;
-	else
+	if (_responsePage.getBufferSize() > getRequest().getConf().getMaxSizeClientRequestBody())
 	{
-		_requestState = PARSING_DONE;
+		setError(PAYLOAD_TOO_LARGE);
 		return RECEIVED_ALL;
 	}
+
+	return WAITING_FOR_MORE;
 }
 
 // For every chunk of data added to the request, parsing continues from last state
 // and returns if the current parsed item (header, body...) is not finished
 void	Response::addCGIChunk(std::string chunk)
 {
-	while (_cgiParsingState != PARSING_CGI_DONE)
+	while (_cgiParsingState != CGI_PARSING_DONE && !hasError())
 	{
+		if (chunk.empty())
+			_cgiParsingState = CGI_PARSING_DONE;
 		switch (_cgiParsingState)
 		{
-			case PARSING_CGI_HEADERS:
+			case CGI_PARSING_HEADERS:
 			{
 				if (parseCGIHeaderLine(chunk) == WAITING_FOR_MORE)
 					return;
 				break;
 			}
-			case PARSING_CGI_BODY:
+			case CGI_PARSING_BODY:
 			{
 				if (assembleCGIBody(chunk) == WAITING_FOR_MORE)
 					return;
