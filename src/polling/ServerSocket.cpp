@@ -248,7 +248,7 @@ void		ServerSocket::timeoutIdleClients()
 		}
 
 		// otherwise it may be stuck for other reasons and need to be put down with a REQUEST TIMEOUT
-		else if (idleTime > TIMEOUT_CONNECTION)
+		else if (client->hasStartedRequest() && idleTime > TIMEOUT_CONNECTION)
 			timeoutRequest(*client);
 	}
 }

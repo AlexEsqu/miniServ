@@ -222,12 +222,8 @@ void			ClientSocket::readRequest()
 
 	checkForReadError(valread);
 
-	// size_t	toRead = BUFFSIZE;
-	// if (getRequest().getParsingState() == PARSING_BODY)
-	// 	toRead = getRequest().getConf().getMaxSizeClientRequestBody() - getRequest().getBodyBuffer().getBufferSize();
-
 	// since some data can be interspeced with \0, creating a string of toRead size
-	std::string requestChunk(_buffer, BUFFSIZE);
+	std::string requestChunk(_buffer, valread);
 
 	_request.addRequestChunk(requestChunk);
 
