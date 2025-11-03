@@ -20,6 +20,7 @@ private:
 	bool				_usingFile;
 	std::istringstream	_memStream;
 	std::ifstream		_fileStream;
+	int					_tempPipeFd[2];
 
 	//-------------- INTERNAL FUNCTIONS -------------------//
 
@@ -49,6 +50,7 @@ public:
 	bool			isUsingFile() const;
 	std::string		getMemoryBuffer() const;
 	std::istream&	getStream();
+	int				getReadableFd();
 
 	//--------------- MEMBER FUNCTIONS -------------------//
 
