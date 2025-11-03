@@ -152,12 +152,17 @@ int Request::getCgiPipe() const
 
 int Request::getCgiForkPid() const
 {
-	return (_CgiForkPid);
+	return (_cgiForkPid);
 }
 
 std::string Request::getCgiParam() const
 {
 	return (_paramCGI);
+}
+
+time_t Request::getCgiStartTime() const
+{
+	return _cgiStartTime;
 }
 
 size_t		Request::getContentLength() const
@@ -363,7 +368,12 @@ void Request::setCgiPipe(int pipeFd)
 
 void Request::setCgiForkPid(int forkPid)
 {
-	_CgiForkPid = forkPid;
+	_cgiForkPid = forkPid;
+}
+
+void Request::setCgiStartTime(time_t start)
+{
+	_cgiStartTime = start;
 }
 
 //----------------------- INTERNAL FUNCTIONS -----------------------------------//
