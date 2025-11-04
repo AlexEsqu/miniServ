@@ -194,14 +194,7 @@ void			ClientSocket::checkForReadError(int valread)
 {
 	// if valread is 0 or less, an error has occurred :
 	if (valread < 0)
-	{
-		// no more available data in socket, unlikely if call to epollin
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		// socket reading error
-		else
-			throw failedSocketRead();
-	}
+		throw failedSocketRead();
 	// socket hung up
 	if (valread == 0)
 		throw endSocket();
@@ -249,14 +242,7 @@ void			ClientSocket::sendResponse()
 								 response.c_str() + totalSent,
 								 totalToSend - totalSent, 0);
 		if (bytesSent < 0)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				response = response.substr(totalSent);
-				return;
-			}
 			throw std::runtime_error("send () failed");
-		}
 		totalSent += bytesSent;
 	}
 

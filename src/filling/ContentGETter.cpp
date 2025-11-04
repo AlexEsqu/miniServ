@@ -85,15 +85,7 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 
 	// Encountered a read error
 	if (bytesRead < 0)
-	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK) // unlikely given epoll
-		{
-			verboseLog("nothing in pipe");
-			return WAITING_FOR_MORE;
-		}
-		else
-			throw std::runtime_error("Failed to read CGI output");
-	}
+		throw std::runtime_error("Failed to read CGI output");
 
 	// creating a string in case of content containing /0 characters
 	std::string	bufferAsString(buffer, bytesRead);

@@ -344,7 +344,6 @@ void Request::addAsHeaderVar(std::string &keyValueString)
 			return;
 		}
 		strToLower(key);
-		strToLower(value);
 		_requestHeaderMap[key] = value;
 
 		if (key == "content-type")
