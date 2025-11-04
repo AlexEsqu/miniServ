@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Webserv</title>
+		<link href="./styles.css" rel="stylesheet" />
+		<link rel="stylesheet" href="https://unpkg.com/xp.css" />
+		<link rel="icon" type="image/png" href="favicon.png" />
+		<script src="./app.js" defer></script>
+	</head>
+	<body class="prevent-select">
+		<div class="window">
+			<div class="title-bar">
+				<div class="title-bar-text">Command Prompt</div>
+			</div>
+			<div class="window-body">
+				<pre>➜  Usage : ./webserv configuration_file.conf</pre>
+			</div>
+		</div>
+
+		<div class="window" id="presentation-window">
+			<div class="title-bar">
+				<div class="title-bar-text">A little presentation of us!</div>
+				<div class="title-bar-controls">
+					<button class="Close" aria-label="Close"></button>
+				</div>
+			</div>
+			<div class="window-body">
+				<menu role="tablist">
+					<button aria-selected="true" class="tablist-button" id="tablist-button-alex" aria-controls="alex-article">Alex</button>
+					<button aria-selected="false" class="tablist-button" id="tablist-button-elvire" aria-controls="elvire-article">Elvire</button>
+					<button aria-selected="false" class="tablist-button" id="tablist-button-add-yourself" aria-controls="add-yourself-article">Add Yourself</button>
+				</menu>
+				<article role="tabpanel" class="presentation-article" id="alex-article">
+					<img  src="./img/Alex.webp" />
+					<p>hello my name is alex</p>
+				</article>
+
+				<article role="tabpanel" hidden="hidden" class="presentation-article" id="elvire-article">
+					<img src="./img/Elvire.webp" />
+					<p>hello my name is Elvire</p>
+				</article>
+
+				<article role="tabpanel" hidden="hidden" class="presentation-article" id="add-yourself-article">
+					<div class="field-row">
+						<form method="post" action="post/" id="form" enctype="application/x-www-form-urlencoded">
+							<div class="field-row-stacked">
+								<label for="name">Name</label>
+								<input type="text" id="name" name="name" />
+							</div>
+							<div class="field-row-stacked">
+								<label for="picture">Submit your picture</label>
+								<input id="picture" name="picture" type="file" accept="image/*" />
+							</div>
+							<div class="field-row-stacked">
+								<label for="description">Description</label>
+								<textarea name="description" id="description" placeholder="Describe yourself"></textarea>
+							</div>
+						</form>
+					</div>
+				</article>
+				<section id="form-buttons" class="field-row">
+					<button type="submit" form="form" id="form-button-ok">OK</button>
+					<button type="reset" form="form" id="form-button-cancel">Cancel</button>
+				</section>
+			</div>
+		</div>
+		<div class="window" id="article-window">
+			<div class="title-bar">
+				<div class="title-bar-text">Webserv</div>
+				<div class="title-bar-controls">
+					<button class="Close" aria-label="Close"></button>
+				</div>
+			</div>
+			<div class="window-body">
+					This project is about writing our own HTTP server.
+
+					<h4>What is HTTP?</h4>
+					<p>
+					HTTP is an application-layer protocol for transmitting hypermedia documents, such as HTML. It was designed for communication between web browsers and web servers, but it
+					can also be used for other purposes, such as machine-to-machine communication, programmatic access to APIs, and more. <br><br>HTTP follows a classical client-server model, with a
+					client opening a connection to make a request, then waiting until it receives a response from the server. HTTP is a stateless protocol, meaning that the server does not
+					keep any session data between two requests, although the later addition of cookies adds state to some client-server interactions.
+				</p>
+				<img src="https://substackcdn.com/image/fetch/$s_!2s7A!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F7140c6e1-4315-45cf-8648-d7685219bc6b_1938x1116.png" />
+			</div>
+		</div>
+	</body>
+	<button id="delete-button">DELETE DATA BUTTON CAREFUL</button>
+	<footer>
+		<div class="title-bar">
+			<div id="main-footer-tab"> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ?autoplay=1" target="_blank">./webserv</a></div>
+		</div>
+	</footer>
+</html>
