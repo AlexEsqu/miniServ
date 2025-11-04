@@ -92,9 +92,11 @@ int Buffer::getReadableFd()
 	else
 	{
 		if (pipe(_tempPipeFd) == -1)
-			throw std::runtime_error("pipe failed");
+			throw std::runtime_error("Buffer pipe failed");
 
 		write(_tempPipeFd[1], _memBuffer.c_str(), _memBuffer.length());
+			throw std::runtime_error("Buffer write failed");
+
 		close(_tempPipeFd[1]);
 
 		return _tempPipeFd[0];
@@ -156,6 +158,7 @@ size_t			Buffer::readFromBuffer(char *buffer, size_t size, size_t offset) const
 		std::ifstream file(_fileBuffer.getFilePath().c_str(), std::ios::binary);
 		file.seekg(offset);
 		file.read(buffer, size);
+			throw std::runtime_error("Buffer read failed");
 		return file.gcount();
 	}
 	else

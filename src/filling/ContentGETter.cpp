@@ -92,10 +92,7 @@ e_dataProgress ContentFetcher::readCGIChunk(ClientSocket *client)
 			return WAITING_FOR_MORE;
 		}
 		else
-		{
-			perror("read from CGI pipe failed");
 			throw std::runtime_error("Failed to read CGI output");
-		}
 	}
 
 	// creating a string in case of content containing /0 characters

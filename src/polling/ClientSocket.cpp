@@ -255,8 +255,7 @@ void			ClientSocket::sendResponse()
 				response = response.substr(totalSent);
 				return;
 			}
-			perror("send failed");
-			return;
+			throw std::runtime_error("send () failed");
 		}
 		totalSent += bytesSent;
 	}
