@@ -79,7 +79,7 @@ OBJ					=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 DEP					=	$(OBJ_DIRS) $(HEADER)
 
-CC					=	clang++
+CC					=	c++
 
 FLAGS				=	-Wall -Wextra -Werror -std=c++98
 
@@ -179,6 +179,10 @@ verbose:			$(TMP_DIR)
 valgrind:
 					make debug
 					$(V_FLAG) ./webserv confs/basic.conf
+
+siege:
+					@echo "You need to have webserv launcheed, wuth valid conf."
+					siege -c 10 -r 1000000 http://localhost:8080/app.js
 
 # **************************************************************************** #
 #		Clean up															   #
