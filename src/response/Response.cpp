@@ -228,27 +228,45 @@ void Response::addHttpHeader(std::string keyColonValue)
 
 std::string Response::createErrorPageContent(const Status &num)
 {
-	std::ifstream inputErrorFile;
-	std::string errorFile = Router::joinPaths(_request.getConf().getRoot(), "error.html");
-	inputErrorFile.open(errorFile.c_str(), std::ifstream::in);
-	std::stringstream outputString;
-	std::string line;
+	std::stringstream output;
 
-	if (!inputErrorFile.is_open())
-	{
-		std::cerr << RED << "Response::createErrorPageContent: Could not open error file: " << errorFile << STOP_COLOR << std::endl;
-		return ("");
-	}
-	while (getline(inputErrorFile, line))
-	{
-		if (line.find("<h1>") != std::string::npos&& line.find("</h1>") != std::string::npos)
-			line.insert(line.find("<h1>") + 4, num.getStringStatusCode() + " " + num.getStatusMessage());
-		if (line.find("<title>") != std::string::npos && line.find("</title>") != std::string::npos)
-			line.insert(line.find("<title>") + 7, num.getStringStatusCode() + " " + num.getStatusMessage());
-		outputString << line;
-	}
-	inputErrorFile.close();
-	return (outputString.str());
+	output <<
+		"<!DOCTYPE html>\n"
+		"<html lang=\"en\">\n"
+		"  <head>\n"
+		"    <title>" << num.getStringStatusCode() << " " << num.getStatusMessage() << "</title>\n"
+		"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n"
+		"    <style>\n"
+		"      html {\n"
+		"        background-image: url(https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzR2cTNwcm91NXEyaGdqYXV5OHlmY2d6eHFnMjQ5ejh0dGtmY2F1biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/aNqEFrYVnsS52/giphy.gif);\n"
+		"        width: 100vw;\n"
+		"        height: 100vh;\n"
+		"        display: flex;\n"
+		"        justify-content: center;\n"
+		"        align-items: center;\n"
+		"        font-family: 'Courier New', Courier, monospace;\n"
+		"      }\n"
+		"      body {\n"
+		"        font-size: 40px;\n"
+		"        background-color: rgba(255, 235, 205, 0.671);\n"
+		"        padding: 10px;\n		"
+		"        text-align: center;\n"
+		"        width: 40%;\n"
+		"        margin: 0 auto;\n"
+		"      }\n"
+		"      a { color: #0066cc; }\n"
+		"    </style>\n"
+		"  </head>\n"
+		"  <body>\n"
+		"    <h1>" << num.getStringStatusCode() << " " << num.getStatusMessage() << "</h1>\n"
+		"    <p>The server was unable to complete your request. Please try again later.</p>\n"
+		"    <p>If this problem persists, please\n"
+		"      <a href=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ?autoplay=1\" target=\"_blank\">contact support</a>.\n"
+		"    </p>\n"
+		"  </body>\n"
+		"</html>\n";
+
+	return output.str();
 }
 
 void Response::addToContent(const std::string content)
