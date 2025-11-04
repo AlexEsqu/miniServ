@@ -9,7 +9,7 @@
 		<link rel="icon" type="image/png" href="favicon.png" />
 		<script src="./app.js" defer></script>
 	</head>
-	<body>
+	<body class="prevent-select">
 		<div class="window">
 			<div class="title-bar">
 				<div class="title-bar-text">Command Prompt</div>
@@ -74,12 +74,12 @@
 				</div>
 			</div>
 			<div class="window-body">
-				<p>
-					This project is about writing your own HTTP server.
+					This project is about writing our own HTTP server.
 
-					What is HTTP?
+					<h4>What is HTTP?</h4>
+					<p>
 					HTTP is an application-layer protocol for transmitting hypermedia documents, such as HTML. It was designed for communication between web browsers and web servers, but it
-					can also be used for other purposes, such as machine-to-machine communication, programmatic access to APIs, and more. <br>HTTP follows a classical client-server model, with a
+					can also be used for other purposes, such as machine-to-machine communication, programmatic access to APIs, and more. <br><br>HTTP follows a classical client-server model, with a
 					client opening a connection to make a request, then waiting until it receives a response from the server. HTTP is a stateless protocol, meaning that the server does not
 					keep any session data between two requests, although the later addition of cookies adds state to some client-server interactions.
 				</p>
@@ -90,7 +90,7 @@
 	<button id="delete-button">DELETE DATA BUTTON CAREFUL</button>
 	<footer>
 		<div class="title-bar">
-			<div id="main-footer-tab">./webserv</div>
+			<div id="main-footer-tab"> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ?autoplay=1" target="_blank">./webserv</a></div>
 		</div>
 	</footer>
 </html>
