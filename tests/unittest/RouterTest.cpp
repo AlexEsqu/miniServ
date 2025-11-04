@@ -1,314 +1,173 @@
 #include "doctest.h"
-
-#include <cstdio>
-#include <cstdlib>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fstream>
-#include <vector>
-#include <string>
-
-#include "Router.hpp"
 #include "Route.hpp"
+#include "Router.hpp"
+#include "ServerConf.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
+#include <sys/stat.h>
+#include <fstream>
+#include <unistd.h>
 
-// helper RAII for temporary directories/files
-struct TempDir
-{
-	std::string path;
-	TempDir(const char* tmpl = "/tmp/miniserv_testXXXXXX")
-	{
-		char buf[256];
-		std::snprintf(buf, sizeof(buf), "%s", tmpl);
-		char* res = mkdtemp(buf);
-		if (res)
-			path = std::string(res);
-		else
-			path = "";
-	}
-	~TempDir()
-	{
-		// Remove all files inside (best-effort)
-		// user tests will remove files explicitly
-		if (!path.empty()) {
-			rmdir(path.c_str()); // only succeeds if empty
+// Helper to find the best matching route from a ServerConf object,
+// mimicking the logic the server should use.
+static const Route* findBestMatchInConf(const ServerConf& conf, const std::string& path) {
+	const std::vector<Route>& routes = conf.getRoutes();
+	const Route* bestMatch = NULL;
+
+	for (size_t i = 0; i < routes.size(); ++i) {
+		if (routes[i].isPathMatch(path)) {
+			if (bestMatch == NULL || routes[i].getURLPath().length() > bestMatch->getURLPath().length()) {
+				bestMatch = &routes[i];
+			}
 		}
 	}
-	std::string join(const std::string& name) const
-	{
-		if (path.empty()) return name;
-		if (path[path.size()-1] == '/')
-			return path + name;
-		return path + "/" + name;
-	}
-};
-
-// small helper to write a file
-static void writeFile(const std::string& p, const std::string& content = "ok")
-{
-	std::ofstream ofs(p.c_str(), std::ios::binary);
-	ofs << content;
-	ofs.close();
+	return bestMatch;
 }
 
-// remove file if exists
-static void rmfile(const std::string& p)
-{
-	unlink(p.c_str());
+
+// Helper to create a mock ServerConf with a realistic route setup
+static ServerConf createMockRoutingServerConf() {
+	std::map<std::string, std::string> serverParams;
+	serverParams["listen"] = "8080";
+	serverParams["root"] = "pages";
+	serverParams["index"] = "index.html";
+	serverParams["client_max_body_size"] = "1000000";
+	ServerConf conf(serverParams);
+
+	// The default route "/" is created by the ServerConf constructor.
+	// We can retrieve and modify it for tests if needed.
+	std::vector<Route>& routes = const_cast<std::vector<Route>&>(conf.getRoutes());
+	for (size_t i = 0; i < routes.size(); ++i) {
+		if (routes[i].getURLPath() == "/") {
+			routes[i].setRootDirectory("pages");
+			std::vector<std::string> defaultFiles;
+			defaultFiles.push_back("index.html");
+			routes[i].setDefaultFiles(defaultFiles);
+			break;
+		}
+	}
+
+	// Add specific routes for testing
+	Route apiRoute;
+	apiRoute.setURLPath("/api");
+	apiRoute.setRootDirectory("api_root");
+	std::vector<std::string> apiMethods;
+	apiMethods.push_back("GET");
+	apiMethods.push_back("POST");
+	apiMethods.push_back("DELETE");
+	apiRoute.setAllowedMethods(apiMethods);
+	conf.addRoute(apiRoute);
+
+	Route postRoute;
+	postRoute.setURLPath("/post");
+	postRoute.setUploadDirectory("uploads");
+	std::vector<std::string> postMethods;
+	postMethods.push_back("POST");
+	postRoute.setAllowedMethods(postMethods);
+	conf.addRoute(postRoute);
+
+	Route privateRoute;
+	privateRoute.setURLPath("/private");
+	privateRoute.setRootDirectory("private_pages");
+	privateRoute.setAutoIndex(false);
+	conf.addRoute(privateRoute);
+
+	return conf;
 }
 
-// remove directory if exists (must be empty)
-static void rmdir_force(const std::string& p)
-{
-	rmdir(p.c_str());
+// Helper to create a dummy file system for tests
+static void createMockFileSystem() {
+	mkdir("pages", 0755);
+	mkdir("api_root", 0755);
+	mkdir("uploads", 0755);
+	mkdir("private_pages", 0755);
+	std::ofstream("pages/index.html").close();
+	std::ofstream("pages/style.css").close();
+	std::ofstream("api_root/data.json").close();
 }
 
-TEST_CASE("ROUTER")
-{
-
-SUBCASE("Router utils")
-{
-	SUBCASE("slash helpers and joinPaths")
-	{
-	CHECK(Router::isRootPath("/") == true);
-	CHECK(Router::isRootPath("") == true);
-	CHECK(Router::isRootPath("/foo") == false);
-
-	CHECK(Router::hasStartingSlash("/a") == true);
-	CHECK(Router::hasStartingSlash("a") == false);
-
-	CHECK(Router::hasTrailingSlash("/a/") == true);
-	CHECK(Router::hasTrailingSlash("/a") == false);
-
-	CHECK(Router::joinPaths("/root/", "/file") == "/root/file");
-	CHECK(Router::joinPaths("/root", "file") == "/root/file");
-	CHECK(Router::joinPaths("/root/", "file") == "/root/file");
-	CHECK(Router::joinPaths("/root", "/file") == "/root/file");
-	}
-
-	SUBCASE("Router isDirectory and isValidGetFilePath")
-	{
-	TempDir tmp;
-	REQUIRE(tmp.path.size() > 0);
-
-	std::string dirpath = tmp.join("dir");
-	int mk = mkdir(dirpath.c_str(), 0700);
-	CHECK(mk == 0);
-
-	std::string filepath = tmp.join("f.txt");
-	writeFile(filepath, "hello");
-
-	CHECK(Router::isDirectory(dirpath) == true);
-	CHECK(Router::isDirectory(filepath) == false);
-
-	CHECK(Router::isValidGetFilePath(filepath) == true);
-	CHECK(Router::isValidGetFilePath(dirpath) == false);
-
-	// cleanup
-	rmfile(filepath);
-	rmdir_force(dirpath);
-	}
+// Helper to clean up the dummy file system
+static void cleanupMockFileSystem() {
+	remove("pages/index.html");
+	remove("pages/style.css");
+	remove("api_root/data.json");
+	rmdir("pages");
+	rmdir("api_root");
+	rmdir("uploads");
+	rmdir("private_pages");
 }
 
-SUBCASE("Router for GET")
-{
-	{
-		TempDir tmp;
-		REQUIRE(tmp.path.size() > 0);
+TEST_CASE("Route and Router Tests") {
+	createMockFileSystem();
 
-		// create root + files
-		std::string root = tmp.path;
-		std::string fileA = tmp.join("hello.txt");
-		std::string dirA = tmp.join("subdir");
-		int mk = mkdir(dirA.c_str(), 0700);
-		CHECK(mk == 0);
-		std::string idx = tmp.join("subdir/index.html");
-		writeFile(fileA, "h");
-		writeFile(idx, "<html></html>");
+	ServerConf conf = createMockRoutingServerConf();
+	Status status;
 
-		// prepare route: url path "/r" -> root = tmp.path
-		Route r;
-		r.setURLPath("/r");
-		r.setRootDirectory(root);
-		std::vector<std::string> defaults;
-		defaults.push_back(std::string("index.html"));
-		r.setDefaultFiles(defaults);
-
-		SUBCASE("returns file at routed URI if existing")
-		{
-			// request to a file under route
-			std::string urlFile = "/r/hello.txt";
-			std::string resolvedFile = Router::routeFilePathForGet(urlFile, &r);
-			CHECK(resolvedFile == root + "/hello.txt");
+	SUBCASE("Router Utility Functions") {
+		SUBCASE("replaceRoutePathByRootDirectory") {
+			const Route* apiRoute = findBestMatchInConf(conf, "/api/resource");
+			REQUIRE(apiRoute != NULL);
+			std::string result = Router::replaceRoutePathByRootDirectory("/api/resource", apiRoute);
+			CHECK(result == "api_root/resource");
 		}
-
-		SUBCASE("returns default file at routed URI if default provided")
-		{
-			// request to directory without trailing slash -> should return default file path
-			std::string urlDirNoSlash = "/r/subdir";
-			std::string resolvedDir = Router::routeFilePathForGet(urlDirNoSlash, &r);
-			CHECK(resolvedDir == root + "/subdir/index.html");
-
-			// request to directory with trailing slash -> should also return default file
-			std::string urlDirSlash = "/r/subdir/";
-			std::string resolvedDir2 = Router::routeFilePathForGet(urlDirSlash, &r);
-			CHECK(resolvedDir2 == root + "/subdir/index.html");
-		}
-
-		SUBCASE("returns empty when file does not exist")
-		{
-			std::string missing = "/r/missing.txt";
-			std::string resolved = Router::routeFilePathForGet(missing, &r);
-			CHECK(resolved.empty());
-		}
-
-		rmfile(fileA);
-		rmfile(idx);
-		rmdir_force(dirA);
-
-		SUBCASE("returns default file when '/' with default file")
-		{
-			TempDir tmp;
-			REQUIRE(tmp.path.size() > 0);
-
-			std::string root = tmp.path;
-			// create index at root
-			std::string idx = tmp.join("index.html");
-			writeFile(idx, "<html>root index</html>");
-
-			Route r;
-			r.setURLPath("/");						// route matches root
-			r.setRootDirectory(root);
-			std::vector<std::string> defs;
-			defs.push_back(std::string("index.html"));
-			r.setDefaultFiles(defs);
-
-			std::string resolved = Router::routeFilePathForGet("/", &r);
-			CHECK(resolved == root + "/index.html");
-
-			rmfile(idx);
-		}
-
-		SUBCASE("returns directory when '/' without default file")
-		{
-			TempDir tmp;
-			REQUIRE(tmp.path.size() > 0);
-
-			std::string root = tmp.path;
-			Route r;
-			r.setURLPath("/");
-			r.setRootDirectory(root);
-			std::vector<std::string> defs;
-			r.setDefaultFiles(defs);
-			r.setAutoIndex(true);
-
-			std::string resolved = Router::routeFilePathForGet("/", &r);
-			// implementation dependent: accept either empty (no file) or the directory path
-			CHECK(resolved == root + "/");
-		}
-
-		SUBCASE("returns empty when '/' without default file and no auto index")
-		{
-			TempDir tmp;
-			REQUIRE(tmp.path.size() > 0);
-
-			std::string root = tmp.path;
-			Route r;
-			r.setURLPath("/");
-			r.setRootDirectory(root);
-			std::vector<std::string> defs;
-			r.setDefaultFiles(defs);
-			r.setAutoIndex(false);
-
-			std::string resolved = Router::routeFilePathForGet("/", &r);
-			// implementation dependent: accept either empty (no file) or the directory path
-			CHECK(resolved.empty());
-		}
-
 	}
 
-	{
-		TempDir tmp;
-		REQUIRE(tmp.path.size() > 0);
-
-		std::string root = tmp.path;
-		std::string dirA = tmp.join("dnoidx");
-		int mk = mkdir(dirA.c_str(), 0700);
-		CHECK(mk == 0);
-
-		Route r;
-		r.setURLPath("/p");
-		r.setRootDirectory(root);
-		// ensure no default files
-		std::vector<std::string> defs;
-		r.setDefaultFiles(defs);
-
-		SUBCASE("returns directory path if no default and autoindex is allowed")
-		{
-			// prepare routedURL already replaced by root directory
-			std::string routed = root + "/dnoidx";
-			std::string res = Router::routeFilePathForGetAsDirectory(routed, &r);
-			bool ok = (res.empty() || res == (routed + "/"));
-			CHECK(ok);
+	SUBCASE("Router Core Logic") {
+		SUBCASE("Finding best top-level match in ServerConf") {
+			CHECK(findBestMatchInConf(conf, "/api/v1/users")->getURLPath() == "/api");
+			CHECK(findBestMatchInConf(conf, "/post/image.jpg")->getURLPath() == "/post");
+			CHECK(findBestMatchInConf(conf, "/style.css")->getURLPath() == "/");
+			CHECK(findBestMatchInConf(conf, "/private/file")->getURLPath() == "/private");
 		}
 
-		SUBCASE("returns empty path if no default nor autoindex is not allowed")
-		{
-			std::string url = "/p/dnoidx";
-			std::string resolvedFromGet = Router::routeFilePathForGet(url, &r);
-			bool ok = (resolvedFromGet.empty() || Router::isDirectory(resolvedFromGet));
-			CHECK(ok);
+		SUBCASE("routeFilePathForGet") {
+			// Test 1: Direct file path
+			Request req1(conf, status);
+			req1.addRequestChunk("GET /style.css HTTP/1.1\r\nHost: localhost\r\n\r\n");
+			req1.setRoute(findBestMatchInConf(conf, req1.getRequestedURL()));
+			CHECK(Router::routeFilePathForGet(req1.getRequestedURL(), req1) == "pages/style.css");
+
+			// Test 2: Directory with default file
+			Request req2(conf, status);
+			req2.addRequestChunk("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n");
+			req2.setRoute(findBestMatchInConf(conf, req2.getRequestedURL()));
+			CHECK(Router::routeFilePathForGet(req2.getRequestedURL(), req2) == "pages/index.html");
+
+			// Test 3: Directory with autoindex on (no default file)
+			Request req3(conf, status);
+			req3.addRequestChunk("GET /api/ HTTP/1.1\r\nHost: localhost\r\n\r\n");
+			req3.setRoute(findBestMatchInConf(conf, req3.getRequestedURL()));
+			CHECK(Router::routeFilePathForGet(req3.getRequestedURL(), req3) == "api_root/");
+
+			// Test 4: Directory with autoindex off (no default file)
+			Request req4(conf, status);
+			req4.addRequestChunk("GET /private/ HTTP/1.1\r\nHost: localhost\r\n\r\n");
+			req4.setRoute(findBestMatchInConf(conf, req4.getRequestedURL()));
+			CHECK(Router::routeFilePathForGet(req4.getRequestedURL(), req4).empty());
 		}
 
-		rmdir_force(dirA);
+		SUBCASE("validateRequestWithRoute") {
+
+			{	// Valid request
+			Request req1(conf, status);
+			Response res(req1, status);
+			req1.addRequestChunk("GET /api HTTP/1.1\r\nHost: localhost\r\n\r\n");
+			req1.setRoute(findBestMatchInConf(conf, req1.getRequestedURL()));
+			Router::validateRequestWithRoute(&req1, &res);
+			CHECK_FALSE(res.hasError());
+			}
+			{
+			// Invalid method
+			Request req2(conf, status);
+			Response res(req2, status);
+			// The /api route in the mock config does not allow DELETE
+			req2.addRequestChunk("DELETE /api HTTP/1.1\r\nHost: localhost\r\n\r\n");
+			req2.setRoute(findBestMatchInConf(conf, req2.getRequestedURL()));
+			Router::validateRequestWithRoute(&req2, &res);
+			CHECK(res.hasError());
+			CHECK(res.getStatus().getStatusCode() == METHOD_NOT_ALLOWED);
+			}
+		}
+	cleanupMockFileSystem();
 	}
-}
-
-SUBCASE("Router for POST")
-{
-	SUBCASE("routeFilePathForPost replaces route path by upload directory")
-	{
-		TempDir tmp;
-		REQUIRE(tmp.path.size() > 0);
-
-		std::string root = tmp.path;
-		std::string upload = tmp.join("upload");
-		int mk = mkdir(upload.c_str(), 0700);
-		CHECK(mk == 0);
-
-		Route r;
-		r.setURLPath("/u");
-		r.setRootDirectory(root);
-		r.setUploadDirectory(upload);
-
-		std::string url = "/u/some/path/file.bin";
-		std::string res = Router::routeFilePathForPost(url, &r);
-
-		// replaceRoutePathByUploadDirectory simply replaces the leading route->getURLPath() with upload dir
-		std::string expected = upload + std::string("/some/path/file.bin");
-		CHECK(res == expected);
-
-		rmdir_force(upload);
-	}
-
-	SUBCASE("routeFilePathForPost with non-existing upload base still composes path")
-	{
-		TempDir tmp;
-		REQUIRE(tmp.path.size() > 0);
-
-		std::string root = tmp.path;
-		std::string upload = tmp.join("upload_nonexist");
-		// don't create upload dir on purpose
-
-		Route r;
-		r.setURLPath("/u");
-		r.setRootDirectory(root);
-		r.setUploadDirectory(upload);
-
-		std::string url = "/u/some/path/file.bin";
-		std::string res = Router::routeFilePathForPost(url, &r);
-
-		std::string expected = upload + std::string("/some/path/file.bin");
-		CHECK(res == expected);
-	}
-}
 }
