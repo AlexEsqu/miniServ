@@ -147,8 +147,9 @@ async function sendForm() {
     // If the request was successful, log the response body
     if (response.ok) {
       console.log("Data:", response.body);
-  	localStorage.setItem("formSubmitted", "true");
       // Display success message or perform any other action
+      	localStorage.setItem("formSubmitted", "true");
+        console.log("set formSubmitted to true after form sending ok")
     } else {
       // If the request was not successful, log the error status
       console.error("Error:", response.status);
@@ -175,7 +176,9 @@ async function getFormInfo(endpoint, responseType = "text") {
       if (req.readyState == 4 && req.status >= 200 && req.status < 300) {
         // If the request was successful, resolve the promise with the response data
         resolve(req.response);
-		localStorage.setItem("formSubmitted", "true");
+		    localStorage.setItem("formSubmitted", "true");
+        console.log("set formSubmitted to true after OK get form info")
+
 
       } else {
         // If the request was not successful, reject the promise with an error
@@ -233,8 +236,11 @@ async function getFormData() {
     }
   } catch (error) {
     // If an error occurs, set the formSubmitted flag to false and log the error
-    localStorage.setItem("formSubmitted", "false");
     console.error(error);
+    localStorage.setItem("formSubmitted", "false");
+    console.log("set formSubmitted to false after getFormData error")
+
+
     return;
   }
 }
@@ -247,7 +253,7 @@ form.addEventListener("submit", async function (e) {
   // Reset the form
   form.reset();
   // Get the form data from the server
-  		getFormData();
+  getFormData();
 
 });
 
@@ -304,7 +310,7 @@ deleteButton.addEventListener("click", async (e) => {
       console.log("picture deleted successfully");
       // Set the formSubmitted flag to false
       localStorage.setItem("formSubmitted", "false");
-
+      console.log("set formSubmitted to false after delete")
       // Reload the window to refresh the page
       window.location.reload();
     } catch (error) {
